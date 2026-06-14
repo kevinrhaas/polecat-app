@@ -1,0 +1,25 @@
+<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Polecat">
+  <!-- ears -->
+  <ellipse cx="60" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(-16 60 58)"/>
+  <ellipse cx="160" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(16 160 58)"/>
+  <ellipse cx="62" cy="62" rx="12" ry="15" fill="#F4A6A6" transform="rotate(-16 62 62)"/>
+  <ellipse cx="158" cy="62" rx="12" ry="15" fill="#F4A6A6" transform="rotate(16 158 62)"/>
+  <!-- head -->
+  <ellipse cx="110" cy="122" rx="84" ry="78" fill="#F5E9D6"/>
+  <!-- mask band over the eyes (polecat signature) -->
+  <path d="M28 102 Q110 80 192 102 Q196 128 160 137 Q110 146 60 137 Q24 128 28 102 Z" fill="#2E2A33"/>
+  <!-- eyes -->
+  <circle cx="78" cy="113" r="19" fill="#ffffff"/>
+  <circle cx="142" cy="113" r="19" fill="#ffffff"/>
+  <circle cx="81" cy="116" r="10.5" fill="#2E2A33"/>
+  <circle cx="139" cy="116" r="10.5" fill="#2E2A33"/>
+  <circle cx="85" cy="112" r="3.6" fill="#ffffff"/>
+  <circle cx="143" cy="112" r="3.6" fill="#ffffff"/>
+  <!-- cheeks -->
+  <circle cx="54" cy="156" r="12" fill="#F4A6A6" opacity="0.55"/>
+  <circle cx="166" cy="156" r="12" fill="#F4A6A6" opacity="0.55"/>
+  <!-- nose -->
+  <path d="M110 150 q10 0 8 8.5 q-2 6.5 -8 7.5 q-6 -1 -8 -7.5 q-2 -8.5 8 -8.5 Z" fill="#3A2F3A"/>
+  <!-- mouth -->
+  <path d="M110 166 q-9 9 -17 2.5 M110 166 q9 9 17 2.5" stroke="#3A2F3A" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg>
