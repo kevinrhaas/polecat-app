@@ -556,16 +556,28 @@ function renderBrowse(filter) {
 }
 
 // ── Keys tab ────────────────────────────────────────────────────────────────
+const KEY_TIER = { claude: 'Paid', gemini: 'Free tier + paid', openai: 'Paid', openrouter: 'Free + paid', groq: 'Free tier', hf: 'Free credits' };
 function renderKeys() {
   const wrap = $('keyFields');
-  wrap.innerHTML = '';
+  wrap.innerHTML =
+    `<details class="key-help"><summary>🔑 What is an API key?</summary>` +
+    `<p>An API key is a short string of letters and numbers — like a passcode. Each provider (Anthropic, Google, OpenAI…) generates one for you so Polecat can use their models on your behalf. Paste it here: it's stored only in your browser and sent straight to that provider — never to us. You stay in control — revoke or regenerate it anytime in the provider's dashboard, and set spending limits there.</p></details>` +
+    `<details class="key-help"><summary>💸 What will it cost?</summary>` +
+    `<p>You only ever pay the provider, for what you use — never Polecat.</p>` +
+    `<ul>` +
+    `<li><b>Free</b> — OpenRouter <code>:free</code> models, Groq's free tier, and Hugging Face credits cost <b>$0</b> (just rate-limited). Gemini also has a free tier.</li>` +
+    `<li><b>Paid</b> — Claude, Gemini &amp; ChatGPT bill per use: cheaper models (Haiku, GPT&#8209;mini, Gemini Flash) ≈ <b>$0.001–0.01</b> a question; flagships (Opus, GPT&#8209;5, Gemini Pro) ≈ <b>$0.01–0.10</b>. Longer answers cost a bit more.</li>` +
+    `<li><b>In practice</b> — light daily use on paid models is often under <b>~$1–5/month</b>; free models stay $0. Set a hard spending cap in each provider's billing settings so there are no surprises.</li>` +
+    `</ul></details>`;
   PROVIDER_IDS.forEach(id => {
     const p = PROVIDERS[id];
     const has = !!providerKey(cfg, id);
+    const tier = KEY_TIER[id] || '';
     const field = el('div', 'key-field');
     field.innerHTML =
       `<div class="key-head"><span class="svc-dot" style="background:${p.color}"></span>` +
-      `<span class="key-name">${escapeHtml(p.name)}</span><span class="key-vendor">${escapeHtml(p.vendor)}</span>` +
+      `<span class="key-name">${escapeHtml(p.name)}</span>` +
+      `<span class="key-tier ${tier === 'Paid' ? 'paid' : 'free'}">${escapeHtml(tier)}</span>` +
       `<span class="key-status ${has ? 'on' : ''}">${has ? '● connected' : '○ no key'}</span></div>` +
       `<input type="password" class="field-input" id="key_${id}" placeholder="${escapeHtml(p.placeholder)}" autocomplete="off" value="${escapeHtml(providerKey(cfg, id))}">` +
       `<span class="field-hint">Key at <a href="${p.keyUrl}" target="_blank" rel="noopener">${escapeHtml(p.keyLabel)}</a>${p.rateNote ? ' · ' + escapeHtml(p.rateNote) : ''}</span>`;
@@ -574,6 +586,12 @@ function renderKeys() {
     input.onchange = () => { buildChips(); const f = field.querySelector('.key-status'); const on = !!input.value.trim(); f.textContent = on ? '● connected' : '○ no key'; f.classList.toggle('on', on); };
     wrap.appendChild(field);
   });
+  // Export / Import lives here — it's about your keys + overall setup
+  const actions = el('div', 'key-actions');
+  actions.innerHTML = `<span class="mini-note">Move your whole setup between browsers or devices</span><span class="arb-spacer"></span><button class="btn btn-ghost" id="cfgExport">Export…</button><button class="btn btn-ghost" id="cfgImport">Import…</button>`;
+  wrap.appendChild(actions);
+  $('cfgExport').onclick = openExport;
+  $('cfgImport').onclick = openImport;
 }
 
 // ── Arbitration tab ───────────────────────────────────────────────────────
@@ -604,8 +622,6 @@ function renderArbitration() {
       `<div class="arb-actions">` +
         (editable ? `<button class="btn btn-ghost" id="arbSave">Save edits</button><button class="btn btn-danger" id="arbDelete">Delete</button>`
                   : `<button class="btn btn-ghost" id="arbDup">Duplicate &amp; edit</button>`) +
-        `<span class="arb-spacer"></span>` +
-        `<button class="btn btn-ghost" id="arbExport">Export…</button><button class="btn btn-ghost" id="arbImport">Import…</button>` +
       `</div>` +
     `</div>`;
 
@@ -622,8 +638,6 @@ function renderArbitration() {
   $('arbDup') && ($('arbDup').onclick = () => duplicateStrategy(strat));
   $('arbSave') && ($('arbSave').onclick = () => saveStrategyEdits(strat.id));
   $('arbDelete') && ($('arbDelete').onclick = () => deleteStrategy(strat.id));
-  $('arbExport').onclick = openExport;
-  $('arbImport').onclick = openImport;
 }
 function duplicateStrategy(strat) {
   const copy = JSON.parse(JSON.stringify(strat));
@@ -683,7 +697,7 @@ function renderDonate() {
 // ════════════════════════════════════════════════════════════════════════════
 //  WELCOME TOUR
 // ════════════════════════════════════════════════════════════════════════════
-let _wslide = 1; const W_TOTAL = 4;
+let _wslide = 1; const W_TOTAL = 5;
 function showWelcome() { _wslide = 1; gotoWelcome(1); $('welcomeOverlay').classList.add('open'); }
 function dismissWelcome(openCfg = false) {
   localStorage.setItem(WELCOME_KEY, '1');

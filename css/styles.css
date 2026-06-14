@@ -257,6 +257,16 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .key-vendor { color: var(--text-3); font-size: 11px; }
 .key-status { margin-left: auto; font-size: 10px; color: var(--text-3); }
 .key-status.on { color: #34d399; }
+.key-tier { font-size: 10px; font-weight: 700; padding: 1px 8px; border-radius: 100px; }
+.key-tier.free { color: #34d399; background: rgba(52,211,153,.13); }
+.key-tier.paid { color: var(--text-3); background: var(--surface-2); }
+.key-help { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 13px; margin-bottom: 10px; font-size: 13px; }
+.key-help summary { cursor: pointer; font-weight: 600; color: var(--text); }
+.key-help p, .key-help li { color: var(--text-2); line-height: 1.55; margin-top: 8px; }
+.key-help ul { margin: 6px 0 0; padding-left: 18px; }
+.key-help li { margin-top: 6px; }
+.key-help code { font-family: 'SF Mono','Fira Code',monospace; font-size: .9em; background: var(--surface-3); padding: 1px 4px; border-radius: 4px; }
+.key-actions { display: flex; align-items: center; gap: 8px; margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--border); }
 
 /* arbitration */
 #arbControls { display: flex; flex-direction: column; gap: 10px; }
@@ -296,7 +306,7 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .welcome-overlay.open { display: flex; }
 .welcome-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; width: 100%; max-width: 520px; max-height: 92vh; box-shadow: 0 32px 80px rgba(0,0,0,.6); overflow: hidden auto; }
 .welcome-close { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--text-3); cursor: pointer; font-size: 20px; line-height: 1; z-index: 1; padding: 6px; border-radius: 6px; }
-.welcome-slide { display: none; flex-direction: column; align-items: center; padding: 40px 32px 26px; text-align: center; gap: 16px; }
+.welcome-slide { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px 32px 24px; text-align: center; gap: 15px; height: clamp(400px, 60vh, 500px); overflow-y: auto; }
 .welcome-slide.active { display: flex; animation: wslide-in .3s ease; }
 .welcome-slide.active.going-back { animation: wslide-back .3s ease; }
 @keyframes wslide-in  { from { opacity: 0; transform: translateX(14px);  } to { opacity: 1; transform: translateX(0); } }
