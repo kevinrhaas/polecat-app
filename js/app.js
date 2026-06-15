@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 import {
   loadCfg, saveCfg, activeSelections, configuredProviders, providerKey, setProviderKey,
-  mkSelection, MAX_SELECTIONS, takeMigrationNote,
+  mkSelection, MAX_SELECTIONS, takeMigrationNote, loadHistory, saveHistory,
 } from './config.js';
 import {
   PROVIDERS, PROVIDER_IDS, makeGen, probeModel, defaultModel, selectionLabel,
@@ -23,6 +23,9 @@ let cfg = loadCfg();
 const convos = {};                  // selectionId -> [{role, content}]
 let lastPrompt = '', results = {}, order = [];
 let activeTab = null;
+let history = loadHistory();         // [thread] newest-first
+let currentThread = null;           // the conversation being built/continued
+let lastConsensusText = '';         // captured per turn for history
 // live consensus progress
 let runStatus = {};                 // selectionId -> 'pending'|'streaming'|'done'|'error'
 let consensusPhase = '';            // '' | 'waiting' | 'arbitrating' | 'done'
@@ -226,7 +229,7 @@ async function sendAll() {
   const list = sels();
   if (!list.length) { openConfig('models'); return; }
 
-  lastPrompt = text; results = {}; order = [];
+  lastPrompt = text; results = {}; order = []; lastConsensusText = '';
   runStatus = {}; list.forEach(s => runStatus[s.id] = 'pending');
   consensusPhase = 'waiting'; consensusStatusText = ''; consensusStepText = '';
   $('promptInput').value = ''; $('promptInput').style.height = 'auto';
@@ -245,7 +248,29 @@ async function sendAll() {
     await runConsensus();
     setConsensusDot(false); setConsensusStep('');
   }
+  recordTurn(text);
   setChipsDisabled(false); $('sendBtn').disabled = false;
+}
+
+// Save this round into the current conversation thread (unless private mode).
+function recordTurn(prompt) {
+  if (cfg.private) return;
+  if (!order.length) return;
+  const answers = {};
+  order.forEach(id => { answers[id] = results[id] ?? null; });
+  if (!currentThread) {
+    currentThread = {
+      id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      title: prompt.slice(0, 80), createdAt: Date.now(), updatedAt: Date.now(),
+      selections: sels().map(s => ({ id: s.id, provider: s.provider, model: s.model })),
+      turns: [],
+    };
+    history.unshift(currentThread);
+  }
+  currentThread.turns.push({ prompt, answers, consensus: cfg.consensus ? (lastConsensusText || null) : null });
+  currentThread.updatedAt = Date.now();
+  saveHistory(history);
+  renderHistoryList();
 }
 
 function resetApp() {
@@ -327,6 +352,7 @@ async function streamToConsensus(sel, messages) {
   bubble.innerHTML = '';
   for await (const chunk of makeGen(sel, messages, cfg)) { full += chunk; bubble.innerHTML = renderMarkdown(full); conv.scrollTop = 0; }
   finishBubble(pair, full);
+  lastConsensusText = full;
   return full;
 }
 function showConsensusStatic(text, isError = false) {
@@ -339,7 +365,7 @@ function showConsensusStatic(text, isError = false) {
     (isError ? '' : `<button class="copy-btn" title="Copy">${COPY_SVG}</button>`) + `</div>` +
     `<div class="msg-bubble">${isError ? `<span class="msg-error">${escapeHtml(text)}</span>` : renderMarkdown(text)}</div></div>`;
   conv.prepend(pair); conv.scrollTop = 0;
-  if (!isError) { highlightBubble(pair); const b = pair.querySelector('.copy-btn'); if (b) b.onclick = () => copyText(text, b); }
+  if (!isError) { highlightBubble(pair); lastConsensusText = text; const b = pair.querySelector('.copy-btn'); if (b) b.onclick = () => copyText(text, b); }
 }
 async function runConsensus() {
   const ordered = order.filter(id => results[id]).map(id => ({ selection: selById(id) || { id, provider: 'openai', model: '' }, text: results[id] }));
@@ -660,13 +686,34 @@ function deleteStrategy(id) {
   persist(); renderArbitration();
 }
 
-// ── Export / Import ───────────────────────────────────────────────────────
+// ── Export / Import (pick what to include) ─────────────────────────────────
 function openExport() {
-  const includeKeys = confirm('Include API keys in the export?\n\nOK = include keys (keep this file private)\nCancel = exclude keys (safe to share)');
-  const blob = new Blob([exportSettings(cfg, { includeKeys })], { type: 'application/json' });
-  const a = el('a'); a.href = URL.createObjectURL(blob); a.download = 'polecat-settings.json'; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-  toast(includeKeys ? 'Exported (with keys)' : 'Exported (no keys)');
+  const ov = el('div', 'exp-overlay');
+  ov.innerHTML =
+    `<div class="exp-card">` +
+    `<div class="exp-title">Export</div>` +
+    `<div class="exp-sub">Choose what to put in the file — to move to another device or back up.</div>` +
+    `<label class="exp-opt"><input type="checkbox" id="expSettings" checked> <span><b>Settings</b><br><span class="mini-note">models, strategies, preferences</span></span></label>` +
+    `<label class="exp-opt"><input type="checkbox" id="expKeys"> <span><b>API keys</b><br><span class="mini-note">keep this file private if you include them</span></span></label>` +
+    `<label class="exp-opt"><input type="checkbox" id="expHistory" checked> <span><b>Conversation history</b><br><span class="mini-note">${history.length} conversation${history.length === 1 ? '' : 's'}</span></span></label>` +
+    `<div class="exp-actions"><button class="btn btn-ghost" id="expCancel">Cancel</button><button class="btn btn-solid" id="expGo">Download</button></div>` +
+    `</div>`;
+  document.body.appendChild(ov);
+  const close = () => ov.remove();
+  ov.onclick = (e) => { if (e.target === ov) close(); };
+  $('expCancel').onclick = close;
+  $('expGo').onclick = () => {
+    const incS = $('expSettings').checked, incK = $('expKeys').checked, incH = $('expHistory').checked;
+    if (!incS && !incK && !incH) { toast('Pick at least one thing'); return; }
+    const data = { _polecat: 1, exportedAt: new Date().toISOString() };
+    if (incS) Object.assign(data, JSON.parse(exportSettings(cfg, { includeKeys: incK })));
+    else if (incK) { data.providers = {}; for (const id of Object.keys(cfg.providers || {})) if (cfg.providers[id]?.key) data.providers[id] = { key: cfg.providers[id].key }; }
+    if (incH) data.history = history;
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = el('a'); a.href = URL.createObjectURL(blob); a.download = 'polecat-export.json'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    close(); toast('Exported');
+  };
 }
 function openImport() {
   const inp = el('input'); inp.type = 'file'; inp.accept = 'application/json,.json';
@@ -675,14 +722,119 @@ function openImport() {
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        cfg = importSettings(cfg, reader.result); persist();
-        buildChips(); renderModels(); renderKeys(); renderArbitration();
-        toast('Settings imported');
+        const data = JSON.parse(reader.result);
+        cfg = importSettings(cfg, data); persist();
+        if (Array.isArray(data.history)) {        // merge history by id, newest first
+          const have = new Set(history.map(t => t.id));
+          data.history.forEach(t => { if (t && t.id && !have.has(t.id)) history.push(t); });
+          history.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+          saveHistory(history); renderHistoryList();
+        }
+        buildChips(); renderModels(); renderKeys(); renderArbitration(); updatePrivateUI();
+        toast('Imported');
       } catch (e) { toast('Import failed: ' + e.message); }
     };
     reader.readAsText(file);
   };
   inp.click();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  SIDEBAR + CONVERSATION HISTORY
+// ════════════════════════════════════════════════════════════════════════════
+function openSidebar() { renderHistoryList(); $('sidebar').classList.add('open'); $('sidebarBackdrop').classList.add('open'); }
+function closeSidebar() { $('sidebar').classList.remove('open'); $('sidebarBackdrop').classList.remove('open'); }
+function toggleSidebar() { $('sidebar').classList.contains('open') ? closeSidebar() : openSidebar(); }
+
+function timeAgo(ts) {
+  const s = (Date.now() - (ts || 0)) / 1000;
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s / 60) + 'm ago';
+  if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+  const d = Math.floor(s / 86400); return d === 1 ? 'yesterday' : d + 'd ago';
+}
+function renderHistoryList() {
+  const wrap = $('sbHistory'); if (!wrap) return;
+  if (!history.length) {
+    wrap.innerHTML = `<div class="sb-empty">No conversations yet.<br>Your chats are saved here, on this device.</div>`;
+    return;
+  }
+  wrap.innerHTML = history.map(t =>
+    `<div class="sb-item${currentThread && currentThread.id === t.id ? ' active' : ''}" data-id="${escapeHtml(t.id)}">` +
+    `<div class="sb-item-main"><div class="sb-item-title">${escapeHtml(t.title || 'Untitled')}</div>` +
+    `<div class="sb-item-meta">${escapeHtml(timeAgo(t.updatedAt || t.createdAt))} · ${t.turns.length} turn${t.turns.length === 1 ? '' : 's'}</div></div>` +
+    `<button class="sb-item-x" title="Delete" data-id="${escapeHtml(t.id)}" aria-label="Delete conversation">×</button></div>`).join('');
+  wrap.querySelectorAll('.sb-item').forEach(it => it.onclick = (e) => { if (e.target.closest('.sb-item-x')) return; restoreThread(it.dataset.id); });
+  wrap.querySelectorAll('.sb-item-x').forEach(x => x.onclick = (e) => { e.stopPropagation(); deleteThread(x.dataset.id); });
+}
+function deleteThread(id) {
+  history = history.filter(t => t.id !== id);
+  if (currentThread && currentThread.id === id) currentThread = null;
+  saveHistory(history); renderHistoryList();
+}
+function clearHistory() {
+  if (!history.length) { toast('History is already empty'); return; }
+  if (!confirm(`Delete all ${history.length} saved conversation${history.length === 1 ? '' : 's'}? This can't be undone.`)) return;
+  history = []; currentThread = null; saveHistory(history); renderHistoryList(); toast('History cleared');
+}
+function newChat() {
+  if ((order.length || Object.keys(results).length) && cfg.private) {
+    if (!confirm("Private mode is on — this chat isn't saved. Start a new one?")) return;
+  }
+  resetApp(); currentThread = null; renderHistoryList(); closeSidebar();
+}
+function togglePrivate() {
+  cfg.private = !cfg.private; persist(); updatePrivateUI();
+  toast(cfg.private ? "Private mode on — new chats won't be saved" : 'Private mode off');
+}
+function updatePrivateUI() {
+  const sw = $('privateSwitch'); if (sw) { sw.classList.toggle('on', cfg.private); sw.setAttribute('aria-checked', String(cfg.private)); }
+  const badge = $('privateBadge'); if (badge) badge.hidden = !cfg.private;
+}
+
+// Restore a saved conversation — rebuild its tabs + transcript, ready to continue.
+function restoreThread(id) {
+  const t = history.find(x => x.id === id); if (!t) return;
+  cfg.selections = (t.selections || []).map(s => ({ id: s.id, provider: s.provider, model: s.model }));
+  persist();
+  Object.keys(convos).forEach(k => delete convos[k]);
+  results = {}; order = []; runStatus = {}; consensusPhase = ''; lastConsensusText = '';
+  $('tabBar').innerHTML = ''; $('tabPanels').innerHTML = ''; activeTab = null;
+  currentThread = t;
+  buildChips();
+  $('responses').style.display = '';
+  ensureTabs();
+  (t.turns || []).forEach(turn => {
+    (t.selections || []).forEach(sel => {
+      const ans = turn.answers ? turn.answers[sel.id] : undefined;
+      const co = getConvo(sel.id);
+      co.push({ role: 'user', content: turn.prompt });
+      if (ans != null) co.push({ role: 'assistant', content: ans });
+      renderStaticPair(sel.id, selectionLabel(sel), turn.prompt, ans);
+    });
+    if (turn.consensus != null) renderStaticConsensus(turn.prompt, turn.consensus);
+  });
+  lastPrompt = t.turns && t.turns.length ? t.turns[t.turns.length - 1].prompt : '';
+  if (cfg.consensus && $('tab_consensus')) switchTab('consensus');
+  closeSidebar(); renderHistoryList();
+}
+function renderStaticPair(selId, label, userContent, answerText) {
+  const conv = $('conv_' + selId); if (!conv) return;
+  $('empty_' + selId)?.remove();
+  const pair = el('div', 'qa-pair');
+  pair.innerHTML =
+    `<div class="msg user"><span class="msg-label">You</span><div class="msg-bubble">${nl2br(userContent)}</div></div>` +
+    `<div class="msg assistant"><div class="msg-head"><span class="msg-label">${escapeHtml(label)}</span>` +
+    (answerText == null ? '' : `<button class="copy-btn" title="Copy">${COPY_SVG}</button>`) + `</div>` +
+    `<div class="msg-bubble">${answerText == null ? '<span class="msg-error">No response recorded</span>' : renderMarkdown(answerText)}</div></div>`;
+  conv.prepend(pair); conv.scrollTop = 0;
+  if (answerText != null) { highlightBubble(pair); const b = pair.querySelector('.copy-btn'); if (b) b.onclick = () => copyText(answerText, b); }
+}
+function renderStaticConsensus(prompt, text) {
+  if (!$('conv_consensus')) return;
+  const prev = lastPrompt; lastPrompt = prompt;
+  showConsensusStatic(text, false);
+  lastPrompt = prev;
 }
 
 // ── Support ─────────────────────────────────────────────────────────────────
@@ -697,7 +849,7 @@ function renderDonate() {
 // ════════════════════════════════════════════════════════════════════════════
 //  WELCOME TOUR
 // ════════════════════════════════════════════════════════════════════════════
-let _wslide = 1; const W_TOTAL = 5;
+let _wslide = 1; const W_TOTAL = 6;
 function showWelcome() { _wslide = 1; gotoWelcome(1); $('welcomeOverlay').classList.add('open'); }
 function dismissWelcome(openCfg = false) {
   localStorage.setItem(WELCOME_KEY, '1');
@@ -741,15 +893,23 @@ function init() {
     cfg.providers = {}; persist(); renderKeys(); buildChips(); renderModels(); toast('Keys cleared');
   };
 
-  $('resetBtn').onclick = () => {
-    if (order.length || Object.keys(results).length) { if (!confirm('Start a new chat? This clears all current responses.')) return; }
-    resetApp();
-  };
+  $('resetBtn').onclick = newChat;
 
   $('sendBtn').onclick = sendAll;
   $('promptInput').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); sendAll(); } });
   $('promptInput').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 260) + 'px'; });
-  $('themeBtn').onclick = () => applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+  $('sbTheme').onclick = () => applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+
+  // sidebar + conversation history
+  $('sidebarToggle').onclick = toggleSidebar;
+  $('sidebarBackdrop').onclick = closeSidebar;
+  $('sbNewChat').onclick = newChat;
+  $('sbExport').onclick = openExport;
+  $('sbImport').onclick = openImport;
+  $('sbClear').onclick = clearHistory;
+  $('privateSwitch').onclick = togglePrivate;
+  $('privateSwitch').onkeydown = (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); togglePrivate(); } };
+  renderHistoryList(); updatePrivateUI();
 
   $('wNext').onclick = welcomeNext; $('wBack').onclick = welcomeBack;
   $('wSkip').onclick = () => dismissWelcome(); $('wClose').onclick = () => dismissWelcome();

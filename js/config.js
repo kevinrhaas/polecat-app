@@ -42,6 +42,7 @@ function normalize(cfg) {
   cfg.consensus   = cfg.consensus !== false;          // default ON
   cfg.modelStatus = (cfg.modelStatus && typeof cfg.modelStatus === 'object') ? cfg.modelStatus : {};
   cfg.ui          = (cfg.ui && typeof cfg.ui === 'object') ? cfg.ui : {};
+  cfg.private     = cfg.private === true;             // private mode: don't record history
   cfg.selections.forEach(s => { if (!s.id) s.id = newId(); });
   return cfg;
 }
@@ -97,6 +98,17 @@ export function loadCfg() {
 export function saveCfg(cfg) {
   cfg.schemaVersion = SCHEMA_VERSION;
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch {}
+}
+
+// ── Conversation history (separate key so the config blob stays small) ──────
+export const HISTORY_KEY = 'polecat_history';
+export const MAX_HISTORY = 200;
+export function loadHistory() {
+  const a = safeParse(localStorage.getItem(HISTORY_KEY));
+  return Array.isArray(a) ? a : [];
+}
+export function saveHistory(arr) {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify((arr || []).slice(0, MAX_HISTORY))); } catch {}
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────

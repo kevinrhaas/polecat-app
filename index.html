@@ -23,6 +23,8 @@
 <body>
 
 <header>
+  <div class="header-left">
+    <button class="icon-btn icon-only" id="sidebarToggle" title="Menu &amp; history" aria-label="Open menu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
   <a class="logo" href="https://polecat.live" title="Polecat home" style="text-decoration:none;color:inherit">
     <svg class="logo-mark" viewBox="0 0 220 220" width="22" height="22" aria-hidden="true">
       <ellipse cx="60" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(-16 60 58)"/>
@@ -36,17 +38,34 @@
     <span class="logo-word">Pole<span class="logo-grad">cat</span></span>
     <span class="logo-ver" id="logoVer"></span>
   </a>
+  </div>
   <div class="header-actions">
+    <span class="private-badge" id="privateBadge" hidden>● Private</span>
     <button class="icon-btn" id="resetBtn" title="New chat">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.39"/></svg>
       New chat
     </button>
-    <button class="icon-btn icon-only" id="themeBtn" title="Toggle theme"></button>
-    <button class="icon-btn icon-only" id="configBtn" title="Settings">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
   </div>
 </header>
+
+<!-- Left sidebar: New chat · history · settings/theme/private -->
+<aside class="sidebar" id="sidebar" aria-label="Menu and conversation history">
+  <div class="sb-top"><button class="sb-newchat" id="sbNewChat">＋ New chat</button></div>
+  <div class="sb-section-label">History</div>
+  <div class="sb-history" id="sbHistory"></div>
+  <div class="sb-foot">
+    <div class="sb-private">
+      <span>Private mode<br><span class="mini-note">don't save chats</span></span>
+      <span class="switch" id="privateSwitch" role="switch" aria-checked="false" tabindex="0"><span class="knob"></span></span>
+    </div>
+    <button class="sb-link" id="configBtn">⚙&nbsp; Settings</button>
+    <button class="sb-link" id="sbTheme">◐&nbsp; Theme</button>
+    <button class="sb-link" id="sbExport">⤓&nbsp; Export…</button>
+    <button class="sb-link" id="sbImport">⤒&nbsp; Import…</button>
+    <button class="sb-link danger" id="sbClear">🗑&nbsp; Clear history</button>
+  </div>
+</aside>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
 <div class="app">
   <div class="prompt-card">
@@ -179,6 +198,16 @@
         <div class="welcome-desc" style="font-size:13px">Or switch consensus off and just read every model side by side.</div>
       </div>
 
+      <div class="welcome-slide" id="wslide-hist">
+        <div class="welcome-slide-icon">🕘</div>
+        <div class="welcome-tagline">Yours, on your device</div>
+        <div class="welcome-desc">Every conversation is saved <b>locally</b> in the ☰ menu — revisit and <b>continue</b> any of them. Nothing leaves your browser.</div>
+        <div class="welcome-steps">
+          <div class="wstep"><span class="wstep-n">🕶</span><span><b>Private mode</b> for when you don't want a chat recorded.</span></div>
+          <div class="wstep"><span class="wstep-n">⤓</span><span><b>Export</b> your setup, keys &amp; history to move to another device.</span></div>
+        </div>
+      </div>
+
       <div class="welcome-slide" id="wslide-5">
         <div class="welcome-slide-icon">🔑</div>
         <div class="welcome-tagline">Bring your own keys</div>
@@ -189,7 +218,7 @@
     </div>
 
     <div class="welcome-footer">
-      <div class="welcome-dots"><div class="wd active"></div><div class="wd"></div><div class="wd"></div><div class="wd"></div><div class="wd"></div></div>
+      <div class="welcome-dots"><div class="wd active"></div><div class="wd"></div><div class="wd"></div><div class="wd"></div><div class="wd"></div><div class="wd"></div></div>
       <div class="welcome-btns">
         <button class="btn btn-ghost" id="wBack" style="visibility:hidden">← Back</button>
         <button class="btn btn-ghost" id="wSkip">Skip</button>
