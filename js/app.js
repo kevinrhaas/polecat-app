@@ -753,19 +753,56 @@ function timeAgo(ts) {
   if (s < 86400) return Math.floor(s / 3600) + 'h ago';
   const d = Math.floor(s / 86400); return d === 1 ? 'yesterday' : d + 'd ago';
 }
+function historyMatches(t, q) {
+  if (!q) return true;
+  if ((t.title || '').toLowerCase().includes(q)) return true;
+  return (t.turns || []).some(tn => (tn.prompt || '').toLowerCase().includes(q));
+}
 function renderHistoryList() {
   const wrap = $('sbHistory'); if (!wrap) return;
+  const search = $('sbSearch');
+  if (search) search.style.display = history.length ? '' : 'none';
   if (!history.length) {
     wrap.innerHTML = `<div class="sb-empty">No conversations yet.<br>Your chats are saved here, on this device.</div>`;
     return;
   }
-  wrap.innerHTML = history.map(t =>
-    `<div class="sb-item${currentThread && currentThread.id === t.id ? ' active' : ''}" data-id="${escapeHtml(t.id)}">` +
-    `<div class="sb-item-main"><div class="sb-item-title">${escapeHtml(t.title || 'Untitled')}</div>` +
+  const q = (search?.value || '').toLowerCase().trim();
+  const items = history.filter(t => historyMatches(t, q))
+    .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (b.updatedAt || 0) - (a.updatedAt || 0));
+  if (!items.length) { wrap.innerHTML = `<div class="sb-empty">No matches for “${escapeHtml(q)}”.</div>`; return; }
+  wrap.innerHTML = items.map(t =>
+    `<div class="sb-item${currentThread && currentThread.id === t.id ? ' active' : ''}${t.pinned ? ' pinned' : ''}" data-id="${escapeHtml(t.id)}">` +
+    `<div class="sb-item-main"><div class="sb-item-title">${t.pinned ? '<span class="sb-pin-dot">📌</span> ' : ''}${escapeHtml(t.title || 'Untitled')}</div>` +
     `<div class="sb-item-meta">${escapeHtml(timeAgo(t.updatedAt || t.createdAt))} · ${t.turns.length} turn${t.turns.length === 1 ? '' : 's'}</div></div>` +
-    `<button class="sb-item-x" title="Delete" data-id="${escapeHtml(t.id)}" aria-label="Delete conversation">×</button></div>`).join('');
-  wrap.querySelectorAll('.sb-item').forEach(it => it.onclick = (e) => { if (e.target.closest('.sb-item-x')) return; restoreThread(it.dataset.id); });
-  wrap.querySelectorAll('.sb-item-x').forEach(x => x.onclick = (e) => { e.stopPropagation(); deleteThread(x.dataset.id); });
+    `<div class="sb-item-actions">` +
+    `<button class="sb-act sb-pin${t.pinned ? ' on' : ''}" title="${t.pinned ? 'Unpin' : 'Pin to top'}" data-id="${escapeHtml(t.id)}">📌</button>` +
+    `<button class="sb-act sb-rename" title="Rename" data-id="${escapeHtml(t.id)}">✎</button>` +
+    `<button class="sb-act sb-del" title="Delete" data-id="${escapeHtml(t.id)}">×</button>` +
+    `</div></div>`).join('');
+  wrap.querySelectorAll('.sb-item').forEach(it => it.onclick = (e) => { if (e.target.closest('.sb-item-actions')) return; restoreThread(it.dataset.id); });
+  wrap.querySelectorAll('.sb-pin').forEach(b => b.onclick = (e) => { e.stopPropagation(); pinThread(b.dataset.id); });
+  wrap.querySelectorAll('.sb-rename').forEach(b => b.onclick = (e) => { e.stopPropagation(); renameThread(b.dataset.id); });
+  wrap.querySelectorAll('.sb-del').forEach(b => b.onclick = (e) => { e.stopPropagation(); deleteThread(b.dataset.id); });
+}
+function pinThread(id) {
+  const t = history.find(x => x.id === id); if (!t) return;
+  t.pinned = !t.pinned; saveHistory(history); renderHistoryList();
+}
+function renameThread(id) {
+  const item = document.querySelector(`.sb-item[data-id="${CSS.escape(id)}"]`);
+  const t = history.find(x => x.id === id); if (!item || !t) return;
+  const titleEl = item.querySelector('.sb-item-title'); if (!titleEl) return;
+  const input = el('input', 'sb-rename-input'); input.value = t.title || '';
+  titleEl.replaceWith(input); input.focus(); input.select();
+  let done = false;
+  const commit = (save) => {
+    if (done) return; done = true;
+    if (save) { const v = input.value.trim(); if (v) { t.title = v; saveHistory(history); } }
+    renderHistoryList();
+  };
+  input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); commit(true); } else if (e.key === 'Escape') { e.preventDefault(); commit(false); } };
+  input.onblur = () => commit(true);
+  input.onclick = (e) => e.stopPropagation();
 }
 function deleteThread(id) {
   history = history.filter(t => t.id !== id);
@@ -904,6 +941,7 @@ function init() {
   $('sidebarToggle').onclick = toggleSidebar;
   $('sidebarBackdrop').onclick = closeSidebar;
   $('sbNewChat').onclick = newChat;
+  $('sbSearch') && ($('sbSearch').oninput = renderHistoryList);
   $('sbExport').onclick = openExport;
   $('sbImport').onclick = openImport;
   $('sbClear').onclick = clearHistory;
