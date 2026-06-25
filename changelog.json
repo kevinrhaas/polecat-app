@@ -1,0 +1,27 @@
+{
+  "updated": "2026-06-25",
+  "entries": [
+    {
+      "date": "2026-06-25",
+      "title": "Free demo + a whole new chat experience",
+      "items": [
+        "✨ Try it free — run a real model instantly, no key or signup",
+        "Attach, paste or drag-drop images; click any image to view it full-size",
+        "Gemini-style layout: the chat box is docked at the bottom, replies flow above",
+        "Press Enter to send (Shift+Enter for a new line) on desktop",
+        "A subtle animated background while the models are thinking",
+        "Clear 👁 markers showing which models can read images"
+      ]
+    },
+    {
+      "date": "2026-06-15",
+      "title": "Conversations & history",
+      "items": [
+        "Saved conversation history with search, rename and pin",
+        "Private mode for chats you don't want recorded",
+        "Export / import your whole setup between devices",
+        "A guided welcome tour"
+      ]
+    }
+  ]
+}

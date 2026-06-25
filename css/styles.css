@@ -487,6 +487,19 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .sb-link.danger { color: #f87171; }
 .sb-link.danger:hover { background: rgba(248,113,113,.1); }
 
+/* ── What's new ──────────────────────────────────────────── */
+.wn-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--brand-b); margin-left: 6px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-b) 28%, transparent); }
+.wn-dot[hidden] { display: none; }
+.wn-card { max-width: 440px; }
+.wn-list { display: flex; flex-direction: column; gap: 14px; max-height: 56vh; overflow-y: auto; margin-top: 6px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.wn-list::-webkit-scrollbar { width: 5px; } .wn-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.wn-entry { border-left: 2px solid color-mix(in srgb, var(--brand-b) 55%, var(--border)); padding-left: 12px; }
+.wn-date { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-3); }
+.wn-etitle { font-size: 14px; font-weight: 700; margin: 2px 0 5px; }
+.wn-items { list-style: none; display: flex; flex-direction: column; gap: 5px; padding: 0; }
+.wn-items li { font-size: 13px; color: var(--text-2); line-height: 1.45; padding-left: 16px; position: relative; }
+.wn-items li::before { content: '›'; position: absolute; left: 2px; color: var(--brand-b); font-weight: 700; }
+
 /* ── Export dialog ───────────────────────────────────────── */
 .exp-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,.6); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 16px; }
 .exp-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-width: 380px; padding: 20px; box-shadow: 0 24px 64px rgba(0,0,0,.5); }

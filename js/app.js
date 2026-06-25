@@ -1010,6 +1010,45 @@ function renderStaticConsensus(prompt, text) {
   lastPrompt = prev;
 }
 
+// ── What's new (changelog) ──────────────────────────────────────────────────
+const CHANGELOG_SEEN_KEY = 'polecat_changelog_seen';
+let _changelog = null;
+async function loadChangelog() {
+  try {
+    const r = await fetch('changelog.json', { cache: 'no-cache' });
+    if (r.ok) _changelog = await r.json();
+  } catch { /* offline / missing — feature just stays quiet */ }
+  updateWhatsNewBadge();
+}
+function changelogLatest() { return (_changelog?.entries?.[0]?.date) || _changelog?.updated || ''; }
+function updateWhatsNewBadge() {
+  const dot = $('whatsNewDot'); if (!dot) return;
+  const latest = changelogLatest();
+  const seen = localStorage.getItem(CHANGELOG_SEEN_KEY) || '';
+  dot.hidden = !latest || latest <= seen;
+}
+function openWhatsNew() {
+  if (!_changelog || !(_changelog.entries || []).length) { toast('No changelog yet'); return; }
+  localStorage.setItem(CHANGELOG_SEEN_KEY, changelogLatest());
+  updateWhatsNewBadge();
+  const ov = el('div', 'exp-overlay');
+  ov.innerHTML =
+    `<div class="exp-card wn-card">` +
+    `<div class="exp-title">✨ What's new</div>` +
+    `<div class="exp-sub">Polecat keeps getting better${_changelog.updated ? ` · updated ${escapeHtml(_changelog.updated)}` : ''}.</div>` +
+    `<div class="wn-list">` + (_changelog.entries || []).map(e =>
+      `<div class="wn-entry"><div class="wn-date">${escapeHtml(e.date || '')}</div>` +
+      `<div class="wn-etitle">${escapeHtml(e.title || '')}</div>` +
+      `<ul class="wn-items">${(e.items || []).map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`).join('') +
+    `</div>` +
+    `<div class="exp-actions"><button class="btn btn-solid" id="wnClose">Close</button></div>` +
+    `</div>`;
+  document.body.appendChild(ov);
+  const close = () => ov.remove();
+  ov.onclick = (e) => { if (e.target === ov) close(); };
+  $('wnClose').onclick = close;
+}
+
 // ── Support ─────────────────────────────────────────────────────────────────
 function renderDonate() {
   const wrap = $('donateArea'); if (!wrap) return;
@@ -1134,6 +1173,8 @@ function init() {
   $('sbExport').onclick = openExport;
   $('sbImport').onclick = openImport;
   $('sbClear').onclick = clearHistory;
+  $('sbWhatsNew') && ($('sbWhatsNew').onclick = openWhatsNew);
+  loadChangelog();
   $('privateSwitch').onclick = togglePrivate;
   $('privateSwitch').onkeydown = (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); togglePrivate(); } };
   renderHistoryList(); updatePrivateUI();
