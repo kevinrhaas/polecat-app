@@ -22,6 +22,9 @@
 </head>
 <body>
 
+<!-- Subtle animated background — fades in only while models are processing -->
+<div class="aurora" id="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+
 <header>
   <div class="header-left">
     <button class="icon-btn icon-only" id="sidebarToggle" title="Menu &amp; history" aria-label="Open menu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
@@ -69,20 +72,36 @@
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
 <div class="app">
-  <div class="prompt-card">
-    <textarea class="prompt-input" id="promptInput" placeholder="Type your prompt — sent to all selected models at once&#10;&#10;⌘↵ or Ctrl↵ to send"></textarea>
-    <div class="prompt-footer">
-      <div class="model-chips" id="modelChips"></div>
-      <button class="send-btn" id="sendBtn" disabled title="Send to all (⌘↵)">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        <span class="send-text">Send to all <kbd>⌘↵</kbd></span>
-      </button>
+  <!-- Chat transcript scrolls here, above the composer (Gemini-style) -->
+  <div class="responses" id="responses">
+    <div class="chat-greeting" id="chatGreeting">
+      <div class="cg-glyph">✦</div>
+      <div class="cg-title">Ask once. <span class="logo-grad">Hear from everyone.</span></div>
+      <div class="cg-sub">Type below — your prompt goes to every selected model at once, then Polecat blends one answer. Attach an image and vision-capable models will read it.</div>
     </div>
-  </div>
-
-  <div class="responses" id="responses" style="display:none">
     <div class="tab-bar" id="tabBar"></div>
     <div id="tabPanels"></div>
+  </div>
+
+  <!-- Composer docked at the bottom -->
+  <div class="composer" id="composer">
+    <div class="prompt-card" id="promptCard">
+      <div class="attach-strip" id="attachStrip" hidden></div>
+      <textarea class="prompt-input" id="promptInput" placeholder="Type your prompt — sent to all selected models at once&#10;⌘↵ or Ctrl↵ to send · paste or drop an image to attach"></textarea>
+      <div class="prompt-footer">
+        <button class="attach-btn" id="attachBtn" title="Attach images" aria-label="Attach images">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        </button>
+        <div class="model-chips" id="modelChips"></div>
+        <button class="send-btn" id="sendBtn" disabled title="Send to all (⌘↵)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <span class="send-text">Send to all <kbd>⌘↵</kbd></span>
+        </button>
+      </div>
+    </div>
+    <div class="vision-note" id="visionNote" hidden></div>
+    <input type="file" id="fileInput" accept="image/*" multiple hidden>
+    <div class="drop-hint" id="dropHint">Drop images to attach</div>
   </div>
 </div>
 
@@ -104,6 +123,7 @@
     <div class="modal-body">
       <section class="cfg-section" data-tab="models" id="sec-models">
         <h3 class="cfg-h">Models <span class="cfg-sub">run any mix — even two from one provider</span></h3>
+        <div class="cfg-legend">👁 = reads images (vision) · attach photos in the chat box and these models will see them</div>
         <div id="selList" class="sel-list"></div>
         <div id="addModelArea"></div>
       </section>

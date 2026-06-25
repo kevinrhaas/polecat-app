@@ -22,12 +22,12 @@ export const PROVIDERS = {
     keyUrl: 'https://console.anthropic.com', keyLabel: 'console.anthropic.com',
     openUrl: 'https://claude.ai/new',
     models: [
-      { value: 'claude-opus-4-8',            label: 'Opus 4.8',   price: '$$$$' },
-      { value: 'claude-sonnet-4-6',          label: 'Sonnet 4.6', price: '$$$'  },
-      { value: 'claude-haiku-4-5-20251001',  label: 'Haiku 4.5',  price: '$$'   },
-      { value: 'claude-opus-4-7',            label: 'Opus 4.7',   price: '$$$$' },
-      { value: 'claude-sonnet-4-5-20250929', label: 'Sonnet 4.5', price: '$$$'  },
-      { value: 'claude-opus-4-1-20250805',   label: 'Opus 4.1',   price: '$$$$' },
+      { value: 'claude-opus-4-8',            label: 'Opus 4.8',   price: '$$$$', vision: true },
+      { value: 'claude-sonnet-4-6',          label: 'Sonnet 4.6', price: '$$$',  vision: true },
+      { value: 'claude-haiku-4-5-20251001',  label: 'Haiku 4.5',  price: '$$',   vision: true },
+      { value: 'claude-opus-4-7',            label: 'Opus 4.7',   price: '$$$$', vision: true },
+      { value: 'claude-sonnet-4-5-20250929', label: 'Sonnet 4.5', price: '$$$',  vision: true },
+      { value: 'claude-opus-4-1-20250805',   label: 'Opus 4.1',   price: '$$$$', vision: true },
     ],
   },
   gemini: {
@@ -38,15 +38,15 @@ export const PROVIDERS = {
     keyUrl: 'https://aistudio.google.com', keyLabel: 'aistudio.google.com',
     openUrl: 'https://gemini.google.com/app',
     models: [
-      { value: 'gemini-3.5-flash',       label: '3.5 Flash', price: '$$'  },
-      { value: 'gemini-3.1-pro-preview', label: '3.1 Pro',   price: '$$$' },
-      { value: 'gemini-3-flash-preview', label: '3 Flash',   price: '$$'  },
-      { value: 'gemini-3.1-flash-lite',  label: '3.1 Lite',  price: '$'   },
-      { value: 'gemini-2.5-pro',         label: '2.5 Pro',   price: '$$$' },
-      { value: 'gemini-2.5-flash',       label: '2.5 Flash', price: '$'   },
-      { value: 'gemini-2.5-flash-lite',  label: '2.5 Lite',  price: '$'   },
-      { value: 'gemini-2.0-flash',       label: '2.0 Flash', price: '$'   },
-      { value: 'gemini-2.0-flash-lite',  label: '2.0 Lite',  price: '$'   },
+      { value: 'gemini-3.5-flash',       label: '3.5 Flash', price: '$$',  vision: true },
+      { value: 'gemini-3.1-pro-preview', label: '3.1 Pro',   price: '$$$', vision: true },
+      { value: 'gemini-3-flash-preview', label: '3 Flash',   price: '$$',  vision: true },
+      { value: 'gemini-3.1-flash-lite',  label: '3.1 Lite',  price: '$',   vision: true },
+      { value: 'gemini-2.5-pro',         label: '2.5 Pro',   price: '$$$', vision: true },
+      { value: 'gemini-2.5-flash',       label: '2.5 Flash', price: '$',   vision: true },
+      { value: 'gemini-2.5-flash-lite',  label: '2.5 Lite',  price: '$',   vision: true },
+      { value: 'gemini-2.0-flash',       label: '2.0 Flash', price: '$',   vision: true },
+      { value: 'gemini-2.0-flash-lite',  label: '2.0 Lite',  price: '$',   vision: true },
     ],
   },
   openai: {
@@ -57,11 +57,11 @@ export const PROVIDERS = {
     keyUrl: 'https://platform.openai.com', keyLabel: 'platform.openai.com',
     openUrl: 'https://chatgpt.com/',
     models: [
-      { value: 'gpt-5.5',      label: 'GPT-5.5',  price: '$$$' },
-      { value: 'gpt-5.4',      label: 'GPT-5.4',  price: '$$$' },
-      { value: 'gpt-5.4-mini', label: '5.4 mini', price: '$$'  },
-      { value: 'gpt-4o',       label: 'GPT-4o',   price: '$$$' },
-      { value: 'gpt-4o-mini',  label: '4o mini',  price: '$'   },
+      { value: 'gpt-5.5',      label: 'GPT-5.5',  price: '$$$', vision: true },
+      { value: 'gpt-5.4',      label: 'GPT-5.4',  price: '$$$', vision: true },
+      { value: 'gpt-5.4-mini', label: '5.4 mini', price: '$$',  vision: true },
+      { value: 'gpt-4o',       label: 'GPT-4o',   price: '$$$', vision: true },
+      { value: 'gpt-4o-mini',  label: '4o mini',  price: '$',   vision: true },
     ],
   },
 
@@ -126,6 +126,13 @@ export function modelLabel(providerId, value) {
   const p = PROVIDERS[providerId];
   return p?.models.find(m => m.value === value)?.label || value;
 }
+// Does this model accept image inputs? Only curated models carry the flag;
+// custom / live-browsed model ids are treated as text-only (conservative — we
+// never claim a model can see images unless we know it can).
+export function modelSupportsVision(providerId, value) {
+  const p = PROVIDERS[providerId];
+  return !!p?.models.find(m => m.value === value)?.vision;
+}
 export function defaultModel(providerId) {
   return PROVIDERS[providerId]?.models[0]?.value;
 }
@@ -173,6 +180,27 @@ async function* streamWithTimeout(resp, extract, onFirst) {
   }
 }
 
+// ── Image attachments ─────────────────────────────────────────────────────
+// A message may carry `images: [{ mime, data(base64) }]`. Each provider wants a
+// different shape; these builders fold images into the content only when the
+// target model is vision-capable (opts.vision) — otherwise the model gets the
+// text alone (so a mixed line-up "just works", text-only models silently skip).
+function hasImages(m) { return m.role === 'user' && Array.isArray(m.images) && m.images.length > 0; }
+function claudeContent(m, vision) {
+  if (!vision || !hasImages(m)) return m.content;
+  return [
+    ...m.images.map(im => ({ type: 'image', source: { type: 'base64', media_type: im.mime, data: im.data } })),
+    ...(m.content ? [{ type: 'text', text: m.content }] : []),
+  ];
+}
+function oaiContent(m, vision) {
+  if (!vision || !hasImages(m)) return m.content;
+  return [
+    ...(m.content ? [{ type: 'text', text: m.content }] : []),
+    ...m.images.map(im => ({ type: 'image_url', image_url: { url: `data:${im.mime};base64,${im.data}` } })),
+  ];
+}
+
 // ── Anthropic ───────────────────────────────────────────────────────────────
 async function* apiClaude(messages, key, model, opts = {}) {
   const { signal, done } = reqSignal(opts);
@@ -185,7 +213,7 @@ async function* apiClaude(messages, key, model, opts = {}) {
       },
       body: JSON.stringify({
         model: model || 'claude-opus-4-8', max_tokens: opts.maxTokens || 8096, stream: true,
-        messages: messages.map(m => ({ role: m.role, content: m.content })),
+        messages: messages.map(m => ({ role: m.role, content: claudeContent(m, opts.vision) })),
       }),
     });
     if (!resp.ok) { const e = await resp.json().catch(() => ({})); throw new Error(e.error?.message || `HTTP ${resp.status}`); }
@@ -194,21 +222,26 @@ async function* apiClaude(messages, key, model, opts = {}) {
 }
 
 // ── Gemini ──────────────────────────────────────────────────────────────────
-function geminiContents(messages) {
-  const merged = [];
+function geminiContents(messages, vision) {
+  const out = [];
   for (const m of messages) {
     const role = m.role === 'assistant' ? 'model' : 'user';
-    if (merged.length && merged[merged.length - 1].role === role)
-      merged[merged.length - 1].parts[0].text += '\n\n' + m.content;
-    else merged.push({ role, parts: [{ text: m.content }] });
+    const parts = [];
+    if (vision && hasImages(m)) for (const im of m.images) parts.push({ inline_data: { mime_type: im.mime, data: im.data } });
+    if (m.content) parts.push({ text: m.content });
+    if (!parts.length) parts.push({ text: '' });
+    const last = out[out.length - 1];
+    // merge consecutive same-role text turns, but never merge a turn carrying images
+    if (last && last.role === role && !(vision && hasImages(m))) last.parts.push(...parts);
+    else out.push({ role, parts });
   }
-  return merged;
+  return out;
 }
 async function* apiGemini(messages, key, model, opts = {}) {
   const m = model || 'gemini-3.5-flash';
   const { signal, done } = reqSignal(opts);
   try {
-    const body = { contents: geminiContents(messages) };
+    const body = { contents: geminiContents(messages, opts.vision) };
     if (opts.maxTokens) body.generationConfig = { maxOutputTokens: opts.maxTokens };
     const resp = await fetch(
       `${PROVIDERS.gemini.baseUrl}/models/${m}:streamGenerateContent?key=${key}&alt=sse`,
@@ -223,7 +256,7 @@ async function* apiGemini(messages, key, model, opts = {}) {
 async function* apiOpenAICompatible(messages, key, model, provider, opts = {}) {
   const { signal, done } = reqSignal(opts);
   try {
-    const body = { model, stream: true, messages: messages.map(m => ({ role: m.role, content: m.content })) };
+    const body = { model, stream: true, messages: messages.map(m => ({ role: m.role, content: oaiContent(m, opts.vision) })) };
     if (opts.maxTokens) body.max_tokens = opts.maxTokens;
     const resp = await fetch(`${provider.baseUrl}/chat/completions`, {
       method: 'POST', signal,
@@ -241,6 +274,8 @@ export function makeGen(selection, messages, cfg, opts = {}) {
   const p   = PROVIDERS[selection.provider];
   const key = providerKey(cfg, selection.provider);
   if (!p) throw new Error(`Unknown provider: ${selection.provider}`);
+  // Only forward images to models we know can read them.
+  opts = { ...opts, vision: modelSupportsVision(selection.provider, selection.model) };
   if (p.kind === 'anthropic') return apiClaude(messages, key, selection.model, opts);
   if (p.kind === 'gemini')    return apiGemini(messages, key, selection.model, opts);
   return apiOpenAICompatible(messages, key, selection.model, p, opts);
