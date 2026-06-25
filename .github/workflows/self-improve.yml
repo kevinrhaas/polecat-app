@@ -1,15 +1,19 @@
 name: Hourly self-improve
 
-# Autonomously evolves the Polecat app every hour using Claude Code, then
-# pushes straight to `main` (GitHub Pages auto-deploys app.polecat.live).
+# Autonomously evolves the Polecat APP (this repo) and, when a cross-repo token
+# is provided, the public WEBSITE (kevinrhaas/polecat) every hour — each with a
+# dated changelog entry. App changes push to main here (GitHub Pages auto-deploys
+# app.polecat.live); website changes push to that repo's default branch.
 #
-# REQUIRED ONE-TIME SETUP (only the repo owner can do this):
-#   Settings → Secrets and variables → Actions → New repository secret
-#     name:  ANTHROPIC_API_KEY   value: <your Anthropic API key>
-#   (or set CLAUDE_CODE_OAUTH_TOKEN instead and swap the input below.)
+# REQUIRED SECRETS (repo → Settings → Secrets and variables → Actions):
+#   ANTHROPIC_API_KEY  – required, so Claude Code can run. (Or swap to
+#                        CLAUDE_CODE_OAUTH_TOKEN below.)
+#   GH_PAT             – OPTIONAL. A fine-grained PAT with Contents: read/write
+#                        on kevinrhaas/polecat (and this repo). When present, the
+#                        run also improves the public website. When absent, only
+#                        the app is improved.
 #
-# Test it any time via the "Run workflow" button (workflow_dispatch) before
-# trusting the hourly schedule.
+# Test it any time with the "Run workflow" button (workflow_dispatch).
 
 on:
   schedule:
@@ -21,11 +25,9 @@ on:
         required: false
         default: ''
 
-# Let the job commit & push to main.
 permissions:
   contents: write
 
-# Never run two improvement passes at once.
 concurrency:
   group: self-improve
   cancel-in-progress: false
@@ -33,47 +35,78 @@ concurrency:
 jobs:
   improve:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
-      - name: Checkout
+      - name: Checkout app
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Improve the app
+      - name: Improve app + website
         uses: anthropics/claude-code-action@v1
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          claude_args: '--max-turns 60 --dangerously-skip-permissions'
+          claude_args: '--max-turns 80 --dangerously-skip-permissions'
           prompt: |
-            You are autonomously improving the **Polecat** web app and pushing the result live.
+            You are autonomously improving **Polecat** and shipping the results live.
+            Operator focus for this run (may be empty): "${{ github.event.inputs.focus }}"
 
-            Context:
-            - Pure static site (vanilla HTML/CSS/JS, no build step, no frameworks, no bundler).
-            - Files: index.html, css/styles.css, js/app.js, js/providers.js, js/config.js,
-              js/arbitration.js, js/ui.js. Served by GitHub Pages from `main` at app.polecat.live.
-            - It sends one prompt to many AI models at once and synthesizes a consensus answer,
-              100% in the browser with the user's own API keys. Existing features that must keep
-              working: multi-model broadcast, consensus/arbitration, conversation history + sidebar,
-              private mode, settings modal, image attachments + lightbox, vision indicators,
-              animated processing background, light/dark themes, mobile layout.
-            - Optional run focus from the operator: "${{ github.event.inputs.focus }}"
+            ── PART 1 — THE APP (this checkout, repo kevinrhaas/polecat-app) ──
+            Static site: vanilla HTML/CSS/JS, no build step, no frameworks. Files:
+            index.html, css/styles.css, js/{app,providers,config,arbitration,ui}.js,
+            changelog.json. Served by GitHub Pages from `main` at app.polecat.live.
+            It sends one prompt to many AI models at once and synthesizes a consensus,
+            100% in the browser with the user's own keys (plus a keyless free demo via
+            a Cloudflare Worker). Features that MUST keep working: multi-model broadcast,
+            consensus/arbitration with selectable strategies + arbiter, conversation
+            history/sidebar, private mode, settings, image attachments + lightbox,
+            vision indicators, animated processing background, free demo, "What's new"
+            panel, light/dark, mobile.
 
-            Goal: make Polecat a world-class, fun, elegant, simple, powerful chat app that feels
-            great on desktop and mobile.
+            Goal: make Polecat a world-class, fun, elegant, simple yet powerful chat app,
+            competitive with Gemini/Claude — but leaning into its real differentiator:
+            asking many models at once and making cross-model consensus/arbitration
+            effortless and delightful. Favour that angle when choosing improvements.
 
-            This run, do EXACTLY this:
-            1. Read the current code to understand the state of the app.
-            2. Choose ONE (or a few tightly-related) high-value improvements: UX polish, delight,
-               accessibility, mobile/touch, performance, or a genuinely useful feature. Keep it
-               simple and elegant and match the existing code style. No frameworks, no build step,
-               keep everything client-side (no servers, no embedded secrets, no new tracking).
-            3. Implement it cleanly. Do NOT introduce regressions; preserve every feature above.
-            4. Sanity-check your changes (syntax-check JS with `node --check`, and review the diff).
-            5. If and only if you made a worthwhile change, commit and push to main:
+            Do this:
+            1. Read the code to understand the current state.
+            2. Choose ONE (or a few tightly-related) high-value improvements — UX polish,
+               delight, accessibility, mobile/touch, performance, or a genuinely useful
+               feature (ideally showcasing the multi-model/arbitration strength). Keep it
+               simple and elegant, match the existing style, stay 100% client-side
+               (no servers, no embedded secrets, no new tracking).
+            3. Implement cleanly with NO regressions to the features listed above.
+            4. Sanity-check: `node --check` each edited JS file; review your diff.
+            5. Prepend a new entry to `changelog.json` (newest first) describing what you
+               shipped, with today's date (YYYY-MM-DD) as `date` and an updated top-level
+               `updated` field. Keep items short and user-facing.
+            6. Commit and push to main (one commit):
                  git add -A
-                 git commit -m "<clear, specific message describing the improvement>"
+                 git commit -m "<clear, specific message>"
                  git push origin HEAD:main
-               If you decided no change is warranted, make no commit and exit cleanly.
+               If nothing worthwhile changed, make no commit.
 
-            Do NOT open a pull request. Make at most one commit. Keep the change focused and shippable.
+            ── PART 2 — THE WEBSITE (only if env GH_PAT is non-empty) ──
+            If "$GH_PAT" is empty, skip this part entirely.
+            Otherwise also enhance the public marketing site at kevinrhaas/polecat:
+              git clone https://x-access-token:$GH_PAT@github.com/kevinrhaas/polecat.git site
+            Then, inside ./site:
+            1. Read it to learn its structure (it's a static site too).
+            2. Make ONE tasteful improvement that keeps it consistent with the app's
+               brand and messaging — emphasise the cross-model consensus differentiator,
+               clarity, polish, mobile, and a link/CTA to the app (app.polecat.live) and
+               the free demo. Do not break it.
+            3. Add or update a changelog on the site (a CHANGELOG / "what's new" section or
+               file) with today's date and a one-line summary of the change, and a visible
+               "last updated <YYYY-MM-DD>" stamp in the footer if one isn't already present.
+            4. Commit and push (one commit) to its default branch:
+                 cd site
+                 git add -A
+                 git -c user.name="polecat-bot" -c user.email="bot@polecat.live" commit -m "<message>"
+                 git push origin HEAD
+            If the website push fails (e.g. token lacks access), log the error and continue
+            — do not fail the whole run.
+
+            Keep each part to a single focused commit. Prefer quality over quantity.
