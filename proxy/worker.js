@@ -113,26 +113,36 @@ export default {
     };
     if (typeof body.temperature === 'number') safe.temperature = body.temperature;
 
-    // ── Proxy upstream (streaming passthrough) ──
-    let upstream;
-    try {
-      upstream = await fetch(`${base}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${env.DEMO_API_KEY}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://app.polecat.live',
-          'X-Title': 'Polecat Free Demo',
-        },
-        body: JSON.stringify(safe),
-      });
-    } catch (e) {
-      return json({ error: { message: 'Upstream request failed: ' + (e?.message || 'error') } }, 502, ch);
-    }
+    // ── Proxy upstream, falling back across free models ──
+    // Free models can be individually flaky ("Provider returned error"), so we
+    // try the requested model first, then the rest of the allowlist, and only
+    // start streaming once one responds OK. If all fail, surface the real error.
+    const upstreamHeaders = {
+      'Authorization': `Bearer ${env.DEMO_API_KEY}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://app.polecat.live',
+      'X-Title': 'Polecat Free Demo',
+    };
+    const candidates = [model, ...[...ALLOWED_MODELS].filter(m => m !== model)];
+    let lastErr = '';
+    for (const m of candidates) {
+      let upstream;
+      try {
+        upstream = await fetch(`${base}/chat/completions`, {
+          method: 'POST', headers: upstreamHeaders, body: JSON.stringify({ ...safe, model: m }),
+        });
+      } catch (e) { lastErr = e?.message || 'network error'; continue; }
 
-    const headers = new Headers();
-    for (const [k, v] of Object.entries(ch)) headers.set(k, v);
-    headers.set('Content-Type', upstream.headers.get('Content-Type') || 'text/event-stream');
-    return new Response(upstream.body, { status: upstream.status, headers });
+      if (upstream.ok) {
+        const headers = new Headers();
+        for (const [k, v] of Object.entries(ch)) headers.set(k, v);
+        headers.set('Content-Type', upstream.headers.get('Content-Type') || 'text/event-stream');
+        return new Response(upstream.body, { status: 200, headers });
+      }
+      lastErr = (await upstream.text().catch(() => '')) || `HTTP ${upstream.status}`;
+      // 401/403 = key/account problem — same for every model, so stop early.
+      if (upstream.status === 401 || upstream.status === 403) break;
+    }
+    return json({ error: { message: 'All free demo models are unavailable right now. Upstream said: ' + String(lastErr).slice(0, 300) } }, 502, ch);
   },
 };
