@@ -1038,7 +1038,18 @@ function init() {
   $('resetBtn').onclick = newChat;
 
   $('sendBtn').onclick = sendAll;
-  $('promptInput').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); sendAll(); } });
+  // Enter sends on desktop (Shift+Enter = newline); on touch devices Enter makes
+  // a newline and the Send button submits. Cmd/Ctrl+Enter always sends.
+  const isTouch = window.matchMedia('(pointer: coarse)').matches;
+  $('promptInput').addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (e.metaKey || e.ctrlKey) { e.preventDefault(); sendAll(); return; }
+    if (e.shiftKey || e.isComposing) return;           // newline / IME composition
+    if (!isTouch) { e.preventDefault(); sendAll(); }    // desktop: plain Enter sends
+  });
+  $('promptInput').placeholder = isTouch
+    ? 'Type your prompt — sent to all selected models at once\nTap ➤ to send · paste or attach an image'
+    : 'Type your prompt — sent to all selected models at once\nEnter to send · Shift+Enter for a new line · paste or drop an image';
   $('promptInput').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; updateSendEnabled(); });
   $('sbTheme').onclick = () => applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
 
