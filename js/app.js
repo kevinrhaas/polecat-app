@@ -8,7 +8,7 @@ import {
 } from './config.js';
 import {
   PROVIDERS, PROVIDER_IDS, makeGen, probeModel, defaultModel, selectionLabel,
-  listModels, modelListSupported,
+  listModels, modelListSupported, modelSupportsVision,
 } from './providers.js';
 import {
   allStrategies, activeStrategy, runArbitration, exportSettings, importSettings,
@@ -31,6 +31,8 @@ let runStatus = {};                 // selectionId -> 'pending'|'streaming'|'don
 let consensusPhase = '';            // '' | 'waiting' | 'arbitrating' | 'done'
 let consensusStatusText = '', consensusStepText = '';
 let _browseList = [], _browseProvider = '';   // live model-list browse state
+let attachments = [];               // [{ id, name, mime, data(base64), dataUrl }] pending on the composer
+let _attc = 0;
 
 const persist  = () => saveCfg(cfg);
 const sels     = () => activeSelections(cfg);
@@ -54,6 +56,64 @@ function buildStamp() {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+// ── Attachments (images: pick · paste · drop) ───────────────────────────────
+const MAX_ATTACH = 6;
+const MAX_ATTACH_BYTES = 8 * 1024 * 1024;   // ~8MB per image — providers reject much larger
+function readImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => {
+      const dataUrl = String(r.result);
+      const comma = dataUrl.indexOf(',');
+      resolve({ id: 'a' + Date.now().toString(36) + (_attc++).toString(36), name: file.name || 'image', mime: file.type || 'image/png', data: dataUrl.slice(comma + 1), dataUrl });
+    };
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+async function addFiles(fileList) {
+  const files = Array.from(fileList || []).filter(f => f.type && f.type.startsWith('image/'));
+  if (!files.length) { toast('Only images can be attached'); return; }
+  for (const f of files) {
+    if (attachments.length >= MAX_ATTACH) { toast(`Up to ${MAX_ATTACH} images`); break; }
+    if (f.size > MAX_ATTACH_BYTES) { toast(`"${f.name}" is too large (max 8MB)`); continue; }
+    try { attachments.push(await readImageFile(f)); } catch { toast('Could not read image'); }
+  }
+  renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled();
+}
+function removeAttachment(id) { attachments = attachments.filter(a => a.id !== id); renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled(); }
+function clearAttachments() { attachments = []; renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled(); }
+function renderAttachments() {
+  const strip = $('attachStrip'); if (!strip) return;
+  strip.hidden = attachments.length === 0;
+  strip.innerHTML = attachments.map(a =>
+    `<div class="attach-thumb" title="${escapeHtml(a.name)}"><img src="${a.dataUrl}" alt="${escapeHtml(a.name)}">` +
+    `<button class="at-x" data-id="${a.id}" title="Remove" aria-label="Remove ${escapeHtml(a.name)}">×</button></div>`).join('');
+  strip.querySelectorAll('.at-x').forEach(b => b.onclick = () => removeAttachment(b.dataset.id));
+}
+// How many currently-selected models can / can't read images.
+function visionSplit() {
+  const list = sels();
+  const can = list.filter(s => modelSupportsVision(s.provider, s.model));
+  return { total: list.length, can: can.length, cannot: list.length - can.length };
+}
+function updateVisionNote() {
+  const note = $('visionNote'); if (!note) return;
+  if (!attachments.length) { note.hidden = true; note.innerHTML = ''; return; }
+  const { total, can, cannot } = visionSplit();
+  note.hidden = false;
+  const n = attachments.length, imgWord = n === 1 ? 'image' : 'images';
+  if (!total) { note.innerHTML = `📎 ${n} ${imgWord} attached — add a model to send.`; return; }
+  if (cannot === 0) { note.innerHTML = `📎 ${n} ${imgWord} attached — <b>all ${total} models</b> can read ${n === 1 ? 'it' : 'them'}. 👁`; return; }
+  if (can === 0) { note.innerHTML = `<span class="vn-warn">⚠ None of your selected models can read images</span> — they'll receive your text only. Add a vision model (👁) like Claude, Gemini or GPT-4o.`; return; }
+  note.innerHTML = `📎 ${n} ${imgWord} attached — <b>${can} of ${total}</b> models can read ${n === 1 ? 'it' : 'them'} (👁); the other ${cannot} get <span class="vn-warn">text only</span>.`;
+}
+function updateSendEnabled() {
+  const send = $('sendBtn'); if (!send) return;
+  const hasContent = $('promptInput').value.trim().length > 0 || attachments.length > 0;
+  send.disabled = !sels().length || !hasContent;
+}
+
 // ── Model chips (prompt footer) ─────────────────────────────────────────────
 function buildChips() {
   const row = $('modelChips'), send = $('sendBtn');
@@ -67,18 +127,26 @@ function buildChips() {
     send.disabled = true;
     return;
   }
-  send.disabled = false;
+  updateSendEnabled();
 
+  const haveImages = attachments.length > 0;
   list.forEach(sel => {
     const p = PROVIDERS[sel.provider];
     const st = statusOf(sel.provider, sel.model);
-    const chip = el('span', 'm-chip' + (st && st.ok === false ? ' failing' : ''));
+    const vision = modelSupportsVision(sel.provider, sel.model);
+    let cls = 'm-chip' + (st && st.ok === false ? ' failing' : '');
+    if (haveImages) cls += vision ? ' has-vision' : ' no-vision';
+    const chip = el('span', cls);
     chip.id = 'chip_' + sel.id;
     chip.style.setProperty('--c', p.color);
-    chip.title = st && st.ok === false ? 'Last test failed: ' + (st.error || 'unavailable') : selectionLabel(sel);
+    chip.title = st && st.ok === false ? 'Last test failed: ' + (st.error || 'unavailable')
+      : selectionLabel(sel) + (vision ? ' · reads images' : ' · text only (no image support)');
+    const visionMark = vision ? `<span class="m-chip-vision" title="Reads images">👁</span>`
+      : (haveImages ? `<span class="m-chip-novision" title="Can't read images — gets text only">⊘</span>` : '');
     chip.innerHTML =
       `<span class="m-chip-dot"></span>` +
       `<span class="m-chip-label">${escapeHtml(selectionLabel(sel))}</span>` +
+      visionMark +
       `<button class="m-chip-x" title="Remove" aria-label="Remove ${escapeHtml(selectionLabel(sel))}">×</button>`;
     chip.querySelector('.m-chip-x').onclick = (e) => { e.stopPropagation(); removeSelection(sel.id); };
     row.appendChild(chip);
@@ -90,6 +158,7 @@ function buildChips() {
     add.onclick = () => openConfig('models');
     row.appendChild(add);
   }
+  updateVisionNote();
 }
 function setChipsDisabled(disabled) {
   document.querySelectorAll('.m-chip').forEach(c => c.classList.toggle('disabled', disabled));
@@ -173,10 +242,26 @@ function switchTab(id) {
 }
 
 // ── Stream a response into a tab ────────────────────────────────────────────
-function assistantPair(label, userContent) {
+// Keep a conversation scrolled to the newest message (bottom).
+function scrollBottom(conv) { if (conv) conv.scrollTop = conv.scrollHeight; }
+// Thumbnails / file chips for image attachments on a user message.
+function attachThumbsHtml(images) {
+  if (!images || !images.length) return '';
+  return `<div class="msg-attachments">` + images.map(im =>
+    im.dataUrl ? `<img class="msg-thumb" src="${im.dataUrl}" alt="${escapeHtml(im.name || 'image')}" title="${escapeHtml(im.name || 'image')}">`
+              : `<span class="msg-file-chip">🖼 ${escapeHtml(im.name || 'image')}</span>`
+  ).join('') + `</div>`;
+}
+function userMsgHtml(userContent, images) {
+  return `<div class="msg user"><span class="msg-label">You</span>` +
+    attachThumbsHtml(images) +
+    (userContent ? `<div class="msg-bubble">${nl2br(userContent)}</div>` : '') +
+    `</div>`;
+}
+function assistantPair(label, userContent, images) {
   const pair = el('div', 'qa-pair');
   pair.innerHTML =
-    `<div class="msg user"><span class="msg-label">You</span><div class="msg-bubble">${nl2br(userContent)}</div></div>` +
+    userMsgHtml(userContent, images) +
     `<div class="msg assistant"><div class="msg-head"><span class="msg-label">${escapeHtml(label)}</span>` +
     `<button class="copy-btn" title="Copy" hidden>${COPY_SVG}</button></div>` +
     `<div class="msg-bubble"><div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></div>`;
@@ -190,14 +275,16 @@ function finishBubble(pair, full) {
   copyBtn.hidden = false; copyBtn.onclick = () => copyText(full, copyBtn);
 }
 
-async function streamTo(sel, userContent) {
+async function streamTo(sel, userContent, images) {
   const co = getConvo(sel.id);
-  co.push({ role: 'user', content: userContent });
+  const userMsg = { role: 'user', content: userContent };
+  if (images && images.length) userMsg.images = images;
+  co.push(userMsg);
   const conv = $('conv_' + sel.id);
   $('empty_' + sel.id)?.remove();
 
-  const pair = assistantPair(selectionLabel(sel), userContent);
-  conv.prepend(pair); conv.scrollTop = 0;
+  const pair = assistantPair(selectionLabel(sel), userContent, images);
+  conv.appendChild(pair); scrollBottom(conv);
   const bubble = pair.querySelector('.msg.assistant .msg-bubble');
 
   const dot = $('tdot_' + sel.id); dot?.classList.add('loading');
@@ -206,7 +293,7 @@ async function streamTo(sel, userContent) {
   try {
     const gen = makeGen(sel, co, cfg);
     bubble.innerHTML = '';
-    for await (const chunk of gen) { full += chunk; bubble.innerHTML = renderMarkdown(full); }
+    for await (const chunk of gen) { full += chunk; bubble.innerHTML = renderMarkdown(full); scrollBottom(conv); }
     finishBubble(pair, full);
     co.push({ role: 'assistant', content: full });
     markRun(sel.id, 'done');
@@ -222,10 +309,15 @@ async function streamTo(sel, userContent) {
   }
 }
 
+// Greeting placeholder (shown before any conversation exists)
+function hideGreeting() { $('chatGreeting')?.classList.add('hidden'); }
+function showGreeting() { const g = $('chatGreeting'); if (g && !document.querySelector('.tab')) g.classList.remove('hidden'); }
+
 // ── Broadcast ───────────────────────────────────────────────────────────────
 async function sendAll() {
   const text = $('promptInput').value.trim();
-  if (!text) return;
+  const images = attachments.slice();
+  if (!text && !images.length) return;
   const list = sels();
   if (!list.length) { openConfig('models'); return; }
 
@@ -233,27 +325,36 @@ async function sendAll() {
   runStatus = {}; list.forEach(s => runStatus[s.id] = 'pending');
   consensusPhase = 'waiting'; consensusStatusText = ''; consensusStepText = '';
   $('promptInput').value = ''; $('promptInput').style.height = 'auto';
-  $('sendBtn').disabled = true; $('responses').style.display = '';
+  clearAttachments();
+  $('sendBtn').disabled = true;
+  hideGreeting();
   setChipsDisabled(true);
+  document.body.classList.add('processing');
   pruneTabs(); ensureTabs();
   if (cfg.consensus) refreshConsensusProgress();
 
-  await Promise.allSettled(list.map(async sel => {
-    const r = await streamTo(sel, text);
-    order.push(sel.id); results[sel.id] = r;
-  }));
+  try {
+    await Promise.allSettled(list.map(async sel => {
+      const r = await streamTo(sel, text, images);
+      order.push(sel.id); results[sel.id] = r;
+    }));
 
-  if (cfg.consensus) {
-    setConsensusDot(true);
-    await runConsensus();
-    setConsensusDot(false); setConsensusStep('');
+    if (cfg.consensus) {
+      setConsensusDot(true);
+      await runConsensus();
+      setConsensusDot(false); setConsensusStep('');
+    }
+    recordTurn(text, images);
+  } finally {
+    document.body.classList.remove('processing');
+    setChipsDisabled(false); updateSendEnabled();
   }
-  recordTurn(text);
-  setChipsDisabled(false); $('sendBtn').disabled = false;
 }
 
 // Save this round into the current conversation thread (unless private mode).
-function recordTurn(prompt) {
+// Image data isn't persisted (it would blow past localStorage quota); we keep
+// lightweight metadata so restored chats can still show what was attached.
+function recordTurn(prompt, images) {
   if (cfg.private) return;
   if (!order.length) return;
   const answers = {};
@@ -261,13 +362,15 @@ function recordTurn(prompt) {
   if (!currentThread) {
     currentThread = {
       id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-      title: prompt.slice(0, 80), createdAt: Date.now(), updatedAt: Date.now(),
+      title: (prompt || (images && images.length ? '🖼 ' + images[0].name : 'Untitled')).slice(0, 80),
+      createdAt: Date.now(), updatedAt: Date.now(),
       selections: sels().map(s => ({ id: s.id, provider: s.provider, model: s.model })),
       turns: [],
     };
     history.unshift(currentThread);
   }
-  currentThread.turns.push({ prompt, answers, consensus: cfg.consensus ? (lastConsensusText || null) : null });
+  const attMeta = (images && images.length) ? images.map(im => ({ name: im.name, mime: im.mime })) : undefined;
+  currentThread.turns.push({ prompt, answers, attachments: attMeta, consensus: cfg.consensus ? (lastConsensusText || null) : null });
   currentThread.updatedAt = Date.now();
   saveHistory(history);
   renderHistoryList();
@@ -311,7 +414,7 @@ function refreshConsensusProgress() {
   if (!conv || (consensusPhase !== 'waiting' && consensusPhase !== 'arbitrating')) return;
   $('empty_consensus')?.remove();
   let box = $('consensus-progress');
-  if (!box) { box = el('div', 'consensus-progress'); box.id = 'consensus-progress'; conv.prepend(box); }
+  if (!box) { box = el('div', 'consensus-progress'); box.id = 'consensus-progress'; conv.appendChild(box); scrollBottom(conv); }
 
   const strat = activeStrategy(cfg);
   const ids = (cfg.selections || []).filter(s => runStatus[s.id] !== undefined);
@@ -346,11 +449,11 @@ async function streamToConsensus(sel, messages) {
   const conv = $('conv_consensus');
   consensusPhase = 'done'; $('consensus-progress')?.remove(); $('empty_consensus')?.remove();
   const pair = assistantPair('Consensus', lastPrompt);
-  conv.prepend(pair); conv.scrollTop = 0;
+  conv.appendChild(pair); scrollBottom(conv);
   const bubble = pair.querySelector('.msg.assistant .msg-bubble');
   let full = '';
   bubble.innerHTML = '';
-  for await (const chunk of makeGen(sel, messages, cfg)) { full += chunk; bubble.innerHTML = renderMarkdown(full); conv.scrollTop = 0; }
+  for await (const chunk of makeGen(sel, messages, cfg)) { full += chunk; bubble.innerHTML = renderMarkdown(full); scrollBottom(conv); }
   finishBubble(pair, full);
   lastConsensusText = full;
   return full;
@@ -364,7 +467,7 @@ function showConsensusStatic(text, isError = false) {
     `<div class="msg assistant"><div class="msg-head"><span class="msg-label">Consensus</span>` +
     (isError ? '' : `<button class="copy-btn" title="Copy">${COPY_SVG}</button>`) + `</div>` +
     `<div class="msg-bubble">${isError ? `<span class="msg-error">${escapeHtml(text)}</span>` : renderMarkdown(text)}</div></div>`;
-  conv.prepend(pair); conv.scrollTop = 0;
+  conv.appendChild(pair); scrollBottom(conv);
   if (!isError) { highlightBubble(pair); lastConsensusText = text; const b = pair.querySelector('.copy-btn'); if (b) b.onclick = () => copyText(text, b); }
 }
 async function runConsensus() {
@@ -454,7 +557,7 @@ function modelOptionsHtml(providerId, selected) {
   if (selected && !known)
     html += `<option value="${escapeHtml(selected)}" selected>${statusGlyph(providerId, selected)}${escapeHtml(selected)} (custom)</option>`;
   html += p.models.map(m =>
-    `<option value="${escapeHtml(m.value)}"${m.value === selected ? ' selected' : ''}>${statusGlyph(providerId, m.value)}${escapeHtml(m.label)}${m.price ? ' — ' + m.price : ''}</option>`
+    `<option value="${escapeHtml(m.value)}"${m.value === selected ? ' selected' : ''}>${statusGlyph(providerId, m.value)}${escapeHtml(m.label)}${m.price ? ' — ' + m.price : ''}${m.vision ? ' 👁' : ''}</option>`
   ).join('');
   if (p.allowCustomModel) html += `<option value="__custom__">Custom model id…</option>`;
   return html;
@@ -475,10 +578,12 @@ function renderSelList() {
     const p = PROVIDERS[sel.provider]; if (!p) return;
     const hasKey = !!providerKey(cfg, sel.provider);
     const row = el('div', 'sel-row' + (hasKey ? '' : ' needs-key'));
+    const vision = modelSupportsVision(sel.provider, sel.model);
     row.innerHTML =
       `<span class="sel-dot" style="background:${p.color}"></span>` +
       `<span class="sel-name">${escapeHtml(p.short)}</span>` +
       `<select class="field-input sel-model"></select>` +
+      (vision ? `<span class="sel-vision" title="Reads images">👁</span>` : '') +
       (hasKey ? statusBadge(sel.provider, sel.model) : `<span class="sel-warn" title="Add a ${escapeHtml(p.name)} key in the Keys tab">no key</span>`) +
       `<button class="sel-x" title="Remove">×</button>`;
     const select = row.querySelector('.sel-model');
@@ -839,7 +944,7 @@ function restoreThread(id) {
   $('tabBar').innerHTML = ''; $('tabPanels').innerHTML = ''; activeTab = null;
   currentThread = t;
   buildChips();
-  $('responses').style.display = '';
+  hideGreeting();
   ensureTabs();
   (t.turns || []).forEach(turn => {
     (t.selections || []).forEach(sel => {
@@ -847,7 +952,7 @@ function restoreThread(id) {
       const co = getConvo(sel.id);
       co.push({ role: 'user', content: turn.prompt });
       if (ans != null) co.push({ role: 'assistant', content: ans });
-      renderStaticPair(sel.id, selectionLabel(sel), turn.prompt, ans);
+      renderStaticPair(sel.id, selectionLabel(sel), turn.prompt, ans, turn.attachments);
     });
     if (turn.consensus != null) renderStaticConsensus(turn.prompt, turn.consensus);
   });
@@ -855,16 +960,16 @@ function restoreThread(id) {
   if (cfg.consensus && $('tab_consensus')) switchTab('consensus');
   closeSidebar(); renderHistoryList();
 }
-function renderStaticPair(selId, label, userContent, answerText) {
+function renderStaticPair(selId, label, userContent, answerText, attachments) {
   const conv = $('conv_' + selId); if (!conv) return;
   $('empty_' + selId)?.remove();
   const pair = el('div', 'qa-pair');
   pair.innerHTML =
-    `<div class="msg user"><span class="msg-label">You</span><div class="msg-bubble">${nl2br(userContent)}</div></div>` +
+    userMsgHtml(userContent, attachments) +
     `<div class="msg assistant"><div class="msg-head"><span class="msg-label">${escapeHtml(label)}</span>` +
     (answerText == null ? '' : `<button class="copy-btn" title="Copy">${COPY_SVG}</button>`) + `</div>` +
     `<div class="msg-bubble">${answerText == null ? '<span class="msg-error">No response recorded</span>' : renderMarkdown(answerText)}</div></div>`;
-  conv.prepend(pair); conv.scrollTop = 0;
+  conv.appendChild(pair); scrollBottom(conv);
   if (answerText != null) { highlightBubble(pair); const b = pair.querySelector('.copy-btn'); if (b) b.onclick = () => copyText(answerText, b); }
 }
 function renderStaticConsensus(prompt, text) {
@@ -934,8 +1039,43 @@ function init() {
 
   $('sendBtn').onclick = sendAll;
   $('promptInput').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); sendAll(); } });
-  $('promptInput').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 260) + 'px'; });
+  $('promptInput').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; updateSendEnabled(); });
   $('sbTheme').onclick = () => applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+
+  // ── Attachments: pick · paste · drag-drop ──
+  $('attachBtn').onclick = () => $('fileInput').click();
+  $('fileInput').onchange = (e) => { addFiles(e.target.files); e.target.value = ''; };
+  $('promptInput').addEventListener('paste', (e) => {
+    const items = e.clipboardData?.items; if (!items) return;
+    const files = [];
+    for (const it of items) { if (it.kind === 'file' && it.type.startsWith('image/')) { const f = it.getAsFile(); if (f) files.push(f); } }
+    if (files.length) { e.preventDefault(); addFiles(files); }
+  });
+  // Greeting quick-start suggestions → fill the box and focus
+  document.querySelectorAll('#cgSuggest .cg-chip').forEach(b => b.onclick = () => {
+    const t = $('promptInput'); t.value = b.dataset.q;
+    t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 200) + 'px';
+    updateSendEnabled(); t.focus();
+  });
+
+  // Image lightbox — click any thumbnail to view full-size
+  const openLightbox = (src, alt) => { const lb = $('lightbox'); $('lightboxImg').src = src; $('lightboxImg').alt = alt || ''; lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false'); };
+  const closeLightbox = () => { const lb = $('lightbox'); lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); $('lightboxImg').src = ''; };
+  document.addEventListener('click', (e) => {
+    const img = e.target.closest('.msg-thumb, .attach-thumb img');
+    if (img && img.src) { e.preventDefault(); openLightbox(img.src, img.alt); }
+  });
+  $('lightbox').onclick = (e) => { if (e.target.id !== 'lightboxImg') closeLightbox(); };
+  $('lightboxClose').onclick = closeLightbox;
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('lightbox').classList.contains('open')) closeLightbox(); });
+
+  const composer = $('composer');
+  let dragDepth = 0;
+  const hasFiles = (e) => Array.from(e.dataTransfer?.types || []).includes('Files');
+  composer.addEventListener('dragenter', (e) => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth++; composer.classList.add('dragover'); });
+  composer.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+  composer.addEventListener('dragleave', (e) => { if (!hasFiles(e)) return; dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) composer.classList.remove('dragover'); });
+  composer.addEventListener('drop', (e) => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth = 0; composer.classList.remove('dragover'); addFiles(e.dataTransfer.files); });
 
   // sidebar + conversation history
   $('sidebarToggle').onclick = toggleSidebar;
