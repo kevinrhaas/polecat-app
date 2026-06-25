@@ -92,6 +92,17 @@ header {
 .cg-glyph { font-size: 40px; line-height: 1; background: linear-gradient(135deg, var(--brand-a), var(--brand-b), var(--consensus)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cp-pulse 2.6s ease-in-out infinite; }
 .cg-title { font-size: 26px; font-weight: 800; letter-spacing: -.5px; }
 .cg-sub { font-size: 14px; color: var(--text-2); line-height: 1.6; max-width: 440px; }
+.cg-suggest { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 520px; margin-top: 6px; }
+.cg-chip { font-family: inherit; font-size: 12.5px; color: var(--text-2); background: var(--surface-2); border: 1px solid var(--border); border-radius: 100px; padding: 8px 14px; cursor: pointer; transition: transform .12s, border-color .12s, color .12s, background .12s; }
+.cg-chip:hover { color: var(--text); border-color: var(--brand-b); background: color-mix(in srgb, var(--brand-b) 9%, var(--surface-2)); transform: translateY(-1px); }
+
+/* ── Image lightbox ──────────────────────────────────────── */
+.lightbox { position: fixed; inset: 0; z-index: 600; display: none; align-items: center; justify-content: center; padding: 32px; background: rgba(0,0,0,.86); backdrop-filter: blur(8px); cursor: zoom-out; }
+.lightbox.open { display: flex; animation: lb-fade .18s ease; }
+@keyframes lb-fade { from { opacity: 0; } to { opacity: 1; } }
+.lightbox img { max-width: 96vw; max-height: 92vh; border-radius: 10px; box-shadow: 0 24px 80px rgba(0,0,0,.6); cursor: default; }
+.lightbox-close { position: absolute; top: 16px; right: 20px; width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255,255,255,.12); color: #fff; font-size: 24px; line-height: 1; cursor: pointer; transition: background .15s; }
+.lightbox-close:hover { background: rgba(255,255,255,.25); }
 
 /* ── Composer (bottom-docked) ───────────────────────────────────────── */
 .composer { position: relative; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; }

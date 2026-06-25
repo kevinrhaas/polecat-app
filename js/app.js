@@ -1051,6 +1051,24 @@ function init() {
     for (const it of items) { if (it.kind === 'file' && it.type.startsWith('image/')) { const f = it.getAsFile(); if (f) files.push(f); } }
     if (files.length) { e.preventDefault(); addFiles(files); }
   });
+  // Greeting quick-start suggestions → fill the box and focus
+  document.querySelectorAll('#cgSuggest .cg-chip').forEach(b => b.onclick = () => {
+    const t = $('promptInput'); t.value = b.dataset.q;
+    t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 200) + 'px';
+    updateSendEnabled(); t.focus();
+  });
+
+  // Image lightbox — click any thumbnail to view full-size
+  const openLightbox = (src, alt) => { const lb = $('lightbox'); $('lightboxImg').src = src; $('lightboxImg').alt = alt || ''; lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false'); };
+  const closeLightbox = () => { const lb = $('lightbox'); lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); $('lightboxImg').src = ''; };
+  document.addEventListener('click', (e) => {
+    const img = e.target.closest('.msg-thumb, .attach-thumb img');
+    if (img && img.src) { e.preventDefault(); openLightbox(img.src, img.alt); }
+  });
+  $('lightbox').onclick = (e) => { if (e.target.id !== 'lightboxImg') closeLightbox(); };
+  $('lightboxClose').onclick = closeLightbox;
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('lightbox').classList.contains('open')) closeLightbox(); });
+
   const composer = $('composer');
   let dragDepth = 0;
   const hasFiles = (e) => Array.from(e.dataTransfer?.types || []).includes('Files');
