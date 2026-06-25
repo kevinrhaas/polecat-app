@@ -14,7 +14,25 @@
 
 import { providerKey } from './config.js';
 
+// Free zero-config demo: routes through a rate-limited Cloudflare Worker that
+// holds the key server-side (never in the browser). No API key required here.
+// Set to '' to hide the demo entirely.
+export const DEMO_PROXY_URL = 'https://polecat-app.kevinrhaas.workers.dev';
+
 export const PROVIDERS = {
+  demo: {
+    id: 'demo', name: 'Free demo', short: 'Free demo', vendor: 'Polecat',
+    color: '#10b981', kind: 'openai-compatible',
+    baseUrl: DEMO_PROXY_URL + '/v1',
+    noKey: true, demo: true,
+    rateNote: 'No key needed — rate-limited free models so you can try Polecat instantly.',
+    models: [
+      { value: 'meta-llama/llama-3.3-70b-instruct:free', label: 'Llama 3.3 70B', price: 'free', free: true },
+      { value: 'openai/gpt-oss-120b:free',               label: 'GPT-OSS 120B',  price: 'free', free: true },
+      { value: 'qwen/qwen3-coder:free',                  label: 'Qwen3 Coder',   price: 'free', free: true },
+      { value: 'google/gemma-4-31b-it:free',             label: 'Gemma 4 31B',   price: 'free', free: true },
+    ],
+  },
   claude: {
     id: 'claude', name: 'Claude', short: 'Claude', vendor: 'Anthropic',
     color: '#d4773b', kind: 'anthropic',
@@ -119,6 +137,8 @@ export const PROVIDERS = {
     ],
   },
 };
+
+if (!DEMO_PROXY_URL) delete PROVIDERS.demo;   // demo disabled → hide it entirely
 
 export const PROVIDER_IDS = Object.keys(PROVIDERS);
 
@@ -258,9 +278,10 @@ async function* apiOpenAICompatible(messages, key, model, provider, opts = {}) {
   try {
     const body = { model, stream: true, messages: messages.map(m => ({ role: m.role, content: oaiContent(m, opts.vision) })) };
     if (opts.maxTokens) body.max_tokens = opts.maxTokens;
+    const headers = { 'content-type': 'application/json', ...(provider.extraHeaders || {}) };
+    if (key) headers['authorization'] = `Bearer ${key}`;   // demo proxy needs none — it holds the key
     const resp = await fetch(`${provider.baseUrl}/chat/completions`, {
-      method: 'POST', signal,
-      headers: { 'authorization': `Bearer ${key}`, 'content-type': 'application/json', ...(provider.extraHeaders || {}) },
+      method: 'POST', signal, headers,
       body: JSON.stringify(body),
     });
     if (!resp.ok) { const e = await resp.json().catch(() => ({})); throw new Error(e.error?.message || e.message || `HTTP ${resp.status}`); }

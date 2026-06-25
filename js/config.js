@@ -123,7 +123,8 @@ export function setProviderKey(cfg, providerId, key) {
 export function configuredProviders(cfg) {
   return Object.keys(cfg.providers || {}).filter(id => cfg.providers[id]?.key);
 }
-// Selections whose provider currently has a key — the ones we actually run.
+// Selections we can actually run: those whose provider has a key, plus the
+// keyless free-demo provider (its key lives server-side in the proxy).
 export function activeSelections(cfg) {
-  return (cfg.selections || []).filter(s => providerKey(cfg, s.provider));
+  return (cfg.selections || []).filter(s => s.provider === 'demo' || providerKey(cfg, s.provider));
 }

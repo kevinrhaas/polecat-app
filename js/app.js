@@ -549,6 +549,23 @@ function openConfig(tab) {
 }
 function closeConfig() { $('configModal').classList.remove('open'); }
 
+// One-tap free demo: make sure a keyless demo model is selected, then drop the
+// user straight into the chat box ready to send.
+function startFreeDemo() {
+  if (!PROVIDERS.demo) return;
+  const have = (cfg.selections || []).some(s => s.provider === 'demo');
+  if (!have) {
+    if ((cfg.selections || []).length >= MAX_SELECTIONS) { toast(`Remove a model first (max ${MAX_SELECTIONS})`); openConfig('models'); return; }
+    (cfg.selections = cfg.selections || []).push(mkSelection('demo', defaultModel('demo')));
+    persist();
+  }
+  closeConfig(); closeSidebar();
+  localStorage.setItem(WELCOME_KEY, '1'); $('welcomeOverlay')?.classList.remove('open');
+  buildChips(); hideGreeting();
+  $('promptInput').focus();
+  toast('Free demo ready — type a question and hit send ✨');
+}
+
 // ── Models tab ──────────────────────────────────────────────────────────────
 function modelOptionsHtml(providerId, selected) {
   const p = PROVIDERS[providerId];
@@ -576,15 +593,18 @@ function renderSelList() {
   list.innerHTML = '';
   (cfg.selections || []).forEach(sel => {
     const p = PROVIDERS[sel.provider]; if (!p) return;
-    const hasKey = !!providerKey(cfg, sel.provider);
-    const row = el('div', 'sel-row' + (hasKey ? '' : ' needs-key'));
+    const ready = p.noKey || !!providerKey(cfg, sel.provider);
+    const row = el('div', 'sel-row' + (ready ? '' : ' needs-key'));
     const vision = modelSupportsVision(sel.provider, sel.model);
+    const readyBadge = p.noKey
+      ? `<span class="sel-free" title="No key needed — runs through the free demo">free</span>`
+      : statusBadge(sel.provider, sel.model);
     row.innerHTML =
       `<span class="sel-dot" style="background:${p.color}"></span>` +
       `<span class="sel-name">${escapeHtml(p.short)}</span>` +
       `<select class="field-input sel-model"></select>` +
       (vision ? `<span class="sel-vision" title="Reads images">👁</span>` : '') +
-      (hasKey ? statusBadge(sel.provider, sel.model) : `<span class="sel-warn" title="Add a ${escapeHtml(p.name)} key in the Keys tab">no key</span>`) +
+      (ready ? readyBadge : `<span class="sel-warn" title="Add a ${escapeHtml(p.name)} key in the Keys tab">no key</span>`) +
       `<button class="sel-x" title="Remove">×</button>`;
     const select = row.querySelector('.sel-model');
     select.innerHTML = modelOptionsHtml(sel.provider, sel.model);
@@ -687,7 +707,7 @@ function renderBrowse(filter) {
 }
 
 // ── Keys tab ────────────────────────────────────────────────────────────────
-const KEY_TIER = { claude: 'Paid', gemini: 'Free tier + paid', openai: 'Paid', openrouter: 'Free + paid', groq: 'Free tier', hf: 'Free credits' };
+const KEY_TIER = { demo: 'Free · no key', claude: 'Paid', gemini: 'Free tier + paid', openai: 'Paid', openrouter: 'Free + paid', groq: 'Free tier', hf: 'Free credits' };
 function renderKeys() {
   const wrap = $('keyFields');
   wrap.innerHTML =
@@ -700,8 +720,19 @@ function renderKeys() {
     `<li><b>Paid</b> — Claude, Gemini &amp; ChatGPT bill per use: cheaper models (Haiku, GPT&#8209;mini, Gemini Flash) ≈ <b>$0.001–0.01</b> a question; flagships (Opus, GPT&#8209;5, Gemini Pro) ≈ <b>$0.01–0.10</b>. Longer answers cost a bit more.</li>` +
     `<li><b>In practice</b> — light daily use on paid models is often under <b>~$1–5/month</b>; free models stay $0. Set a hard spending cap in each provider's billing settings so there are no surprises.</li>` +
     `</ul></details>`;
+  if (PROVIDERS.demo) {
+    const card = el('div', 'demo-card');
+    card.innerHTML =
+      `<div class="demo-card-head"><span class="demo-spark">✨</span><b>No key? Try it free.</b></div>` +
+      `<div class="demo-card-sub">Run a free model through Polecat right now — no signup, no key. ` +
+      `When you're ready, add your own free key below for unlimited use &amp; more models.</div>` +
+      `<button class="btn btn-solid demo-go" id="demoGoKeys">✨ Try it free — no setup</button>`;
+    wrap.appendChild(card);
+    card.querySelector('#demoGoKeys').onclick = () => startFreeDemo();
+  }
   PROVIDER_IDS.forEach(id => {
     const p = PROVIDERS[id];
+    if (p.noKey) return;                       // demo needs no key field
     const has = !!providerKey(cfg, id);
     const tier = KEY_TIER[id] || '';
     const field = el('div', 'key-field');
@@ -1068,6 +1099,13 @@ function init() {
     t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 200) + 'px';
     updateSendEnabled(); t.focus();
   });
+  // Free-demo CTA (greeting). Hidden if the demo is disabled or already in use.
+  const cgTry = $('cgTry');
+  if (cgTry) {
+    const demoActive = !!PROVIDERS.demo && (cfg.selections || []).some(s => s.provider === 'demo');
+    cgTry.hidden = !PROVIDERS.demo || demoActive;
+    cgTry.onclick = startFreeDemo;
+  }
 
   // Image lightbox — click any thumbnail to view full-size
   const openLightbox = (src, alt) => { const lb = $('lightbox'); $('lightboxImg').src = src; $('lightboxImg').alt = alt || ''; lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false'); };
@@ -1103,8 +1141,9 @@ function init() {
   $('wNext').onclick = welcomeNext; $('wBack').onclick = welcomeBack;
   $('wSkip').onclick = () => dismissWelcome(); $('wClose').onclick = () => dismissWelcome();
   $('wDonate') && ($('wDonate').onclick = (e) => { e.preventDefault(); window.open(DONATE_URL, '_blank', 'noopener'); });
+  { const wt = $('wTryDemo'); if (wt) { wt.hidden = !PROVIDERS.demo; wt.onclick = startFreeDemo; } }
 
-  const hasKeys = configuredProviders(cfg).length > 0;
+  const hasKeys = configuredProviders(cfg).length > 0 || (cfg.selections || []).some(s => s.provider === 'demo');
   const seen = !!localStorage.getItem(WELCOME_KEY);
   if (location.hash === '#settings') setTimeout(() => openConfig(), 200);   // deep-link to settings
   else if (!hasKeys && !seen) setTimeout(showWelcome, 350);
