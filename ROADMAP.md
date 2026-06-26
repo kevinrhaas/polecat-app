@@ -63,7 +63,7 @@ Polecat's signature differentiator vs single-model chat (Gemini/Claude).
       pairwise similarity among the raw model answers (token/shingle Jaccard) and
       a rough per-model overlap with the final consensus text. Use as a fallback
       when the arbiter JSON is missing, and to cross-check its percentages.
-- [ ] **P3 — Provenance panel UI.** Below the consensus answer, add a collapsible
+- [x] **P3 — Provenance panel UI.** Below the consensus answer, add a collapsible
       "How this was formed" panel: per-model contribution bars (%, approx),
       a one-line agreement summary, and expandable "Where they disagreed" and
       "Notable claims" sections. Use each model's brand color + a text label.

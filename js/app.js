@@ -546,13 +546,100 @@ async function runConsensus() {
     provenance: (data) => onProvenance(data),
   });
 }
-// EPIC 1 · P1 — receive the arbiter's machine-readable agreement map. Stored
-// here (and stamped on the consensus pair) for the upcoming provenance panel;
-// no UI yet, so it never alters the streamed answer. Degrades to null silently.
+// EPIC 1 · P3 — "How this was formed" collapsible provenance panel.
+// Appended below the consensus sources footer; never blocks or alters the answer.
+function getModelColor(m) {
+  if (m.id) { const s = selById(m.id); if (s) return PROVIDERS[s.provider]?.color || '#888'; }
+  const matched = sels().find(s => selectionLabel(s) === m.label);
+  return matched ? (PROVIDERS[matched.provider]?.color || '#888') : '#888';
+}
+function renderProvenancePanel(pair, prov) {
+  if (!prov || !prov.perModel || !prov.perModel.length) return;
+  const isLocal = prov.source === 'local';
+  const sig = prov.agreementSignal;
+  const agreeLevel = sig == null ? null
+    : sig >= 0.26 ? { label: 'Strong agreement', cls: 'agree-high' }
+    : sig >= 0.11 ? { label: 'Moderate agreement', cls: 'agree-mid' }
+    : { label: 'Diverse views', cls: 'agree-low' };
+
+  const barsHtml = prov.perModel.map(m => {
+    const color = getModelColor(m);
+    const mismatchTip = m.mismatch ? ' title="Estimated contribution differs noticeably from measured overlap"' : '';
+    const stanceCls = { aligned: 'prov-aligned', partial: 'prov-partial', outlier: 'prov-outlier' }[m.stance] || 'prov-partial';
+    return `<div class="prov-bar-row">` +
+      `<span class="prov-model-dot" style="background:${escapeHtml(color)}"></span>` +
+      `<span class="prov-model-name" title="${escapeHtml(m.label)}">${escapeHtml(m.label)}</span>` +
+      `<div class="prov-bar-track"><div class="prov-bar-fill" style="width:${m.contributionPct}%;background:${escapeHtml(color)}"></div></div>` +
+      `<span class="prov-pct"${mismatchTip}>${m.contributionPct}%${m.mismatch ? '<span class="prov-mismatch" aria-hidden="true">~</span>' : ''}</span>` +
+      `<span class="prov-stance ${stanceCls}">${escapeHtml(m.stance)}</span>` +
+      `</div>`;
+  }).join('');
+
+  let agreesHtml = '';
+  if (!isLocal && prov.agreements && prov.agreements.length) {
+    agreesHtml = `<div class="prov-agrees">${prov.agreements.slice(0, 4).map(a => `<div class="prov-agree-item"><span class="prov-agree-check">✓</span>${escapeHtml(a)}</div>`).join('')}</div>`;
+  }
+
+  let disagreeHtml = '';
+  if (prov.disagreements && prov.disagreements.length) {
+    const items = prov.disagreements.map(d =>
+      `<div class="prov-dis-item"><div class="prov-dis-point">${escapeHtml(d.point)}</div>` +
+      (d.positions && d.positions.length
+        ? `<ul class="prov-dis-pos">${d.positions.map(p => `<li><b>${escapeHtml(p.model)}:</b> ${escapeHtml(p.claim)}</li>`).join('')}</ul>`
+        : '') +
+      `</div>`).join('');
+    disagreeHtml = `<details class="prov-details"><summary>Where they differed (${prov.disagreements.length})</summary><div class="prov-details-body">${items}</div></details>`;
+  }
+
+  let notableHtml = '';
+  if (prov.notable && prov.notable.length) {
+    const items = prov.notable.map(n =>
+      `<div class="prov-notable-item">` +
+      `<span class="prov-notable-claim">${escapeHtml(n.claim)}</span>` +
+      (n.note ? ` <span class="prov-notable-note">— ${escapeHtml(n.note)}</span>` : '') +
+      (n.models && n.models.length ? `<span class="prov-notable-models">${n.models.map(escapeHtml).join(', ')}</span>` : '') +
+      `</div>`).join('');
+    notableHtml = `<details class="prov-details"><summary>Notable claims (${prov.notable.length})</summary><div class="prov-details-body">${items}</div></details>`;
+  }
+
+  const panel = el('div', 'provenance-panel');
+  panel.innerHTML =
+    `<button class="prov-toggle" aria-expanded="false" aria-controls="prov-body-${pair.id || ''}">` +
+    `<span class="prov-toggle-icon" aria-hidden="true">▶</span>` +
+    `<span class="prov-toggle-label">How this was formed</span>` +
+    (agreeLevel ? `<span class="prov-badge ${agreeLevel.cls}">${escapeHtml(agreeLevel.label)}</span>` : '') +
+    (isLocal ? `<span class="prov-badge prov-local" title="Contribution estimated from text overlap — no extra model call">measured</span>` : '') +
+    `</button>` +
+    `<div class="prov-body" hidden>` +
+    `<div class="prov-section">` +
+    `<div class="prov-section-label">Contribution <span class="prov-approx">(approximate)</span></div>` +
+    barsHtml +
+    `</div>` +
+    (agreesHtml ? `<div class="prov-section prov-agree-section">${agreesHtml}</div>` : '') +
+    (disagreeHtml || notableHtml ? `<div class="prov-section prov-sub-section">${disagreeHtml}${notableHtml}</div>` : '') +
+    `</div>`;
+
+  const toggleBtn = panel.querySelector('.prov-toggle');
+  const body = panel.querySelector('.prov-body');
+  toggleBtn.onclick = () => {
+    const open = toggleBtn.getAttribute('aria-expanded') === 'true';
+    toggleBtn.setAttribute('aria-expanded', String(!open));
+    toggleBtn.querySelector('.prov-toggle-icon').textContent = open ? '▶' : '▼';
+    body.hidden = open;
+  };
+
+  const assistantMsg = pair.querySelector('.msg.assistant');
+  if (assistantMsg) assistantMsg.appendChild(panel);
+}
+
+// EPIC 1 · P1 — receive the arbiter's machine-readable agreement map. Stamped
+// on the consensus pair and rendered as the provenance panel immediately after.
 function onProvenance(data) {
   lastConsensusProvenance = data || null;
   const pair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
-  if (pair) pair._provenance = lastConsensusProvenance;
+  if (!pair) return;
+  pair._provenance = lastConsensusProvenance;
+  if (lastConsensusProvenance) renderProvenancePanel(pair, lastConsensusProvenance);
 }
 
 // ════════════════════════════════════════════════════════════════════════════

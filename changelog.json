@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "See how every consensus was built",
+      "items": [
+        "✦ New \"How this was formed\" panel below each consensus — collapsible, mobile-friendly",
+        "Per-model contribution bars (%) with brand colors and alignment labels (aligned / partial / outlier)",
+        "Shows the overall agreement level (strong / moderate / diverse) at a glance",
+        "Expandable sections for where the models differed and any notable or contested claims",
+        "Contribution is approximate and labelled honestly; falls back gracefully to text-overlap measurement when the arbiter analysis is unavailable"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "A measured agreement signal, no extra calls",
       "items": [
         "✦ Polecat now measures how much each model's wording actually overlaps the consensus, straight from the text — free, no extra model call",
