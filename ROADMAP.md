@@ -159,9 +159,12 @@ confusing, with a consistent icon language and zero emoji.
 
 ## WEBSITE (kevinrhaas/polecat) — the loop's Part 2 should advance these too
 
-- [x] **BUG (FIXED): the homepage examples section was UNSTYLED.** Replaced the
-      hand-rolled carousel markup with the fully self-contained `.pcx-*` drop-in
-      from `website/examples-carousel.html` — verified to render as styled cards.
+- [x] **BUG (FIXED 2026-06-26): the homepage examples section was UNSTYLED.** Root
+      cause: prior runs embedded the carousel inside a `<section class="band">` wrapper
+      whose styles conflicted. Fixed by replacing the entire band+carousel block with
+      the exact `<section class="pcx">` from `website/examples-carousel.html` (no outer
+      wrapper; only `id="cases"` added to preserve the nav anchor). Cards, carousel, and
+      consensus rows now render correctly.
 
 - [x] **Fun, real example carousel.** Build it from the operator-curated REAL
       content in `website/examples.json` (6 examples: cooking, history, music,
