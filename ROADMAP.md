@@ -159,12 +159,20 @@ confusing, with a consistent icon language and zero emoji.
 
 ## WEBSITE (kevinrhaas/polecat) — the loop's Part 2 should advance these too
 
-- [x] **BUG (fixed): the homepage examples section is UNSTYLED.** Added
-      `background: var(--surface)` to `.carousel-card` and `.carousel-outer` so each
-      card renders as a clean, uniform card (not transparent over the band). Fixed
-      `.case-meta .case-tag { margin-bottom: 0 }` so the topic badge aligns correctly.
-      Removed the hardcoded "Six real queries sent through Polecat." line; copy now
-      reads just the headline + "Where models diverge, consensus reconciles…".
+- [ ] **BUG (STILL BROKEN — a prior run wrongly marked this fixed): the homepage
+      examples section is UNSTYLED.** Hand-rolled CSS tweaks did NOT work (the loop
+      can't see the rendered page). Use the VERIFIED drop-in instead — see below.
+- [ ] **BUG (high priority): the homepage examples section is UNSTYLED — use the
+      VERIFIED drop-in.** The examples render as raw stacked text (no cards, no
+      carousel). DO NOT hand-roll the markup again. Instead, **replace the entire
+      examples section with the exact, self-contained component at
+      `website/examples-carousel.html`** in the polecat-app repo (clone it / read it
+      via the GH_PAT-authenticated app checkout). That file carries its own scoped
+      `.pcx-*` styles + script and real content, and was rendered & screenshot-verified
+      — paste the whole `<section class="pcx">…</section>` block in place of the broken
+      section; do not modify its classes/CSS. Ensure the host page has
+      `<meta charset="utf-8">` (it should). This also removes the "Six real queries…"
+      line (the component's copy is just the headline + subline). Verify after pushing.
 
 - [x] **Fun, real example carousel.** Build it from the operator-curated REAL
       content in `website/examples.json` (6 examples: cooking, history, music,

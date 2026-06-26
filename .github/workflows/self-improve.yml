@@ -120,10 +120,15 @@ jobs:
             Then, inside ./site:
             1. Read it to learn its structure (it's a static site too).
             2. Make ONE tasteful improvement. FIRST consult the "WEBSITE" section of
-               this app repo's ROADMAP.md and advance the next unchecked item there
-               (e.g. the fun, real example carousel that shows models disagreeing then
-               reaching consensus; REMOVE the weak "baking soda" example; keep a
-               cooking example). Otherwise make a tasteful polish that keeps it
+               this app repo's ROADMAP.md and advance the next unchecked item there.
+               TOP PRIORITY: the examples section is unstyled — replace it with the
+               VERIFIED, self-contained component at this repo's
+               `website/examples-carousel.html` (it has its own scoped .pcx-* styles +
+               script + real content; it was rendered & screenshot-verified). Read that
+               file from the app checkout ($GITHUB_WORKSPACE/website/examples-carousel.html)
+               and paste its entire <section class="pcx">…</section> block in place of
+               the broken examples section. Do NOT rewrite its markup/CSS. Ensure the
+               page has <meta charset="utf-8">. Otherwise make a tasteful polish that keeps it
                consistent with the app's brand — emphasise the cross-model consensus
                differentiator, clarity, polish, mobile, and a link/CTA to the app
                (app.polecat.live) and the free demo. Do not break it. Tick the

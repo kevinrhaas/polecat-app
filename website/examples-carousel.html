@@ -1,0 +1,127 @@
+<!-- ───────────────────────────────────────────────────────────────────────
+  Polecat homepage "Examples" carousel — SELF-CONTAINED drop-in.
+  Paste this whole block into the website where the examples section should be
+  (it carries its own scoped styles `.pcx-*` and script, so it does not depend
+  on the site's CSS). Replace the existing raw/unstyled examples section with
+  this. Content is real, operator-curated (see website/examples.json).
+  Verified rendered locally before commit.
+──────────────────────────────────────────────────────────────────────── -->
+<section class="pcx" aria-label="Real Polecat examples">
+  <style>
+    .pcx{ --pcx-bg:#111118; --pcx-bg2:#18181f; --pcx-border:#2a2a3c; --pcx-text:#e8e8f2;
+      --pcx-text2:#9a9ab5; --pcx-text3:#6b6b86; --pcx-amber:#d4773b; --pcx-purple:#9333ea;
+      --pcx-green:#10b981; max-width:880px; margin:0 auto; padding:8px 16px 40px; color:var(--pcx-text);
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
+    .pcx-eyebrow{ font-size:13px; font-weight:700; letter-spacing:.3px; color:var(--pcx-amber); text-transform:uppercase; }
+    .pcx-head{ font-size:clamp(26px,4vw,40px); font-weight:800; letter-spacing:-.5px; margin:6px 0 8px; line-height:1.1; }
+    .pcx-sub{ font-size:15px; color:var(--pcx-text2); line-height:1.6; margin-bottom:20px; max-width:640px; }
+    .pcx-viewport{ overflow:hidden; border-radius:16px; }
+    .pcx-track{ display:flex; transition:transform .45s cubic-bezier(.4,0,.2,1); }
+    .pcx-card{ flex:0 0 100%; box-sizing:border-box; padding:22px 22px 24px; background:var(--pcx-bg);
+      border:1px solid var(--pcx-border); border-radius:16px; }
+    .pcx-card-top{ display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .pcx-topic{ font-size:12px; font-weight:700; color:var(--pcx-text2); }
+    .pcx-tag{ font-size:11px; font-weight:700; padding:2px 9px; border-radius:100px; }
+    .pcx-tag.diverge{ color:var(--pcx-amber); background:color-mix(in srgb,var(--pcx-amber) 15%,transparent); }
+    .pcx-tag.agree{ color:var(--pcx-green); background:color-mix(in srgb,var(--pcx-green) 15%,transparent); }
+    .pcx-prompt{ font-size:18px; font-weight:700; line-height:1.4; margin-bottom:16px; }
+    .pcx-takes{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+    .pcx-take{ display:flex; gap:10px; align-items:baseline; background:var(--pcx-bg2);
+      border:1px solid var(--pcx-border); border-radius:10px; padding:9px 12px; }
+    .pcx-model{ font-size:12px; font-weight:700; color:var(--pcx-text2); white-space:nowrap; flex-shrink:0; min-width:120px; }
+    .pcx-pick{ font-size:14px; color:var(--pcx-text); line-height:1.45; }
+    .pcx-consensus{ display:flex; gap:10px; align-items:flex-start; padding:13px 14px; border-radius:12px;
+      background:linear-gradient(135deg,color-mix(in srgb,var(--pcx-purple) 14%,var(--pcx-bg2)),var(--pcx-bg2));
+      border:1px solid color-mix(in srgb,var(--pcx-purple) 38%,var(--pcx-border)); }
+    .pcx-spark{ color:var(--pcx-purple); font-weight:800; line-height:1.4; }
+    .pcx-clabel{ font-size:11px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--pcx-purple); display:block; margin-bottom:2px; }
+    .pcx-ctext{ font-size:14px; line-height:1.5; color:var(--pcx-text); }
+    .pcx-nav{ display:flex; align-items:center; justify-content:center; gap:14px; margin-top:16px; }
+    .pcx-arrow{ width:36px; height:36px; border-radius:50%; border:1px solid var(--pcx-border); background:var(--pcx-bg);
+      color:var(--pcx-text); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+    .pcx-arrow:hover{ border-color:var(--pcx-amber); color:var(--pcx-amber); }
+    .pcx-dots{ display:flex; gap:7px; }
+    .pcx-dot{ width:8px; height:8px; border-radius:50%; border:none; background:var(--pcx-border); cursor:pointer; padding:0; transition:all .2s; }
+    .pcx-dot.on{ background:var(--pcx-amber); width:22px; border-radius:4px; }
+    @media (max-width:560px){ .pcx-model{ min-width:0; } .pcx-take{ flex-direction:column; gap:2px; } }
+    @media (prefers-reduced-motion:reduce){ .pcx-track{ transition:none; } }
+  </style>
+
+  <div class="pcx-eyebrow">Real prompts, real models</div>
+  <h2 class="pcx-head">Ask once. Watch them split — then reconcile.</h2>
+  <p class="pcx-sub">Where models diverge, consensus reconciles; where they agree, you can trust it.</p>
+
+  <div class="pcx-viewport">
+    <div class="pcx-track" id="pcxTrack"></div>
+  </div>
+  <div class="pcx-nav">
+    <button class="pcx-arrow" id="pcxPrev" aria-label="Previous example">&lsaquo;</button>
+    <div class="pcx-dots" id="pcxDots"></div>
+    <button class="pcx-arrow" id="pcxNext" aria-label="Next example">&rsaquo;</button>
+  </div>
+
+  <script>
+  (function(){
+    var EX = [
+      { topic:"Cooking", pattern:"divergence", prompt:"What's the secret to extra-crispy roast potatoes?",
+        takes:[ {m:"HF · Qwen3 235B", p:"Baking soda — a “game-changer” for craggy edges"},
+                {m:"GPT-5.5", p:"Parboil + rough-up + hot fat; baking soda optional"},
+                {m:"Llama 3.3 70B", p:"Starchy potato, parboil, shake to roughen, duck fat, scorching pan"} ],
+        consensus:"Starchy potato → parboil → rough up the edges → very hot fat. Baking soda is optional (raises pH for crispier edges)." },
+      { topic:"History", pattern:"divergence", prompt:"What is the most significant event in US history? Choose only one.",
+        takes:[ {m:"Groq · Llama 3.3 70B", p:"American Civil War (1861–65)"},
+                {m:"HF · DeepSeek V3.1", p:"The American Revolution & founding (1776)"},
+                {m:"OpenRouter · GPT-OSS", p:"Adoption of the Constitution (1787)"} ],
+        consensus:"The American Civil War (1861–65) — with the nation’s founding a close, defensible alternative." },
+      { topic:"Music", pattern:"divergence", prompt:"What's the all-time best Beatles song? Pick just one.",
+        takes:[ {m:"Llama 3.3 70B", p:"Hey Jude"},
+                {m:"Gemma 4 31B", p:"A Day in the Life"},
+                {m:"GPT-5.5", p:"A Day in the Life"} ],
+        consensus:"“A Day in the Life” — the band’s artistic peak; “Hey Jude” / “Yesterday” win on popularity." },
+      { topic:"Learning to code", pattern:"convergence", prompt:"What's the best first programming language to learn in 2026?",
+        takes:[ {m:"GPT-5.5", p:"Python"},
+                {m:"HF · Qwen3 235B", p:"Python (then JavaScript for the web)"},
+                {m:"Gemma 4 31B", p:"Python all-rounder; TypeScript for web"} ],
+        consensus:"Python overall; JavaScript/TypeScript if you’re web-focused. Rare strong agreement — trust it." },
+      { topic:"Travel", pattern:"divergence", prompt:"Most underrated, inexpensive, best-value, most-fun travel spot? Choose one.",
+        takes:[ {m:"Llama 3.3 70B", p:"Hoi An, Vietnam"},
+                {m:"OpenRouter · GPT-OSS", p:"Tbilisi, Georgia"},
+                {m:"HF · Qwen3 235B", p:"Azores (São Miguel), Portugal"} ],
+        consensus:"Da Nang, Vietnam — beach + city + food + nature at very low cost (Tbilisi & the Azores are great wildcards)." },
+      { topic:"Sports", pattern:"divergence", prompt:"Who is the single greatest athlete of all time?",
+        takes:[ {m:"GPT-5.5", p:"Jim Thorpe (best all-around)"},
+                {m:"Llama 3.3 70B", p:"No single answer — depends on the criteria"},
+                {m:"HF · Qwen3 235B", p:"Jordan, Ali, Serena, Bolt, Pelé… (8 contenders)"} ],
+        consensus:"No objective GOAT; if forced, Jim Thorpe for all-around ability — Jordan, Ali, Serena & Bolt all defensible." }
+    ];
+    var esc = function(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+    var track = document.getElementById('pcxTrack'), dots = document.getElementById('pcxDots');
+    if(!track) return;
+    track.innerHTML = EX.map(function(e){
+      var tag = e.pattern==='convergence' ? '<span class="pcx-tag agree">They agreed</span>' : '<span class="pcx-tag diverge">They disagreed</span>';
+      var takes = e.takes.map(function(t){ return '<div class="pcx-take"><span class="pcx-model">'+esc(t.m)+'</span><span class="pcx-pick">'+esc(t.p)+'</span></div>'; }).join('');
+      return '<article class="pcx-card"><div class="pcx-card-top"><span class="pcx-topic">'+esc(e.topic)+'</span>'+tag+'</div>'+
+        '<div class="pcx-prompt">“'+esc(e.prompt)+'”</div>'+
+        '<div class="pcx-takes">'+takes+'</div>'+
+        '<div class="pcx-consensus"><span class="pcx-spark">✦</span><div><span class="pcx-clabel">Consensus</span><span class="pcx-ctext">'+esc(e.consensus)+'</span></div></div>'+
+        '</article>';
+    }).join('');
+    dots.innerHTML = EX.map(function(_,i){ return '<button class="pcx-dot'+(i===0?' on':'')+'" data-i="'+i+'" aria-label="Example '+(i+1)+'"></button>'; }).join('');
+    var i = 0, n = EX.length, timer = null;
+    var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    function go(k){ i=(k+n)%n; track.style.transform='translateX(-'+(i*100)+'%)';
+      dots.querySelectorAll('.pcx-dot').forEach(function(d,j){ d.classList.toggle('on', j===i); }); }
+    function start(){ if(reduce) return; stop(); timer=setInterval(function(){ go(i+1); }, 6000); }
+    function stop(){ if(timer){ clearInterval(timer); timer=null; } }
+    document.getElementById('pcxPrev').onclick=function(){ go(i-1); start(); };
+    document.getElementById('pcxNext').onclick=function(){ go(i+1); start(); };
+    dots.querySelectorAll('.pcx-dot').forEach(function(d){ d.onclick=function(){ go(+d.dataset.i); start(); }; });
+    var vp = track.parentElement;
+    vp.addEventListener('mouseenter', stop); vp.addEventListener('mouseleave', start);
+    var x0=null;
+    vp.addEventListener('touchstart', function(e){ x0=e.touches[0].clientX; stop(); }, {passive:true});
+    vp.addEventListener('touchend', function(e){ if(x0==null) return; var dx=e.changedTouches[0].clientX-x0; if(Math.abs(dx)>40) go(i+(dx<0?1:-1)); x0=null; start(); }, {passive:true});
+    start();
+  })();
+  </script>
+</section>
