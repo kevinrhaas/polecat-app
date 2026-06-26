@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "PDF text extraction",
+      "items": [
+        "You can now attach PDF files — text is extracted page-by-page in your browser and sent to all models",
+        "Page markers ([Page 1], [Page 2], …) help every model understand the document structure",
+        "A live progress percentage appears on the file chip while extraction runs; send stays disabled until complete",
+        "PDFs over 20 000 characters are trimmed with a visible truncation note",
+        "Nothing is uploaded — extraction happens entirely in-browser, matching Polecat's privacy promise"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "Attach text files & docs",
       "items": [
         "You can now attach text files — .txt, .md, .csv, .json, .py, .js, .ts, .sh, .log, .yaml, .sql, and many more",

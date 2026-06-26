@@ -113,7 +113,7 @@ Polecat's privacy promise. (PPTX was the operator's concrete blocker — priorit
       docs + images; drag/drop/paste; ≤5 files; size caps; file chips with a type
       icon + name + size + remove. Plain-text family (txt, md, csv, json, code, log)
       is read and injected as text immediately.
-- [ ] **F2 — PDF text extraction** via pdf.js (lazy CDN); inject text with light page
+- [x] **F2 — PDF text extraction** via pdf.js (lazy CDN); inject text with light page
       markers; cap length.
 - [ ] **F3 — Office docs** (PPTX first, then DOCX, XLSX) via in-browser unzip
       (JSZip) / mammoth / SheetJS — extract slide/sheet/doc text.
