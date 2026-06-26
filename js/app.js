@@ -65,6 +65,7 @@ const MAX_ATTACH = 5;
 const MAX_ATTACH_BYTES = 8 * 1024 * 1024;       // ~8MB per image
 const MAX_TEXT_ATTACH_BYTES = 5 * 1024 * 1024;  // 5MB per text file (before reading)
 const MAX_TEXT_CHARS = 20000;                    // chars to inject per file (~5k tokens)
+const MAX_TOTAL_TEXT_CHARS = 60000;              // total char budget across ALL text files combined (~15k tokens)
 const MAX_OFFICE_ATTACH_BYTES = 10 * 1024 * 1024; // 10 MB for office documents
 
 const _TEXT_TYPES = new Set(['text/plain','text/markdown','text/csv','text/javascript',
@@ -371,18 +372,30 @@ function updateVisionNote() {
   }
   if (pdfAtts.length) {
     const n = pdfAtts.length, fw = n === 1 ? 'PDF' : 'PDFs';
-    const truncNote = pdfAtts.some(a => a.truncated) ? ' <span class="vn-warn">(some truncated to 20 k chars)</span>' : '';
-    parts.push(`📄 ${n} ${fw} — text extracted in-browser and sent to all models.${truncNote}`);
+    parts.push(`📄 ${n} ${fw} — text extracted in-browser, sent to all models.`);
   }
   if (officeAtts.length) {
     const n = officeAtts.length, fw = n === 1 ? 'document' : 'documents';
-    const truncNote = officeAtts.some(a => a.truncated) ? ' <span class="vn-warn">(some truncated)</span>' : '';
-    parts.push(`📎 ${n} office ${fw} — text extracted in-browser and sent to all models.${truncNote}`);
+    parts.push(`📎 ${n} office ${fw} — text extracted in-browser, sent to all models.`);
   }
   if (txtAtts.length) {
     const n = txtAtts.length, fw = n === 1 ? 'file' : 'files';
-    const truncNote = txtAtts.some(a => a.truncated) ? ' <span class="vn-warn">(some truncated)</span>' : '';
-    parts.push(`📄 ${n} text ${fw} — content sent to all models.${truncNote}`);
+    parts.push(`📄 ${n} text ${fw} — content sent to all models.`);
+  }
+  // Show total context budget used by all extracted text files
+  const allExtracted = [...pdfAtts, ...officeAtts, ...txtAtts].filter(a => a.textContent != null);
+  if (allExtracted.length) {
+    const totalChars = allExtracted.reduce((s, a) => s + a.textContent.length, 0);
+    if (totalChars > 1000) {
+      const kChars = totalChars >= 10000 ? Math.round(totalChars / 1000) + 'k' : (totalChars / 1000).toFixed(1) + 'k';
+      const budgetK = Math.round(MAX_TOTAL_TEXT_CHARS / 1000);
+      if (totalChars > MAX_TOTAL_TEXT_CHARS) {
+        parts.push(`Context: ~${kChars} chars extracted <span class="vn-warn">— over ${budgetK}k limit; oldest files will be trimmed on send</span>`);
+      } else {
+        const pct = Math.round(totalChars / MAX_TOTAL_TEXT_CHARS * 100);
+        parts.push(`Context: ~${kChars} chars of ${budgetK}k budget${pct >= 80 ? ' <span class="vn-warn">(budget nearly full)</span>' : ''}`);
+      }
+    }
   }
   note.innerHTML = parts.join('<br>');
 }
@@ -662,6 +675,32 @@ function startSuggestionRotation() {
   }, 7000);
 }
 
+// ── Text-file context blocks ─────────────────────────────────────────────────
+// Builds the injected context blocks sent to every model, applying a total char
+// budget so many large files can't quietly overflow context windows.
+function buildTextBlocks(textFiles) {
+  let totalUsed = 0, anyTruncated = false;
+  const parts = [];
+  for (const tf of textFiles) {
+    const remaining = MAX_TOTAL_TEXT_CHARS - totalUsed;
+    if (remaining <= 0) { anyTruncated = true; continue; }
+    let content = tf.textContent || '';
+    let fileTruncated = tf.truncated || false;
+    if (content.length > remaining) { content = content.slice(0, remaining); fileTruncated = true; anyTruncated = true; }
+    totalUsed += content.length;
+    // Type hint so every model understands the document kind
+    let typeHint = '';
+    if (tf.docType === 'pptx') typeHint = tf.slideCount != null ? `PowerPoint presentation, ${tf.slideCount} slides` : 'PowerPoint presentation';
+    else if (tf.docType === 'docx') typeHint = 'Word document';
+    else if (tf.docType === 'xlsx') typeHint = tf.sheetCount != null ? `Excel spreadsheet, ${tf.sheetCount} sheets` : 'Excel spreadsheet';
+    else if (tf.mime === 'application/pdf') typeHint = tf.pageCount != null ? `PDF document, ${tf.pageCount} pages` : 'PDF document';
+    const typeAttr = typeHint ? ` type="${typeHint}"` : '';
+    const truncNote = fileTruncated ? `\n[Content truncated — showing first ${content.length.toLocaleString()} characters of the original]` : '';
+    parts.push(`<file name="${tf.name}"${typeAttr}>\n${content}${truncNote}\n</file>`);
+  }
+  return { parts, totalChars: totalUsed, truncated: anyTruncated };
+}
+
 // ── Broadcast ───────────────────────────────────────────────────────────────
 async function sendAll() {
   const text = $('promptInput').value.trim();
@@ -669,14 +708,13 @@ async function sendAll() {
   const imgAtts   = readyAtts.filter(a => a.kind === 'image');
   const textFiles = readyAtts.filter(a => a.kind === 'text');
 
-  // Inject text file contents as labelled blocks prepended to the user message
+  // Inject text file contents as labelled blocks prepended to the user message.
+  // Total char budget is enforced so many files can't silently overflow context.
   let userText = text;
   if (textFiles.length) {
-    const blocks = textFiles.map(tf => {
-      const trunc = tf.truncated ? `\n[File truncated to ${MAX_TEXT_CHARS.toLocaleString()} characters]` : '';
-      return `<file name="${tf.name}">\n${tf.textContent}${trunc}\n</file>`;
-    }).join('\n\n');
-    userText = blocks + (text ? '\n\n' + text : '');
+    const built = buildTextBlocks(textFiles);
+    if (built.truncated) toast(`Context capped at ${(MAX_TOTAL_TEXT_CHARS / 1000).toFixed(0)}k characters — some file content was trimmed`);
+    if (built.parts.length) userText = built.parts.join('\n\n') + (text ? '\n\n' + text : '');
   }
 
   if (!userText && !imgAtts.length) return;

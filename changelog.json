@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "Smarter file context: budget cap + clearer labels",
+      "items": [
+        "Attached files now share a 60k-character context budget — all models get the right amount without silently overflowing",
+        "When the total exceeds the budget, a clear toast tells you what was trimmed (nothing disappears quietly)",
+        "The vision note now shows exactly how many characters of extracted text will be sent and what percentage of the budget is used",
+        "File blocks sent to models now include a type label — \"PowerPoint presentation, 24 slides\", \"PDF document, 6 pages\", etc. — so every model understands what it's reading",
+        "Files work correctly with consensus and arbitration: each model receives the same labelled context, and the arbiter synthesizes from all model answers"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "Office document support (PPTX, DOCX, XLSX)",
       "items": [
         "Attach PowerPoint (.pptx), Word (.docx), and Excel (.xlsx/.xls) files — text is extracted in-browser and sent to all models",

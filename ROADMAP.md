@@ -117,7 +117,7 @@ Polecat's privacy promise. (PPTX was the operator's concrete blocker — priorit
       markers; cap length.
 - [x] **F3 — Office docs** (PPTX first, then DOCX, XLSX) via in-browser unzip
       (JSZip) / mammoth / SheetJS — extract slide/sheet/doc text.
-- [ ] **F4 — Prompt injection & budgeting.** Fold extracted content into the message
+- [x] **F4 — Prompt injection & budgeting.** Fold extracted content into the message
       as labelled blocks ("Attached: deck.pptx" + text), shared across all selected
       models; token-budget + truncation notice; works with consensus/arbitration.
 - [ ] **F5 — Native document passing — APPROVED (operator said yes to native PDF).**
