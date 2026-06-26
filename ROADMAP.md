@@ -103,6 +103,10 @@ Polecat's privacy promise. (PPTX was the operator's concrete blocker — priorit
 - Truncate very large extractions to a token budget with a visible "(truncated)"
   note; mind free-demo/context limits.
 - Graceful degradation: if a type can't be parsed, attach the filename + a note.
+- **REQUIRED (treat absence as a bug, not polish):** always show a clear per-file
+  **progress / processing indicator** while extracting text locally — a spinner or
+  progress meter on each file chip and a disabled/“working…” send state — so the UI
+  never appears frozen. Build this *with each parser phase* (F1–F4), not in F6.
 
 **Phases** (one per run; keep each a single focused commit)
 - [ ] **F1 — Generalize attachments from images-only to any file.** Picker accepts
@@ -116,14 +120,18 @@ Polecat's privacy promise. (PPTX was the operator's concrete blocker — priorit
 - [ ] **F4 — Prompt injection & budgeting.** Fold extracted content into the message
       as labelled blocks ("Attached: deck.pptx" + text), shared across all selected
       models; token-budget + truncation notice; works with consensus/arbitration.
-- [ ] **F5 — Native document passing (enhancement)** for capable providers
-      (Anthropic PDF document blocks, Gemini inline_data application/pdf, OpenAI file
-      input) when the model supports it — better than text-only for those models.
-- [ ] **F6 — Polish.** Parsing progress indicator, error states, mobile, a11y, a
-      privacy note ("files are read in your browser, never uploaded"), "What's new".
+- [ ] **F5 — Native document passing — APPROVED (operator said yes to native PDF).**
+      For capable providers, pass the document natively instead of extracted text:
+      Anthropic PDF document blocks, Gemini inline_data application/pdf, OpenAI file
+      input. **Prioritize native PDF for Claude/Gemini/GPT** (higher fidelity); keep
+      client-side text extraction as the universal fallback for models that can't.
+- [ ] **F6 — Polish.** Refine error states, mobile, a11y, a privacy note ("files are
+      read in your browser, never uploaded"), and "What's new". (Progress indicator
+      is NOT here — it's a core requirement built in F1–F4.)
 
-**Open question (non-blocking):** default is *extract-text-for-all* (universal). Native
-PDF/doc passing to capable models is F5 (enhancement) — confirm if it should jump ahead.
+**Decided:** extract-text-for-all is the universal baseline; **native PDF passing to
+capable models (Claude/Gemini/GPT) is approved** (F5) — do it for those models and
+fall back to text extraction elsewhere.
 
 **Done when:** a user can attach a PPTX (and PDF/DOCX/XLSX/text) and ask all models
 to analyze it, fully client-side, with clean limits and clear feedback.
