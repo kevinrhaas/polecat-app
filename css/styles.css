@@ -580,6 +580,44 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
   .prov-stance { display: none; }
 }
 
+/* ── Inline attribution (EPIC 1 · P4) ───────────────────── */
+/* Toggle button — matches copy-btn style but glows when on */
+.attr-toggle-btn { transition: color .15s, background .15s, opacity .15s; }
+.attr-toggle-btn.active { color: var(--brand-b); opacity: 1; }
+.attr-toggle-btn.active svg { stroke: var(--brand-b); }
+
+/* Paragraph-level attribution — activated by .attribution-active on the bubble */
+.attribution-active .attr-para {
+  border-left: 3px solid transparent;
+  padding-left: 10px;
+  margin-left: -13px;
+  border-radius: 0 4px 4px 0;
+  transition: border-color .25s, background .25s, padding-left .25s;
+}
+.attribution-active .attr-para.attr-solo {
+  border-left-color: color-mix(in srgb, var(--attr-c, #888) 70%, transparent);
+  background: color-mix(in srgb, var(--attr-c, #888) 5%, transparent);
+}
+.attribution-active .attr-para.attr-agreed {
+  border-left-color: rgba(52, 211, 153, 0.65);
+  background: rgba(52, 211, 153, 0.04);
+}
+@media (prefers-reduced-motion: reduce) {
+  .attribution-active .attr-para { transition: none; }
+}
+
+/* Shared floating tooltip (positioned by JS, lives on body) */
+.attr-tooltip {
+  position: fixed; z-index: 999; pointer-events: none;
+  background: var(--surface-3); border: 1px solid var(--border);
+  color: var(--text-2); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: 7px;
+  white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  opacity: 0; transform: translateY(3px); transition: opacity .12s, transform .12s;
+}
+.attr-tooltip.visible { opacity: 1; transform: translateY(0); }
+
 /* ── Export dialog ───────────────────────────────────────── */
 .exp-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,.6); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 16px; }
 .exp-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-width: 380px; padding: 20px; box-shadow: 0 24px 64px rgba(0,0,0,.5); }

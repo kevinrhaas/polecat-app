@@ -12,12 +12,15 @@ import {
 } from './providers.js';
 import {
   allStrategies, activeStrategy, runArbitration, exportSettings, importSettings,
+  computeParaAttribution,
 } from './arbitration.js';
 import { $, el, escapeHtml, nl2br, renderMarkdown, highlightBubble, toast, applyTheme, currentTheme } from './ui.js';
 
 const DONATE_URL = 'https://ko-fi.com/polecatlive';
 const WELCOME_KEY = 'polecat_welcomed';
 const COPY_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+// EPIC 1 · P4 — layers icon for the inline attribution toggle
+const ATTR_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`;
 
 let cfg = loadCfg();
 const convos = {};                  // selectionId -> [{role, content}]
@@ -546,6 +549,53 @@ async function runConsensus() {
     provenance: (data) => onProvenance(data),
   });
 }
+// EPIC 1 · P4 — Inline attribution: color-coded paragraph highlighting.
+// A floating tooltip div is shared across all attributed paragraphs.
+let _attrTipEl = null;
+function getAttrTipEl() {
+  if (!_attrTipEl) { _attrTipEl = el('div', 'attr-tooltip'); _attrTipEl.id = 'attr-tooltip'; document.body.appendChild(_attrTipEl); }
+  return _attrTipEl;
+}
+function showAttrTip(text, x, y) {
+  const tip = getAttrTipEl();
+  tip.textContent = text;
+  tip.style.left = Math.min(x + 14, window.innerWidth - 220) + 'px';
+  tip.style.top  = Math.max(y - 38, 4) + 'px';
+  tip.classList.add('visible');
+}
+function hideAttrTip() { getAttrTipEl().classList.remove('visible'); }
+
+// Apply block-level attribution colors to an already-rendered bubble. Uses the
+// paragraph ordering (both the markdown split and the DOM are in document order)
+// to map segments to DOM elements without any extra model call.
+function applyInlineAttribution(bubble, attrData) {
+  if (!attrData || !attrData.length) return;
+  const BLOCK_SEL = ':scope > p, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > h5, :scope > h6, :scope > ul, :scope > ol, :scope > pre, :scope > blockquote';
+  const blocks = [...bubble.querySelectorAll(BLOCK_SEL)];
+  if (!blocks.length) return;
+  let si = 0;
+  blocks.forEach(block => {
+    const seg = attrData[Math.min(si, attrData.length - 1)];
+    si = Math.min(si + 1, attrData.length - 1);
+    if (!seg || !seg.primaryId) return;
+    const color = getModelColor({ id: seg.primaryId });
+    block.classList.add('attr-para', seg.agreed ? 'attr-agreed' : 'attr-solo');
+    block.style.setProperty('--attr-c', color);
+    const tipText = seg.agreed
+      ? 'Models agreed on this point'
+      : `Primarily from: ${seg.primaryLabel}`;
+    block.addEventListener('mouseenter', (e) => showAttrTip(tipText, e.clientX, e.clientY));
+    block.addEventListener('mousemove',  (e) => showAttrTip(tipText, e.clientX, e.clientY));
+    block.addEventListener('mouseleave', hideAttrTip);
+    block.addEventListener('click', (e) => {
+      const tip = getAttrTipEl();
+      if (tip.classList.contains('visible') && tip.textContent === tipText) { hideAttrTip(); return; }
+      showAttrTip(tipText, e.clientX, e.clientY);
+      clearTimeout(tip._t); tip._t = setTimeout(hideAttrTip, 2200);
+    });
+  });
+}
+
 // EPIC 1 · P3 — "How this was formed" collapsible provenance panel.
 // Appended below the consensus sources footer; never blocks or alters the answer.
 function getModelColor(m) {
@@ -634,12 +684,38 @@ function renderProvenancePanel(pair, prov) {
 
 // EPIC 1 · P1 — receive the arbiter's machine-readable agreement map. Stamped
 // on the consensus pair and rendered as the provenance panel immediately after.
+// Also triggers P4: computes paragraph attribution and wires the toggle button.
 function onProvenance(data) {
   lastConsensusProvenance = data || null;
   const pair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
   if (!pair) return;
   pair._provenance = lastConsensusProvenance;
   if (lastConsensusProvenance) renderProvenancePanel(pair, lastConsensusProvenance);
+
+  // P4 — Inline attribution (no extra model call, runs synchronously)
+  if (!lastConsensusText) return;
+  const ordered = order.filter(id => results[id])
+    .map(id => ({ selection: selById(id) || { id, provider: 'openai', model: '' }, text: results[id] }));
+  if (ordered.length < 2) return;
+  const attrData = computeParaAttribution(lastConsensusText, ordered, sel => selectionLabel(sel));
+  if (!attrData || !attrData.length) return;
+  const bubble = pair.querySelector('.msg.assistant .msg-bubble');
+  const msgHead = pair.querySelector('.msg.assistant .msg-head');
+  if (!bubble || !msgHead || msgHead.querySelector('.attr-toggle-btn')) return;
+  applyInlineAttribution(bubble, attrData);
+  const btn = el('button', 'copy-btn attr-toggle-btn');
+  btn.innerHTML = ATTR_ICON;
+  btn.title = 'Highlight source models';
+  btn.setAttribute('aria-label', 'Toggle source highlighting');
+  btn.setAttribute('aria-pressed', 'false');
+  btn.onclick = () => {
+    const on = bubble.classList.toggle('attribution-active');
+    btn.setAttribute('aria-pressed', String(on));
+    btn.title = on ? 'Hide source highlighting' : 'Highlight source models';
+    btn.classList.toggle('active', on);
+    if (!on) hideAttrTip();
+  };
+  msgHead.appendChild(btn);
 }
 
 // ════════════════════════════════════════════════════════════════════════════

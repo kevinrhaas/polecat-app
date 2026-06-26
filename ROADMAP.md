@@ -72,7 +72,7 @@ Polecat's signature differentiator vs single-model chat (Gemini/Claude).
       a one-line agreement summary, and expandable "Where they disagreed" and
       "Notable claims" sections. Use each model's brand color + a text label.
       Mobile-friendly, accessible.
-- [ ] **P4 — Inline attribution.** Optionally color/annotate sentences or sections
+- [x] **P4 — Inline attribution.** Optionally color/annotate sentences or sections
       of the consensus answer by originating model and/or agreement level, with a
       hover/tap tooltip ("Claude & Gemini agreed", "only GPT-5 claimed this").
       A toggle turns highlighting on/off. Must stay readable when off.

@@ -226,6 +226,36 @@ export function computeLocalAgreement(results, consensusText, labelOf) {
   return { perModel, pairwise, avgSimilarity };
 }
 
+// EPIC 1 · P4 — Paragraph-level attribution for inline source highlighting.
+// No extra model call; uses the same shingle helpers as computeLocalAgreement.
+// Splits the consensus into paragraphs, then finds which model's text is most
+// similar to each paragraph. Returns null for single-model or missing data.
+export function computeParaAttribution(consensusText, results, labelOf) {
+  if (!Array.isArray(results) || results.length < 2 || !consensusText) return null;
+  const models = results.map(r => ({
+    id: r.selection.id, label: labelOf(r.selection),
+    sh: shingleSet(contentTokens(r.text)),
+  }));
+  const segs = consensusText.split(/\n{2,}/).map(s => s.trim()).filter(s => s.length > 20);
+  if (!segs.length) return null;
+  return segs.map(text => {
+    const sh = shingleSet(contentTokens(text));
+    const scores = models
+      .map(m => ({ id: m.id, label: m.label, score: jaccard(sh, m.sh) }))
+      .sort((a, b) => b.score - a.score);
+    const top = scores[0].score;
+    const second = scores.length > 1 ? scores[1].score : 0;
+    const hasSignal = top >= 0.05;
+    const agreed = hasSignal && second >= 0.05 && (second / top) >= 0.65;
+    return {
+      text,
+      primaryId: hasSignal ? scores[0].id : null,
+      primaryLabel: hasSignal ? scores[0].label : null,
+      agreed, top, second,
+    };
+  });
+}
+
 // Build a provenance object purely from the local signal — used when the
 // arbiter call fails or returns nothing parseable. Honest: no fabricated
 // agreements/disagreements, just the measured contribution + stance.

@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "See which model wrote which part",
+      "items": [
+        "✦ New \"Highlight source models\" button on every consensus answer — tap it to color each paragraph by which model it came from",
+        "Green highlights show where all models agreed; model-colored highlights show where one model's phrasing dominated",
+        "Hover or tap any highlighted paragraph to see a tooltip: \"Primarily from: Claude\" or \"Models agreed on this point\"",
+        "Zero extra cost — computed instantly from text overlap, no model calls",
+        "Toggle on/off per answer; off by default so the answer is always readable"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "Crisper Settings",
       "items": [
         "Settings now opens sharp instead of momentarily blurred — no more clicking to make it readable"
