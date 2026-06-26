@@ -48,10 +48,10 @@ jobs:
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         with:
-          # Prefer a Claude subscription token (no per-use API billing); falls
-          # back to the API key if the OAuth token secret isn't set.
+          # Use the Claude subscription token only (no per-use API billing).
+          # (Don't also pass anthropic_api_key — when both are set the action
+          # prefers the API key, which is the dead/credit-capped one.)
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: '--max-turns 80 --dangerously-skip-permissions'
           prompt: |
             You are autonomously improving **Polecat** and shipping the results live.
