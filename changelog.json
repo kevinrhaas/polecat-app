@@ -3,6 +3,14 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "Website: examples carousel polished",
+      "items": [
+        "Fixed the homepage examples carousel — each card now has a proper card background and clean uniform layout",
+        "Removed the hardcoded 'Six real queries sent through Polecat.' line from the section header"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "A friendlier free start",
       "items": [
         "The welcome screen now shows rotating, clickable example questions — tap one to try it instantly",

@@ -159,17 +159,12 @@ confusing, with a consistent icon language and zero emoji.
 
 ## WEBSITE (kevinrhaas/polecat) — the loop's Part 2 should advance these too
 
-- [ ] **BUG (high priority): the homepage examples section is UNSTYLED.** It renders
-      as raw stacked text ("Ask once. Watch them split — then reconcile." followed by
-      plain lines like "CookingViews differ", model names, picks) with no cards, no
-      spacing, no carousel. Fix the CSS/markup so each example is a clean, uniform
-      **card** (prompt → 2–3 differing model takes → consensus), in a proper rotating
-      **carousel** (auto-rotate, pause on hover, swipeable, reduced-motion safe).
-      Likely cause: the carousel markup was added but its CSS isn't present/linked or
-      the class names don't match. Verify the styles actually load and apply.
-      Also: **remove the "Six real queries sent through Polecat." line** — don't
-      hardcode a count or that phrasing; use cleaner copy (or just the headline +
-      "Where models diverge, consensus reconciles; where they agree, you can trust it.").
+- [x] **BUG (fixed): the homepage examples section is UNSTYLED.** Added
+      `background: var(--surface)` to `.carousel-card` and `.carousel-outer` so each
+      card renders as a clean, uniform card (not transparent over the band). Fixed
+      `.case-meta .case-tag { margin-bottom: 0 }` so the topic badge aligns correctly.
+      Removed the hardcoded "Six real queries sent through Polecat." line; copy now
+      reads just the headline + "Where models diverge, consensus reconciles…".
 
 - [x] **Fun, real example carousel.** Build it from the operator-curated REAL
       content in `website/examples.json` (6 examples: cooking, history, music,
