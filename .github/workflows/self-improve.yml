@@ -84,12 +84,15 @@ jobs:
             - Smooth, subtle motion and transitions; nothing janky.
 
             Do this:
-            1. Read the code to understand the current state.
-            2. Choose ONE (or a few tightly-related) high-value improvements — UX polish,
-               delight, accessibility, mobile/touch, performance, or a genuinely useful
-               feature (ideally showcasing the multi-model/arbitration strength). Keep it
-               simple and elegant, match the existing style, stay 100% client-side
-               (no servers, no embedded secrets, no new tracking).
+            1. Read the code to understand the current state. Then read ROADMAP.md.
+            2. PRIORITY: if ROADMAP.md has an epic with unchecked steps, advance the
+               NEXT unchecked step of the highest-priority epic this run — a real,
+               shippable, non-breaking increment. Tick that box in ROADMAP.md. Only if
+               the roadmap is empty, or no step can be advanced safely this run, fall
+               back to ONE tightly-scoped polish (UX, delight, accessibility, mobile,
+               performance) ideally showcasing the multi-model/arbitration strength.
+               Keep it simple and elegant, match the existing style, stay 100%
+               client-side (no servers, no embedded secrets, no new tracking).
             3. Implement cleanly with NO regressions to the features listed above.
             4. Sanity-check: `node --check` each edited JS file; review your diff.
             5. Prepend a new entry to `changelog.json` (newest first) describing what you
