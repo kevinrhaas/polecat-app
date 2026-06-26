@@ -1,0 +1,77 @@
+{
+  "_note": "Real, operator-curated Polecat examples for the public website (kevinrhaas/polecat) carousel. Each shows the prompt, a few DIFFERING model takes, and the synthesized consensus. The site should render these as uniform, brand-matched cards (same frame/aspect/dark theme) — NOT raw screenshots. Auto-rotate, pause on hover, swipeable on mobile, respect reduced-motion. Drop the old standalone 'baking soda' example; keep the cooking one (#cooking).",
+  "examples": [
+    {
+      "id": "cooking",
+      "topic": "Cooking",
+      "pattern": "divergence",
+      "prompt": "What's the secret to extra-crispy roast potatoes?",
+      "takes": [
+        { "model": "HF · Qwen3 235B", "pick": "Parboil with baking soda — a 'game-changer' for craggy edges" },
+        { "model": "GPT-5.5", "pick": "Parboil + rough-up + hot fat; baking soda optional" },
+        { "model": "Llama 3.3 70B", "pick": "Starchy potato, parboil, shake to roughen, duck/goose fat, scorching pan" }
+      ],
+      "consensus": "Starchy potato → parboil → rough up the edges → very hot fat. Baking soda is optional (raises pH for crispier edges)."
+    },
+    {
+      "id": "history",
+      "topic": "History",
+      "pattern": "divergence",
+      "prompt": "What is the most significant event in US history? You can choose only one.",
+      "takes": [
+        { "model": "Groq · Llama 3.3 70B", "pick": "American Civil War (1861–65)" },
+        { "model": "HF · DeepSeek V3.1", "pick": "The American Revolution & founding (1776)" },
+        { "model": "OpenRouter · GPT-OSS", "pick": "Adoption of the Constitution (1787)" }
+      ],
+      "consensus": "The American Civil War (1861–65) — with the nation's founding a close, defensible alternative."
+    },
+    {
+      "id": "music",
+      "topic": "Music",
+      "pattern": "divergence",
+      "prompt": "What's the all-time best Beatles song? You can choose only one.",
+      "takes": [
+        { "model": "Llama 3.3 70B", "pick": "Hey Jude" },
+        { "model": "Gemma 4 31B", "pick": "A Day in the Life" },
+        { "model": "GPT-5.5", "pick": "A Day in the Life" }
+      ],
+      "consensus": "'A Day in the Life' — the band's artistic peak; 'Hey Jude' / 'Yesterday' win on popularity."
+    },
+    {
+      "id": "coding",
+      "topic": "Learning to code",
+      "pattern": "convergence",
+      "prompt": "What's the best first programming language to learn in 2026?",
+      "takes": [
+        { "model": "GPT-5.5", "pick": "Python" },
+        { "model": "HF · Qwen3 235B", "pick": "Python (then JavaScript for the web)" },
+        { "model": "Gemma 4 31B", "pick": "Python all-rounder; TypeScript for web; Rust for performance" }
+      ],
+      "consensus": "Python overall; JavaScript/TypeScript if you're web-focused, Swift/Kotlin for mobile. (Rare strong agreement — trust it.)"
+    },
+    {
+      "id": "travel",
+      "topic": "Travel",
+      "pattern": "divergence",
+      "prompt": "Most underrated, inexpensive, best-value, most-fun travel spot? You can choose only one.",
+      "takes": [
+        { "model": "Llama 3.3 70B", "pick": "Hoi An, Vietnam" },
+        { "model": "OpenRouter · GPT-OSS", "pick": "Tbilisi, Georgia" },
+        { "model": "HF · Qwen3 235B", "pick": "Azores (São Miguel), Portugal" }
+      ],
+      "consensus": "Da Nang, Vietnam — beach + city + food + nature at very low cost (Tbilisi & the Azores are great wildcards)."
+    },
+    {
+      "id": "sports",
+      "topic": "Sports",
+      "pattern": "divergence",
+      "prompt": "Who is the single greatest athlete of all time?",
+      "takes": [
+        { "model": "GPT-5.5", "pick": "Jim Thorpe (best all-around)" },
+        { "model": "Llama 3.3 70B", "pick": "No single answer — depends on the criteria" },
+        { "model": "HF · Qwen3 235B", "pick": "Jordan, Ali, Serena, Bolt, Pelé… (8 contenders)" }
+      ],
+      "consensus": "No objective GOAT; if forced, Jim Thorpe for all-around ability — Jordan, Ali, Serena, Bolt, Phelps, Messi/Pelé & more remain defensible by other measures."
+    }
+  ]
+}

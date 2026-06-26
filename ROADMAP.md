@@ -107,21 +107,15 @@ confusing, with a consistent icon language and zero emoji.
 
 ## WEBSITE (kevinrhaas/polecat) — the loop's Part 2 should advance these too
 
-- [ ] **Fun, real example carousel.** Replace the landing examples with a rotating
-      carousel of *fun, real* prompts that show the magic: models genuinely
-      DISAGREE, then Consensus reconciles. Show a couple of differing model takes
-      + the consensus for each. **Remove the "baking soda" example (it's weak).**
-      **Keep a cooking/recipe example** (the operator likes it). Starter set of
-      real, divergence-friendly prompts (validate/expand — keep them tasteful & fun):
-      - "What's the all-time best Beatles song? Pick just one."
-      - "The single most significant event in US history — choose only one."
-      - "Best first programming language to learn in 2026 — one pick."
-      - "Greatest athlete of all time — one name."
-      - "Most underrated travel destination?"
-      - "Is a hot dog a sandwich? Decide."
-      - a fun cooking/recipe prompt (keep one).
-      The carousel should auto-rotate, pause on hover, be swipeable on mobile,
-      respect reduced-motion, and link into the app / free demo.
+- [ ] **Fun, real example carousel.** Build it from the operator-curated REAL
+      content in `website/examples.json` (6 examples: cooking, history, music,
+      coding, travel, sports — each with the prompt, 2–3 differing model takes,
+      and the consensus). Render as **uniform, brand-matched cards** (same frame/
+      aspect/dark theme) — NOT raw screenshots; auto-rotate, pause on hover,
+      swipeable on mobile, respect reduced-motion, link into the app / free demo.
+      Show the "they disagreed → consensus reconciled" (and the one "they agreed →
+      trust it") story. **Remove the old standalone "baking soda" example; keep the
+      cooking one.** Quality & consistency over quantity.
 - [ ] Keep the website's brand, "last updated" stamp, and changelog in sync with
       the app; emphasise the cross-model consensus differentiator.
 
