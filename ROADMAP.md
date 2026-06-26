@@ -105,6 +105,28 @@ confusing, with a consistent icon language and zero emoji.
 
 ---
 
+## WEBSITE (kevinrhaas/polecat) — the loop's Part 2 should advance these too
+
+- [ ] **Fun, real example carousel.** Replace the landing examples with a rotating
+      carousel of *fun, real* prompts that show the magic: models genuinely
+      DISAGREE, then Consensus reconciles. Show a couple of differing model takes
+      + the consensus for each. **Remove the "baking soda" example (it's weak).**
+      **Keep a cooking/recipe example** (the operator likes it). Starter set of
+      real, divergence-friendly prompts (validate/expand — keep them tasteful & fun):
+      - "What's the all-time best Beatles song? Pick just one."
+      - "The single most significant event in US history — choose only one."
+      - "Best first programming language to learn in 2026 — one pick."
+      - "Greatest athlete of all time — one name."
+      - "Most underrated travel destination?"
+      - "Is a hot dog a sandwich? Decide."
+      - a fun cooking/recipe prompt (keep one).
+      The carousel should auto-rotate, pause on hover, be swipeable on mobile,
+      respect reduced-motion, and link into the app / free demo.
+- [ ] Keep the website's brand, "last updated" stamp, and changelog in sync with
+      the app; emphasise the cross-model consensus differentiator.
+
+---
+
 ## Backlog (smaller, pick up anytime)
 - **README.md** for the repo (currently missing): what Polecat is, the
   cross-model + consensus/arbitration differentiator, BYOK + zero-config free

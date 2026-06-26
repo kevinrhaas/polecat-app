@@ -119,10 +119,15 @@ jobs:
               git clone https://x-access-token:$GH_PAT@github.com/kevinrhaas/polecat.git site
             Then, inside ./site:
             1. Read it to learn its structure (it's a static site too).
-            2. Make ONE tasteful improvement that keeps it consistent with the app's
-               brand and messaging — emphasise the cross-model consensus differentiator,
-               clarity, polish, mobile, and a link/CTA to the app (app.polecat.live) and
-               the free demo. Do not break it.
+            2. Make ONE tasteful improvement. FIRST consult the "WEBSITE" section of
+               this app repo's ROADMAP.md and advance the next unchecked item there
+               (e.g. the fun, real example carousel that shows models disagreeing then
+               reaching consensus; REMOVE the weak "baking soda" example; keep a
+               cooking example). Otherwise make a tasteful polish that keeps it
+               consistent with the app's brand — emphasise the cross-model consensus
+               differentiator, clarity, polish, mobile, and a link/CTA to the app
+               (app.polecat.live) and the free demo. Do not break it. Tick the
+               ROADMAP item if you complete it.
             3. Add or update a changelog on the site (a CHANGELOG / "what's new" section or
                file) with today's date and a one-line summary of the change, and a visible
                "last updated <YYYY-MM-DD>" stamp in the footer if one isn't already present.

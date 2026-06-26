@@ -36,7 +36,7 @@ function normalize(cfg) {
   cfg.providers   = (cfg.providers && typeof cfg.providers === 'object') ? cfg.providers : {};
   cfg.selections  = Array.isArray(cfg.selections) ? cfg.selections : [];
   cfg.arbitration = (cfg.arbitration && typeof cfg.arbitration === 'object') ? cfg.arbitration : {};
-  if (!cfg.arbitration.activeId) cfg.arbitration.activeId = 'sequential';
+  if (!cfg.arbitration.activeId) cfg.arbitration.activeId = 'comprehensive';   // light single-pass default (sequential chains many calls)
   if (!cfg.arbitration.arbiter)  cfg.arbitration.arbiter = 'auto';
   if (!Array.isArray(cfg.arbitration.custom)) cfg.arbitration.custom = [];
   cfg.arbitration.provenance = cfg.arbitration.provenance !== false;   // agreement map: default ON
