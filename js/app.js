@@ -26,6 +26,7 @@ let activeTab = null;
 let history = loadHistory();         // [thread] newest-first
 let currentThread = null;           // the conversation being built/continued
 let lastConsensusText = '';         // captured per turn for history
+let lastConsensusProvenance = null; // EPIC 1 — arbiter's agreement map for the current consensus
 // live consensus progress
 let runStatus = {};                 // selectionId -> 'pending'|'streaming'|'done'|'error'
 let consensusPhase = '';            // '' | 'waiting' | 'arbitrating' | 'done'
@@ -343,7 +344,7 @@ async function sendAll() {
   const list = sels();
   if (!list.length) { openConfig('models'); return; }
 
-  lastPrompt = text; results = {}; order = []; lastConsensusText = '';
+  lastPrompt = text; results = {}; order = []; lastConsensusText = ''; lastConsensusProvenance = null;
   runStatus = {}; list.forEach(s => runStatus[s.id] = 'pending');
   consensusPhase = 'waiting'; consensusStatusText = ''; consensusStepText = '';
   $('promptInput').value = ''; $('promptInput').style.height = 'auto';
@@ -541,7 +542,17 @@ async function runConsensus() {
     step: setConsensusStep,
     showStatic: (t) => showConsensusStatic(t, false),
     fail: (t) => showConsensusStatic(t, true),
+    provenanceEnabled: cfg.arbitration.provenance !== false,
+    provenance: (data) => onProvenance(data),
   });
+}
+// EPIC 1 · P1 — receive the arbiter's machine-readable agreement map. Stored
+// here (and stamped on the consensus pair) for the upcoming provenance panel;
+// no UI yet, so it never alters the streamed answer. Degrades to null silently.
+function onProvenance(data) {
+  lastConsensusProvenance = data || null;
+  const pair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
+  if (pair) pair._provenance = lastConsensusProvenance;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -818,6 +829,7 @@ function renderArbitration() {
   const wrap = $('arbControls');
   const strat = activeStrategy(cfg);
   const on = cfg.consensus !== false;
+  const provOn = cfg.arbitration.provenance !== false;
   const editable = !strat.builtin;
 
   const stratOpts = allStrategies(cfg).map(s =>
@@ -835,6 +847,8 @@ function renderArbitration() {
       `<div class="arb-desc">${escapeHtml(strat.description || '')}</div>` +
       `<label class="mini-label">Final arbiter <span class="mini-note">model that produces the consensus</span></label><select class="field-input" id="arbiterSelect">${arbiterOpts}</select>` +
       `<div class="arb-meta">structure: <b>${escapeHtml(strat.structure)}</b> · default arbiter: <b>${escapeHtml(strat.arbiter)}</b></div>` +
+      `<label class="switch-row"><span><b>Agreement map</b><br><span class="switch-sub">After each consensus, analyze how the models agreed &amp; how much each shaped the answer</span></span>` +
+        `<span class="switch ${provOn ? 'on' : ''}" id="provSwitch" role="switch" aria-checked="${provOn}" tabindex="0"><span class="knob"></span></span></label>` +
       `<details class="arb-prompts"${editable ? ' open' : ''}><summary>Prompt template${Object.keys(strat.prompts || {}).length > 1 ? 's' : ''}</summary>${promptFields}` +
         (editable ? `<label class="arb-plabel">name</label><input class="field-input" id="arbName" value="${escapeHtml(strat.name)}">` : '') +
       `</details>` +
@@ -852,6 +866,9 @@ function renderArbitration() {
   };
   $('consensusSwitch').onclick = toggle;
   $('consensusSwitch').onkeydown = (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } };
+  const provToggle = () => { cfg.arbitration.provenance = !provOn; persist(); renderArbitration(); };
+  $('provSwitch').onclick = provToggle;
+  $('provSwitch').onkeydown = (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); provToggle(); } };
   $('arbSelect').onchange = (e) => { cfg.arbitration.activeId = e.target.value; persist(); renderArbitration(); };
   $('arbiterSelect').onchange = (e) => { cfg.arbitration.arbiter = e.target.value; persist(); };
   $('arbDup') && ($('arbDup').onclick = () => duplicateStrategy(strat));
@@ -1028,7 +1045,7 @@ function restoreThread(id) {
   cfg.selections = (t.selections || []).map(s => ({ id: s.id, provider: s.provider, model: s.model }));
   persist();
   Object.keys(convos).forEach(k => delete convos[k]);
-  results = {}; order = []; runStatus = {}; consensusPhase = ''; lastConsensusText = '';
+  results = {}; order = []; runStatus = {}; consensusPhase = ''; lastConsensusText = ''; lastConsensusProvenance = null;
   $('tabBar').innerHTML = ''; $('tabPanels').innerHTML = ''; activeTab = null;
   currentThread = t;
   buildChips();

@@ -39,6 +39,7 @@ function normalize(cfg) {
   if (!cfg.arbitration.activeId) cfg.arbitration.activeId = 'sequential';
   if (!cfg.arbitration.arbiter)  cfg.arbitration.arbiter = 'auto';
   if (!Array.isArray(cfg.arbitration.custom)) cfg.arbitration.custom = [];
+  cfg.arbitration.provenance = cfg.arbitration.provenance !== false;   // agreement map: default ON
   cfg.consensus   = cfg.consensus !== false;          // default ON
   cfg.modelStatus = (cfg.modelStatus && typeof cfg.modelStatus === 'object') ? cfg.modelStatus : {};
   cfg.ui          = (cfg.ui && typeof cfg.ui === 'object') ? cfg.ui : {};

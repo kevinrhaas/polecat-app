@@ -25,7 +25,7 @@ Polecat's signature differentiator vs single-model chat (Gemini/Claude).
 - Accessible: never color-only — pair color with labels/text.
 
 **Phases** (do roughly one per run; keep each a single focused commit)
-- [ ] **P1 — Provenance data from the arbiter.** Add an `arbitration.js` step that,
+- [x] **P1 — Provenance data from the arbiter.** Add an `arbitration.js` step that,
       after the consensus answer is produced, makes ONE extra silent arbiter call
       returning machine-readable JSON: `{ perModel:[{id,label,contributionPct,
       stance}], agreements:[...], disagreements:[{point, positions:[{model,

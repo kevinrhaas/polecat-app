@@ -3,6 +3,15 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "Groundwork for the agreement map",
+      "items": [
+        "✦ After each consensus, Polecat now quietly asks the arbiter how much each model shaped the answer and where they agreed or disagreed",
+        "New Arbitration setting — \"Agreement map\" (on by default) — to turn this analysis on or off",
+        "Runs only after your answer streams, so it never slows down the response; the visible breakdown lands next"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "Land on the consensus, watch the race live",
       "items": [
         "✦ Hit send with consensus on and you now jump straight to the Consensus tab — watch every model check in (✓/✗) in real time, then see the blended answer form",

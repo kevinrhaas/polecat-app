@@ -75,6 +75,99 @@ function fill(tpl, vars) {
 function formatAnswers(results, labelOf) {
   return results.map((r, i) => `### Answer ${i + 1} — ${labelOf(r.selection)}\n${r.text}`).join('\n\n');
 }
+
+// ── Provenance (agreement map) ──────────────────────────────────────────────
+// After the consensus answer is produced, make ONE extra silent arbiter call
+// that returns machine-readable JSON describing how each model shaped the
+// answer and where they agreed/disagreed. Never blocks or alters the streamed
+// answer; degrades to null on any failure. Gated by ctx.provenanceEnabled.
+const PROVENANCE_PROMPT =
+`You just helped synthesize ONE consensus answer to this question:
+
+"{prompt}"
+
+Here are the {n} independent model answers that were available:
+
+{answers}
+
+And here is the FINAL consensus answer that was produced:
+
+---
+{consensus}
+---
+
+Analyze, honestly and approximately, how the consensus relates to the individual answers. Reply with ONLY a JSON object (no prose, no markdown fences) of EXACTLY this shape:
+
+{
+  "perModel": [{"label": "<exact model label from above>", "contributionPct": <integer 0-100, approximate>, "stance": "<aligned|partial|outlier>"}],
+  "agreements": ["<short point most models agreed on>"],
+  "disagreements": [{"point": "<what they differed on>", "positions": [{"model": "<label>", "claim": "<their stance, short>"}]}],
+  "notable": [{"claim": "<a notable or contested claim>", "models": ["<label>"], "note": "<why it stands out, short>"}]
+}
+
+Rules:
+- Use the EXACT labels shown above. Include every model in "perModel".
+- contributionPct is approximate; values should sum to roughly 100.
+- If contribution is genuinely unclear, distribute evenly and use stance "partial".
+- Keep every string short — a phrase, not a paragraph. Use [] for arrays you cannot fill.`;
+
+// Pull a JSON object out of a model reply: tolerate ```json fences and prose.
+export function extractJson(text) {
+  if (!text) return null;
+  let t = String(text).trim();
+  const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) t = fence[1].trim();
+  const start = t.indexOf('{'), end = t.lastIndexOf('}');
+  if (start === -1 || end === -1 || end < start) return null;
+  try { return JSON.parse(t.slice(start, end + 1)); } catch { return null; }
+}
+
+// Clamp/validate the parsed object into a safe shape, mapping labels back to
+// selection ids so the UI can use brand colors. Returns null if nothing usable.
+export function normalizeProvenance(data, results, labelOf) {
+  if (!data || typeof data !== 'object') return null;
+  const out = { perModel: [], agreements: [], disagreements: [], notable: [] };
+  if (Array.isArray(data.perModel)) {
+    out.perModel = data.perModel.map((m) => {
+      const label = String(m?.label ?? '').trim();
+      const match = results.find(r => labelOf(r.selection) === label);
+      let pct = Number(m?.contributionPct);
+      if (!isFinite(pct)) pct = 0;
+      pct = Math.max(0, Math.min(100, Math.round(pct)));
+      const stance = ['aligned', 'partial', 'outlier'].includes(m?.stance) ? m.stance : 'partial';
+      return { id: match ? match.selection.id : null, label, contributionPct: pct, stance };
+    }).filter(m => m.label);
+  }
+  if (Array.isArray(data.agreements))
+    out.agreements = data.agreements.map(s => String(s).trim()).filter(Boolean).slice(0, 12);
+  if (Array.isArray(data.disagreements))
+    out.disagreements = data.disagreements.filter(d => d && d.point).map(d => ({
+      point: String(d.point).trim(),
+      positions: Array.isArray(d.positions)
+        ? d.positions.map(p => ({ model: String(p?.model ?? '').trim(), claim: String(p?.claim ?? '').trim() })).filter(p => p.model || p.claim)
+        : [],
+    })).slice(0, 12);
+  if (Array.isArray(data.notable))
+    out.notable = data.notable.filter(x => x && x.claim).map(x => ({
+      claim: String(x.claim).trim(),
+      models: Array.isArray(x.models) ? x.models.map(s => String(s).trim()).filter(Boolean) : [],
+      note: String(x?.note ?? '').trim(),
+    })).slice(0, 12);
+  if (!out.perModel.length && !out.agreements.length && !out.disagreements.length && !out.notable.length) return null;
+  return out;
+}
+
+async function maybeProvenance(ctx, arbiter, consensusText) {
+  if (!ctx.provenanceEnabled || typeof ctx.provenance !== 'function') return;
+  const { results } = ctx;
+  if (results.length < 2 || !arbiter || !consensusText) return;
+  const answers = formatAnswers(results, ctx.labelOf);
+  const msg = fill(PROVENANCE_PROMPT, { prompt: ctx.prompt, answers, n: results.length, consensus: consensusText });
+  let raw = '';
+  try { raw = await ctx.silent(arbiter, [{ role: 'user', content: msg }]); }
+  catch { ctx.provenance(null); return; }
+  ctx.provenance(normalizeProvenance(extractJson(raw), results, ctx.labelOf));
+}
 const PROV_RANK = { claude: 6, openai: 5, gemini: 4, openrouter: 3, hf: 2, groq: 1 };
 function modelPriceScore(sel) {
   const m = PROVIDERS[sel.provider]?.models.find(x => x.value === sel.model);
@@ -135,7 +228,9 @@ async function runChain(strategy, ctx) {
       try { draft = await ctx.silent(r.selection, msgs); } catch { /* keep draft */ }
     } else {
       ctx.status('Finalizing consensus…');
-      try { await ctx.stream(r.selection, msgs); } catch { ctx.showStatic(draft); }
+      let finalText = null;
+      try { finalText = await ctx.stream(r.selection, msgs); } catch { ctx.showStatic(draft); }
+      if (finalText) await maybeProvenance(ctx, r.selection, finalText);
     }
   }
 }
@@ -147,8 +242,10 @@ async function runJudge(strategy, ctx) {
   const judgePrompt = fill(strategy.prompts.judge, { prompt, answers, n: results.length });
   ctx.status('Synthesizing…');
   ctx.step(`${ctx.labelOf(arbiter)} judging`);
-  try { await ctx.stream(arbiter, [{ role: 'user', content: judgePrompt }]); }
+  let finalText = null;
+  try { finalText = await ctx.stream(arbiter, [{ role: 'user', content: judgePrompt }]); }
   catch { ctx.showStatic(results[0].text); }
+  if (finalText) await maybeProvenance(ctx, arbiter, finalText);
 }
 
 async function runDebate(strategy, ctx) {
@@ -167,8 +264,10 @@ async function runDebate(strategy, ctx) {
     { role: 'assistant', content: critique || '(no critique produced)' },
     { role: 'user', content: strategy.prompts.synth },
   ];
-  try { await ctx.stream(arbiter, msgs); }
+  let finalText = null;
+  try { finalText = await ctx.stream(arbiter, msgs); }
   catch { ctx.showStatic(results[0].text); }
+  if (finalText) await maybeProvenance(ctx, arbiter, finalText);
 }
 
 // ── Settings portability (export / import to another instance) ──────────────
@@ -183,7 +282,7 @@ export function exportSettings(cfg, { includeKeys = false } = {}) {
     includesKeys: includeKeys,
     consensus: cfg.consensus !== false,
     selections: cfg.selections || [],
-    arbitration: cfg.arbitration || { activeId: 'sequential', arbiter: 'auto', custom: [] },
+    arbitration: cfg.arbitration || { activeId: 'sequential', arbiter: 'auto', provenance: true, custom: [] },
     providers,
   }, null, 2);
 }
@@ -194,7 +293,7 @@ export function importSettings(cfg, json) {
   if (Array.isArray(data.selections))
     next.selections = data.selections.map(s => ({ id: s.id || newId(), provider: s.provider, model: s.model }));
   if (data.arbitration)
-    next.arbitration = { activeId: data.arbitration.activeId || 'sequential', arbiter: data.arbitration.arbiter || 'auto', custom: Array.isArray(data.arbitration.custom) ? data.arbitration.custom : [] };
+    next.arbitration = { activeId: data.arbitration.activeId || 'sequential', arbiter: data.arbitration.arbiter || 'auto', provenance: data.arbitration.provenance !== false, custom: Array.isArray(data.arbitration.custom) ? data.arbitration.custom : [] };
   if (typeof data.consensus === 'boolean') next.consensus = data.consensus;
   if (data.providers)
     for (const [k, v] of Object.entries(data.providers)) if (v && v.key) next.providers[k] = { key: v.key };
