@@ -48,6 +48,9 @@ jobs:
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         with:
+          # Prefer a Claude subscription token (no per-use API billing); falls
+          # back to the API key if the OAuth token secret isn't set.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: '--max-turns 80 --dangerously-skip-permissions'
           prompt: |
@@ -84,15 +87,21 @@ jobs:
             - Smooth, subtle motion and transitions; nothing janky.
 
             Do this:
-            1. Read the code to understand the current state. Then read ROADMAP.md.
+            1. Read the code to understand the current state. Then read ROADMAP.md —
+               including its "North star & standing directives", which apply to EVERY
+               change (beginner-first, clean IA, delight, mobile, innovate-not-thrash).
             2. PRIORITY: if ROADMAP.md has an epic with unchecked steps, advance the
                NEXT unchecked step of the highest-priority epic this run — a real,
-               shippable, non-breaking increment. Tick that box in ROADMAP.md. Only if
-               the roadmap is empty, or no step can be advanced safely this run, fall
-               back to ONE tightly-scoped polish (UX, delight, accessibility, mobile,
-               performance) ideally showcasing the multi-model/arbitration strength.
-               Keep it simple and elegant, match the existing style, stay 100%
-               client-side (no servers, no embedded secrets, no new tracking).
+               shippable, non-breaking increment. Tick that box in ROADMAP.md.
+               HOWEVER, every few runs (use your judgement — e.g. when the app feels
+               cluttered or inconsistent) do a "periodic best-practice pass" instead:
+               step back and reorganise/simplify menus, settings, and onboarding,
+               improve accessibility/mobile, tighten copy, and raise overall craft.
+               If the roadmap is empty or no step can be advanced safely, fall back to
+               ONE tightly-scoped polish — ideally showcasing the multi-model/
+               arbitration strength. Always: simple, elegant, match existing style,
+               100% client-side (no servers, no embedded secrets, no new tracking),
+               and never regress existing features.
             3. Implement cleanly with NO regressions to the features listed above.
             4. Sanity-check: `node --check` each edited JS file; review your diff.
             5. Prepend a new entry to `changelog.json` (newest first) describing what you

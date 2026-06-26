@@ -8,6 +8,32 @@ can be safely advanced.
 
 ---
 
+## North star & standing directives (apply judgement EVERY run)
+
+Polecat should be **world-class and visibly ahead of every competitor** — a
+simple joy to use: clean, elegant, beginner-friendly, fun, delightful, and
+genuinely innovative. Hold this bar on every change. Concretely:
+
+- **Beginner-first & guided.** Sensible defaults, gentle inline helpers/tooltips,
+  empty states that teach, no jargon. A first-timer should succeed in seconds.
+- **Clean, elegant information architecture.** Keep menus/settings well-organised
+  and uncluttered. It's OK — encouraged — to *reorganise, group, rename, or move*
+  controls when it makes things simpler and more obvious.
+- **Delight & polish.** Beautiful spacing/typography, tasteful motion, responsive
+  and flawless on desktop AND mobile, light AND dark.
+- **Lean into the differentiator.** The multi-model + consensus/arbitration story
+  is the magic — make it effortless, legible, and impressive.
+- **Innovate forward, don't thrash.** Press toward groundbreaking, genuinely new
+  capability — but evolve, don't wildly rewrite. Never regress existing features.
+
+**Periodic best-practice pass (do this every few runs, by your own judgement):**
+instead of a feature, step back and do a holistic cleanup/reorganisation —
+audit the menus/settings/onboarding, simplify and de-clutter, fix inconsistencies,
+improve accessibility & mobile, tighten copy, and raise the overall craft. Treat
+it as ongoing curation so the app keeps getting *simpler* as it gets more capable.
+
+---
+
 ## EPIC 1 — Consensus provenance & agreement map  ⭐ (highest priority)
 
 **Vision:** make the cross-model advantage *visible*. For each consensus answer,
