@@ -3,6 +3,16 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "Smarter handling of large attachments",
+      "items": [
+        "Attached files are now labelled by type (PDF, PowerPoint, Word, Excel, text) when sent to the models, so answers can reference them clearly",
+        "Several large documents at once are now kept within a shared size budget — small files stay whole while big ones are split fairly — so they never overflow a model's context window",
+        "Clear notices show when content was trimmed to fit, both in the message and on the attachment chips",
+        "The same extracted content reaches every selected model and the consensus arbiter"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "Attach PowerPoint, Word & Excel files",
       "items": [
         "You can now attach Office documents — PPTX, DOCX and XLSX — and have every model analyze them",

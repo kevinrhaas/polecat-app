@@ -273,6 +273,43 @@ function fmtBytes(n) {
   return (n / 1024 / 1024).toFixed(1) + ' MB';
 }
 
+// ── Attachment prompt-injection & budgeting (F4) ─────────────────────────────
+// Combined cap across ALL attachment text (per-file is MAX_TEXT_CHARS). ~12k
+// tokens, so several large docs can't blow the context window of smaller/free
+// models. Shared across every selected model + the arbiter.
+const MAX_TOTAL_ATTACH_CHARS = 48000;
+
+function attachTypeLabel(a) {
+  if (a.isPdf) return 'PDF';
+  if (a.office === 'pptx') return 'PowerPoint';
+  if (a.office === 'docx') return 'Word';
+  if (a.office === 'xlsx') return 'Excel';
+  return 'text';
+}
+
+// Fairly allocate the shared budget across attachments: small files keep their
+// full text; the remaining budget is split evenly among the larger ones
+// (water-fill). Returns { blocks:[{name,type,text,truncated}], budgetTrimmed }.
+function budgetAttachmentText(files) {
+  const lenOf = f => (f.textContent || '').length;
+  const total = files.reduce((s, f) => s + lenOf(f), 0);
+  if (total <= MAX_TOTAL_ATTACH_CHARS) {
+    return { budgetTrimmed: false, blocks: files.map(f => ({
+      name: f.name, type: attachTypeLabel(f), text: f.textContent || '', truncated: !!f.truncated })) };
+  }
+  const take = new Array(files.length).fill(0);
+  let remaining = MAX_TOTAL_ATTACH_CHARS, left = files.length;
+  files.map((f, i) => ({ i, len: lenOf(f) })).sort((a, b) => a.len - b.len).forEach(o => {
+    const share = Math.floor(remaining / left);
+    const t = Math.min(o.len, share);
+    take[o.i] = t; remaining -= t; left--;
+  });
+  return { budgetTrimmed: true, blocks: files.map((f, i) => ({
+    name: f.name, type: attachTypeLabel(f),
+    text: (f.textContent || '').slice(0, take[i]),
+    truncated: !!f.truncated || take[i] < lenOf(f) })) };
+}
+
 async function addFiles(fileList) {
   const all = Array.from(fileList || []);
   const ok = f => isImageFile(f) || isPdfFile(f) || isOfficeFile(f) || isTextFile(f);
@@ -383,7 +420,9 @@ function updateVisionNote() {
     const failNote = txtAtts.some(a => a.failed) ? ' <span class="vn-warn">(one couldn\'t be read — sent as a note)</span>' : '';
     const hasExtract = txtAtts.some(a => a.isPdf || a.isOffice);
     const kindWord = hasExtract ? 'extracted text' : 'text';
-    parts.push(`📄 ${n} ${fw} — ${kindWord} sent to all models.${truncNote}${failNote}`);
+    const totalChars = txtAtts.reduce((s, a) => s + ((a.textContent || '').length), 0);
+    const budgetNote = totalChars > MAX_TOTAL_ATTACH_CHARS ? ' <span class="vn-warn">(large — trimmed to fit when sent)</span>' : '';
+    parts.push(`📄 ${n} ${fw} — ${kindWord} sent to all models.${truncNote}${failNote}${budgetNote}`);
   }
   note.innerHTML = parts.join('<br>');
 }
@@ -670,14 +709,21 @@ async function sendAll() {
   const imgAtts   = readyAtts.filter(a => a.kind === 'image');
   const textFiles = readyAtts.filter(a => a.kind === 'text');
 
-  // Inject text file contents as labelled blocks prepended to the user message
+  // Fold extracted file content into labelled blocks prepended to the user
+  // message, within a shared size budget so several large docs can't blow a
+  // model's context. The same combined text goes to every selected model and,
+  // via their answers, into consensus/arbitration. (F4)
   let userText = text;
   if (textFiles.length) {
-    const blocks = textFiles.map(tf => {
-      const trunc = tf.truncated ? `\n[File truncated to ${MAX_TEXT_CHARS.toLocaleString()} characters]` : '';
-      return `<file name="${tf.name}">\n${tf.textContent}${trunc}\n</file>`;
+    const { blocks, budgetTrimmed } = budgetAttachmentText(textFiles);
+    const rendered = blocks.map(b => {
+      const trunc = b.truncated ? `\n[Content truncated to fit size limits]` : '';
+      return `<file name="${b.name}" type="${b.type}">\n${b.text}${trunc}\n</file>`;
     }).join('\n\n');
-    userText = blocks + (text ? '\n\n' + text : '');
+    const n = textFiles.length;
+    const header = `The user attached ${n} file${n > 1 ? 's' : ''}; the text extracted from ${n > 1 ? 'them' : 'it'} is included below.` +
+      (budgetTrimmed ? ' Some content was trimmed to fit a shared size budget.' : '');
+    userText = `${header}\n\n${rendered}` + (text ? '\n\n' + text : '');
   }
 
   if (!userText && !imgAtts.length) return;

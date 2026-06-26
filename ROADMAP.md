@@ -128,9 +128,14 @@ Polecat's privacy promise. (PPTX was the operator's concrete blocker — priorit
       share the capped-block budget + per-slide/-sheet progress indicator, ride the
       `kind:'text'` injection path, and degrade to a labelled note on failure. A generic
       `loadScript()` + `pushCapped()` helper now backs both F2 and F3.
-- [ ] **F4 — Prompt injection & budgeting.** Fold extracted content into the message
-      as labelled blocks ("Attached: deck.pptx" + text), shared across all selected
-      models; token-budget + truncation notice; works with consensus/arbitration.
+- [x] **F4 — Prompt injection & budgeting.** Fold extracted content into the message
+      as labelled blocks (`<file name="…" type="PDF/PowerPoint/Word/Excel/text">`) with a
+      short header, prepended to the user message and shared verbatim across every selected
+      model (and thus consensus/arbitration via their answers). Added a combined budget
+      (MAX_TOTAL_ATTACH_CHARS ≈ 48k chars / ~12k tokens) on top of the per-file cap, with a
+      fair water-fill allocation (small files kept whole, the remainder split evenly among
+      large ones) so several big docs can't blow a smaller/free model's context. Visible
+      truncation notices both in the injected text and the composer's attachment note.
 - [ ] **F5 — Native document passing — APPROVED (operator said yes to native PDF).**
       For capable providers, pass the document natively instead of extracted text:
       Anthropic PDF document blocks, Gemini inline_data application/pdf, OpenAI file
