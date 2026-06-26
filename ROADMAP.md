@@ -122,6 +122,10 @@ confusing, with a consistent icon language and zero emoji.
 ---
 
 ## Backlog (smaller, pick up anytime)
+- Onboarding/demo polish (ongoing): keep the first-run flow obvious & delightful —
+  rotating clickable example questions on the empty state (done), demo starts with
+  two fast free models + light consensus (done); next: a subtle first-time pointer
+  to the Consensus tab, and tighten the welcome tour → demo handoff.
 - **README.md** for the repo (currently missing): what Polecat is, the
   cross-model + consensus/arbitration differentiator, BYOK + zero-config free
   demo, the Cloudflare proxy, privacy (100% in-browser), the hourly self-improve

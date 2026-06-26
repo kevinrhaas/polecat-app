@@ -339,6 +339,51 @@ async function streamTo(sel, userContent, images) {
 function hideGreeting() { $('chatGreeting')?.classList.add('hidden'); }
 function showGreeting() { const g = $('chatGreeting'); if (g && !document.querySelector('.tab')) g.classList.remove('hidden'); }
 
+// Rotating, clickable example questions — show how it works at a glance.
+const SUGGESTIONS = [
+  "What's the all-time best Beatles song? Pick just one.",
+  "What is the most significant event in US history? Choose only one.",
+  "Best first programming language to learn in 2026?",
+  "Most underrated, best-value, most-fun travel spot — pick one.",
+  "Who is the single greatest athlete of all time?",
+  "What's the secret to extra-crispy roast potatoes?",
+  "Is a hot dog a sandwich? Decide.",
+  "Best sci-fi movie ever made — one pick.",
+  "Coffee or tea — settle it for good.",
+  "What's the most important habit for a longer, healthier life?",
+  "Greatest video game of all time?",
+  "Explain quantum entanglement like I'm 12.",
+];
+let _sugTimer = null;
+function pickRandom(arr, n) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a.slice(0, n);
+}
+function fillPrompt(q) {
+  const t = $('promptInput'); if (!t) return;
+  t.value = q; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 200) + 'px';
+  updateSendEnabled(); t.focus();
+}
+function renderSuggestions() {
+  const wrap = $('cgSuggest'); if (!wrap) return;
+  wrap.innerHTML = pickRandom(SUGGESTIONS, 4)
+    .map(q => `<button class="cg-chip" data-q="${escapeHtml(q)}">${escapeHtml(q)}</button>`).join('');
+  wrap.querySelectorAll('.cg-chip').forEach(b => b.onclick = () => fillPrompt(b.dataset.q));
+}
+function startSuggestionRotation() {
+  if (_sugTimer) { clearInterval(_sugTimer); _sugTimer = null; }
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;   // randomize once, don't auto-rotate
+  _sugTimer = setInterval(() => {
+    const g = $('chatGreeting');
+    if (!g || g.classList.contains('hidden')) return;            // only while the greeting is visible
+    if (($('promptInput')?.value || '').trim()) return;          // don't swap mid-typing
+    const wrap = $('cgSuggest'); if (!wrap) return;
+    wrap.style.opacity = '0';
+    setTimeout(() => { renderSuggestions(); wrap.style.opacity = ''; }, 220);
+  }, 7000);
+}
+
 // ── Broadcast ───────────────────────────────────────────────────────────────
 async function sendAll() {
   const text = $('promptInput').value.trim();
@@ -780,21 +825,29 @@ function openConfig(tab) {
 }
 function closeConfig() { $('configModal').classList.remove('open'); }
 
-// One-tap free demo: make sure a keyless demo model is selected, then drop the
-// user straight into the chat box ready to send.
+// One-tap free demo: select TWO fast, free models + a light consensus so the
+// cross-model magic is obvious, then keep the clickable example questions up.
+const DEMO_STARTER_MODELS = ['meta-llama/llama-3.3-70b-instruct:free', 'google/gemma-4-31b-it:free'];
 function startFreeDemo() {
   if (!PROVIDERS.demo) return;
-  const have = (cfg.selections || []).some(s => s.provider === 'demo');
-  if (!have) {
-    if ((cfg.selections || []).length >= MAX_SELECTIONS) { toast(`Remove a model first (max ${MAX_SELECTIONS})`); openConfig('models'); return; }
-    (cfg.selections = cfg.selections || []).push(mkSelection('demo', defaultModel('demo')));
-    persist();
+  cfg.selections = cfg.selections || [];
+  for (const m of DEMO_STARTER_MODELS) {
+    if (cfg.selections.length >= MAX_SELECTIONS) break;
+    if (!cfg.selections.some(s => s.provider === 'demo' && s.model === m)) cfg.selections.push(mkSelection('demo', m));
   }
+  if (!cfg.selections.some(s => s.provider === 'demo')) {   // safety: ensure at least one demo model
+    if (cfg.selections.length >= MAX_SELECTIONS) { toast(`Remove a model first (max ${MAX_SELECTIONS})`); openConfig('models'); return; }
+    cfg.selections.push(mkSelection('demo', defaultModel('demo')));
+  }
+  cfg.consensus = true;                       // show the consensus so it's obvious how it works
+  persist();
   closeConfig(); closeSidebar();
   localStorage.setItem(WELCOME_KEY, '1'); $('welcomeOverlay')?.classList.remove('open');
-  buildChips(); hideGreeting();
+  const t = $('cgTry'); if (t) t.hidden = true;
+  const hint = $('cgHint'); if (hint) hint.hidden = false;
+  buildChips(); showGreeting(); renderSuggestions();        // keep the example questions visible
   $('promptInput').focus();
-  toast('Free demo ready — type a question and hit send ✨');
+  toast('Free demo ready — pick a question below or type your own ✨');
 }
 
 // ── Models tab ──────────────────────────────────────────────────────────────
@@ -1369,19 +1422,17 @@ function init() {
     for (const it of items) { if (it.kind === 'file' && it.type.startsWith('image/')) { const f = it.getAsFile(); if (f) files.push(f); } }
     if (files.length) { e.preventDefault(); addFiles(files); }
   });
-  // Greeting quick-start suggestions → fill the box and focus
-  document.querySelectorAll('#cgSuggest .cg-chip').forEach(b => b.onclick = () => {
-    const t = $('promptInput'); t.value = b.dataset.q;
-    t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 200) + 'px';
-    updateSendEnabled(); t.focus();
-  });
+  // Greeting quick-start suggestions → rotating, clickable example questions.
+  renderSuggestions();
+  startSuggestionRotation();
   // Free-demo CTA (greeting). Hidden if the demo is disabled or already in use.
   const cgTry = $('cgTry');
+  const demoActive = !!PROVIDERS.demo && (cfg.selections || []).some(s => s.provider === 'demo');
   if (cgTry) {
-    const demoActive = !!PROVIDERS.demo && (cfg.selections || []).some(s => s.provider === 'demo');
     cgTry.hidden = !PROVIDERS.demo || demoActive;
     cgTry.onclick = startFreeDemo;
   }
+  { const hint = $('cgHint'); if (hint) hint.hidden = !demoActive; }   // show "pick a question" once demo is active
 
   // Image lightbox — click any thumbnail to view full-size
   const openLightbox = (src, alt) => { const lb = $('lightbox'); $('lightboxImg').src = src; $('lightboxImg').alt = alt || ''; lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false'); };

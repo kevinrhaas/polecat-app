@@ -3,6 +3,14 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "A friendlier free start",
+      "items": [
+        "The welcome screen now shows rotating, clickable example questions — tap one to try it instantly",
+        "\"Try it free\" now starts with two fast free models and a consensus, so you immediately see the cross-model magic"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "See which model wrote which part",
       "items": [
         "✦ New \"Highlight source models\" button on every consensus answer — tap it to color each paragraph by which model it came from",

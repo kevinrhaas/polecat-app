@@ -95,7 +95,9 @@ header {
 .cg-try { font-family: inherit; font-size: 14px; font-weight: 700; color: #fff; background: linear-gradient(120deg, #10b981, #0ea5e9); border: none; border-radius: 100px; padding: 11px 22px; cursor: pointer; box-shadow: 0 6px 22px color-mix(in srgb, #10b981 35%, transparent); transition: transform .12s, box-shadow .12s, opacity .12s; }
 .cg-try:hover { transform: translateY(-1px); box-shadow: 0 8px 28px color-mix(in srgb, #10b981 45%, transparent); }
 .cg-try[hidden] { display: none; }
-.cg-suggest { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 520px; margin-top: 6px; }
+.cg-suggest { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 520px; margin-top: 6px; transition: opacity .22s ease; }
+.cg-hint { font-size: 12.5px; color: var(--text-3); margin-top: 4px; }
+.cg-hint[hidden] { display: none; }
 .cg-chip { font-family: inherit; font-size: 12.5px; color: var(--text-2); background: var(--surface-2); border: 1px solid var(--border); border-radius: 100px; padding: 8px 14px; cursor: pointer; transition: transform .12s, border-color .12s, color .12s, background .12s; }
 .cg-chip:hover { color: var(--text); border-color: var(--brand-b); background: color-mix(in srgb, var(--brand-b) 9%, var(--surface-2)); transform: translateY(-1px); }
 
