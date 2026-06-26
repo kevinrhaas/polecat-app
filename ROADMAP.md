@@ -107,7 +107,7 @@ confusing, with a consistent icon language and zero emoji.
 
 ## WEBSITE (kevinrhaas/polecat) — the loop's Part 2 should advance these too
 
-- [ ] **Fun, real example carousel.** Build it from the operator-curated REAL
+- [x] **Fun, real example carousel.** Build it from the operator-curated REAL
       content in `website/examples.json` (6 examples: cooking, history, music,
       coding, travel, sports — each with the prompt, 2–3 differing model takes,
       and the consensus). Render as **uniform, brand-matched cards** (same frame/
