@@ -3,6 +3,15 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "A measured agreement signal, no extra calls",
+      "items": [
+        "✦ Polecat now measures how much each model's wording actually overlaps the consensus, straight from the text — free, no extra model call",
+        "Cross-checks the arbiter's contribution estimates against this measurement and flags where they disagree",
+        "Acts as a graceful fallback so the breakdown still appears even if the arbiter analysis is unavailable"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "Groundwork for the agreement map",
       "items": [
         "✦ After each consensus, Polecat now quietly asks the arbiter how much each model shaped the answer and where they agreed or disagreed",

@@ -157,16 +157,123 @@ export function normalizeProvenance(data, results, labelOf) {
   return out;
 }
 
+// ── EPIC 1 · P2 — Local agreement signal (no extra cost) ────────────────────
+// Measure agreement straight from the raw answer text — pairwise shingle Jaccard
+// between every model pair, and how much of the final consensus each model's
+// wording covers. Pure & cheap (no model call). Used two ways: as a *fallback*
+// when the arbiter's JSON is missing, and to *cross-check* the arbiter's
+// approximate contribution percentages with a measured number.
+const STOP = new Set(('the a an and or but of to in on at for with as by is are was were be been being it ' +
+  'its this that these those i you he she we they them his her their our your my me do does did have has had ' +
+  'not no so if then than from up out about into over after will would can could should may might just also').split(' '));
+
+function contentTokens(text) {
+  return (String(text || '').toLowerCase().match(/[a-z0-9]+/g) || []).filter(w => w.length > 2 && !STOP.has(w));
+}
+// Bigram shingles capture phrasing overlap, not just shared vocabulary.
+function shingleSet(toks, n = 2) {
+  const set = new Set();
+  if (toks.length < n) { toks.forEach(t => set.add(t)); return set; }
+  for (let i = 0; i <= toks.length - n; i++) set.add(toks.slice(i, i + n).join(' '));
+  return set;
+}
+function jaccard(a, b) {
+  if (!a.size || !b.size) return 0;
+  let inter = 0; for (const x of a) if (b.has(x)) inter++;
+  return inter / (a.size + b.size - inter);
+}
+function containment(part, whole) { // fraction of `whole` covered by `part`
+  if (!whole.size) return 0;
+  let inter = 0; for (const x of whole) if (part.has(x)) inter++;
+  return inter / whole.size;
+}
+function stanceFromSignal(centrality, avg) {
+  if (avg <= 0) return 'partial';
+  if (centrality >= avg * 1.15) return 'aligned';
+  if (centrality <= avg * 0.6)  return 'outlier';
+  return 'partial';
+}
+
+// Returns { perModel:[{id,label,overlap,centrality,contributionPct}],
+//           pairwise:[{a,b,similarity}], avgSimilarity } or null (< 2 models).
+export function computeLocalAgreement(results, consensusText, labelOf) {
+  if (!Array.isArray(results) || results.length < 2) return null;
+  const models = results.map(r => ({
+    id: r.selection.id, label: labelOf(r.selection), sh: shingleSet(contentTokens(r.text)),
+  }));
+  const pairwise = [];
+  let simSum = 0;
+  for (let i = 0; i < models.length; i++)
+    for (let j = i + 1; j < models.length; j++) {
+      const similarity = jaccard(models[i].sh, models[j].sh);
+      pairwise.push({ a: models[i].label, b: models[j].label, similarity });
+      simSum += similarity;
+    }
+  const avgSimilarity = pairwise.length ? simSum / pairwise.length : 0;
+  const consSh = shingleSet(contentTokens(consensusText));
+  const perModel = models.map(m => {
+    const overlap = containment(m.sh, consSh);          // how much of the consensus this model's text covers
+    let aSum = 0, aN = 0;                                // mean similarity to the other models → "centrality"
+    for (const p of pairwise) if (p.a === m.label || p.b === m.label) { aSum += p.similarity; aN++; }
+    return { id: m.id, label: m.label, overlap, centrality: aN ? aSum / aN : 0 };
+  });
+  const totalOverlap = perModel.reduce((s, m) => s + m.overlap, 0);
+  perModel.forEach(m => {
+    m.contributionPct = totalOverlap > 0
+      ? Math.round((m.overlap / totalOverlap) * 100)
+      : Math.round(100 / perModel.length);
+  });
+  return { perModel, pairwise, avgSimilarity };
+}
+
+// Build a provenance object purely from the local signal — used when the
+// arbiter call fails or returns nothing parseable. Honest: no fabricated
+// agreements/disagreements, just the measured contribution + stance.
+export function provenanceFromLocal(local) {
+  if (!local || !local.perModel.length) return null;
+  return {
+    perModel: local.perModel.map(m => ({
+      id: m.id, label: m.label, contributionPct: m.contributionPct,
+      stance: stanceFromSignal(m.centrality, local.avgSimilarity),
+      localPct: m.contributionPct, overlap: m.overlap, mismatch: false,
+    })),
+    agreements: [], disagreements: [], notable: [],
+    agreementSignal: local.avgSimilarity, pairwise: local.pairwise, source: 'local',
+  };
+}
+
+// Fold the measured signal into an arbiter-produced provenance object so the UI
+// can show measured agreement next to the arbiter's approximate split, and flag
+// per-model where the two diverge a lot. Mutates & returns `prov`.
+export function mergeLocalSignal(prov, local) {
+  if (!prov) return null;
+  if (!local) { prov.source = 'arbiter'; return prov; }
+  prov.agreementSignal = local.avgSimilarity;
+  prov.pairwise = local.pairwise;
+  prov.source = 'arbiter';
+  const byLabel = new Map(local.perModel.map(m => [m.label, m]));
+  prov.perModel.forEach(m => {
+    const lm = byLabel.get(m.label);
+    if (!lm) return;
+    m.localPct = lm.contributionPct;
+    m.overlap = lm.overlap;
+    m.mismatch = Math.abs(m.contributionPct - lm.contributionPct) >= 25;  // arbiter vs measured
+  });
+  return prov;
+}
+
 async function maybeProvenance(ctx, arbiter, consensusText) {
   if (!ctx.provenanceEnabled || typeof ctx.provenance !== 'function') return;
   const { results } = ctx;
   if (results.length < 2 || !arbiter || !consensusText) return;
+  const local = computeLocalAgreement(results, consensusText, ctx.labelOf);
   const answers = formatAnswers(results, ctx.labelOf);
   const msg = fill(PROVENANCE_PROMPT, { prompt: ctx.prompt, answers, n: results.length, consensus: consensusText });
   let raw = '';
   try { raw = await ctx.silent(arbiter, [{ role: 'user', content: msg }]); }
-  catch { ctx.provenance(null); return; }
-  ctx.provenance(normalizeProvenance(extractJson(raw), results, ctx.labelOf));
+  catch { ctx.provenance(provenanceFromLocal(local)); return; }
+  const arb = normalizeProvenance(extractJson(raw), results, ctx.labelOf);
+  ctx.provenance(arb ? mergeLocalSignal(arb, local) : provenanceFromLocal(local));
 }
 const PROV_RANK = { claude: 6, openai: 5, gemini: 4, openrouter: 3, hf: 2, groq: 1 };
 function modelPriceScore(sel) {

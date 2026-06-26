@@ -33,7 +33,7 @@ Polecat's signature differentiator vs single-model chat (Gemini/Claude).
       fenced ```json, extra prose, or failure → null). Expose it to app.js via the
       arbitration ctx without changing the streamed answer. Gate behind a setting
       (default on) so it can be disabled.
-- [ ] **P2 — Local agreement signal (no extra cost).** In a small helper, compute
+- [x] **P2 — Local agreement signal (no extra cost).** In a small helper, compute
       pairwise similarity among the raw model answers (token/shingle Jaccard) and
       a rough per-model overlap with the final consensus text. Use as a fallback
       when the arbiter JSON is missing, and to cross-check its percentages.
