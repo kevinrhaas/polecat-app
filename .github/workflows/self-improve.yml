@@ -71,6 +71,18 @@ jobs:
             asking many models at once and making cross-model consensus/arbitration
             effortless and delightful. Favour that angle when choosing improvements.
 
+            Polish targets (match the feel of Gemini's web/mobile app, an explicit
+            benchmark — without losing the multi-model identity):
+            - A warm, well-centred greeting + logo on the empty state; consider a
+              friendly headline like Gemini's "what's on your mind?".
+            - Responsive, comfortable sizing on both desktop and mobile (readable
+              max-widths, generous spacing, large tap targets).
+            - The composer should feel great: auto-growing input, clear send affordance.
+            - Reading while streaming must stay comfortable — the user's question stays
+              pinned near the top and the answer grows below it (already implemented via
+              scrollPairToTop; keep this behaviour, don't regress to auto-scroll-to-bottom).
+            - Smooth, subtle motion and transitions; nothing janky.
+
             Do this:
             1. Read the code to understand the current state.
             2. Choose ONE (or a few tightly-related) high-value improvements — UX polish,

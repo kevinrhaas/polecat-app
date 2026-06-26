@@ -244,6 +244,14 @@ function switchTab(id) {
 // ── Stream a response into a tab ────────────────────────────────────────────
 // Keep a conversation scrolled to the newest message (bottom).
 function scrollBottom(conv) { if (conv) conv.scrollTop = conv.scrollHeight; }
+// Gemini-style: bring the start of a new exchange to the top of the viewport so
+// the answer reads top-down below the question instead of the view glueing to
+// the bottom and yanking on every streamed token.
+function scrollPairToTop(conv, pair) {
+  if (!conv || !pair) return;
+  const delta = pair.getBoundingClientRect().top - conv.getBoundingClientRect().top;
+  conv.scrollTop += delta - 8;
+}
 // Thumbnails / file chips for image attachments on a user message.
 function attachThumbsHtml(images) {
   if (!images || !images.length) return '';
@@ -294,7 +302,7 @@ async function streamTo(sel, userContent, images) {
   $('empty_' + sel.id)?.remove();
 
   const pair = assistantPair(selectionLabel(sel), userContent, images);
-  conv.appendChild(pair); scrollBottom(conv);
+  conv.appendChild(pair); scrollPairToTop(conv, pair);
   const bubble = pair.querySelector('.msg.assistant .msg-bubble');
 
   const dot = $('tdot_' + sel.id); dot?.classList.add('loading');
@@ -304,7 +312,9 @@ async function streamTo(sel, userContent, images) {
   try {
     const gen = makeGen(sel, co, cfg);
     bubble.innerHTML = '';
-    for await (const chunk of gen) { full += chunk; bubble.innerHTML = renderMarkdown(full); scrollBottom(conv); }
+    // Don't auto-follow while streaming — the question is pinned to the top and
+    // the answer grows below it, so the reader keeps their place (Gemini-style).
+    for await (const chunk of gen) { full += chunk; bubble.innerHTML = renderMarkdown(full); }
     finishBubble(pair, full);
     if (full) setMsgTime(pair, performance.now() - t0);
     co.push({ role: 'assistant', content: full });
@@ -485,12 +495,12 @@ async function streamToConsensus(sel, messages) {
   const conv = $('conv_consensus');
   consensusPhase = 'done'; $('consensus-progress')?.remove(); $('empty_consensus')?.remove();
   const pair = assistantPair('Consensus', lastPrompt);
-  conv.appendChild(pair); scrollBottom(conv);
+  conv.appendChild(pair); scrollPairToTop(conv, pair);
   const bubble = pair.querySelector('.msg.assistant .msg-bubble');
   let full = '';
   bubble.innerHTML = '';
   const t0 = performance.now();
-  for await (const chunk of makeGen(sel, messages, cfg)) { full += chunk; bubble.innerHTML = renderMarkdown(full); scrollBottom(conv); }
+  for await (const chunk of makeGen(sel, messages, cfg)) { full += chunk; bubble.innerHTML = renderMarkdown(full); }
   finishBubble(pair, full);
   if (full) {
     setMsgTime(pair, performance.now() - t0);

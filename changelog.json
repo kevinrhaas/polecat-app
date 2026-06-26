@@ -3,6 +3,13 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "Easier to read answers as they stream",
+      "items": [
+        "Your question now stays pinned to the top while the answer grows below it — no more jumping around while results come in"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "See what went into every consensus",
       "items": [
         "✦ Each consensus answer now shows the models it was blended from, with the arbiter marked ⚖️",
