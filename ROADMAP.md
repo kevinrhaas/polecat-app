@@ -115,7 +115,7 @@ Polecat's privacy promise. (PPTX was the operator's concrete blocker — priorit
       is read and injected as text immediately.
 - [x] **F2 — PDF text extraction** via pdf.js (lazy CDN); inject text with light page
       markers; cap length.
-- [ ] **F3 — Office docs** (PPTX first, then DOCX, XLSX) via in-browser unzip
+- [x] **F3 — Office docs** (PPTX first, then DOCX, XLSX) via in-browser unzip
       (JSZip) / mammoth / SheetJS — extract slide/sheet/doc text.
 - [ ] **F4 — Prompt injection & budgeting.** Fold extracted content into the message
       as labelled blocks ("Attached: deck.pptx" + text), shared across all selected

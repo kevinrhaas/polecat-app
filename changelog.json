@@ -3,6 +3,19 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "Office document support (PPTX, DOCX, XLSX)",
+      "items": [
+        "Attach PowerPoint (.pptx), Word (.docx), and Excel (.xlsx/.xls) files — text is extracted in-browser and sent to all models",
+        "PPTX: slide text extracted slide-by-slide with [Slide N] markers; live progress shown while extracting",
+        "DOCX: full document text extracted via mammoth.js loaded on demand from CDN",
+        "XLSX/XLS: all sheet data extracted as CSV with [Sheet: name] headers via SheetJS",
+        "Libraries are lazy-loaded (only downloaded when you first attach that file type) so the app stays fast",
+        "Office docs get a 10 MB size limit; chips show slide count, sheet count, or file size at a glance",
+        "Nothing is uploaded — extraction happens entirely in-browser, matching Polecat's privacy promise"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "PDF text extraction",
       "items": [
         "You can now attach PDF files — text is extracted page-by-page in your browser and sent to all models",

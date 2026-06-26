@@ -65,6 +65,7 @@ const MAX_ATTACH = 5;
 const MAX_ATTACH_BYTES = 8 * 1024 * 1024;       // ~8MB per image
 const MAX_TEXT_ATTACH_BYTES = 5 * 1024 * 1024;  // 5MB per text file (before reading)
 const MAX_TEXT_CHARS = 20000;                    // chars to inject per file (~5k tokens)
+const MAX_OFFICE_ATTACH_BYTES = 10 * 1024 * 1024; // 10 MB for office documents
 
 const _TEXT_TYPES = new Set(['text/plain','text/markdown','text/csv','text/javascript',
   'text/typescript','application/json','text/html','text/css','text/x-python',
@@ -81,6 +82,26 @@ function isPdfFile(f) {
   if (f.type === 'application/pdf') return true;
   const ext = ((f.name || '').split('.').pop() || '').toLowerCase();
   return ext === 'pdf';
+}
+function isPptxFile(f) {
+  if (f.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') return true;
+  return ((f.name || '').split('.').pop() || '').toLowerCase() === 'pptx';
+}
+function isDocxFile(f) {
+  if (f.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') return true;
+  return ((f.name || '').split('.').pop() || '').toLowerCase() === 'docx';
+}
+function isXlsxFile(f) {
+  if (f.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') return true;
+  const ext = ((f.name || '').split('.').pop() || '').toLowerCase();
+  return ext === 'xlsx' || ext === 'xls';
+}
+function isOfficeFile(f) { return isPptxFile(f) || isDocxFile(f) || isXlsxFile(f); }
+function officeDocType(f) {
+  if (isPptxFile(f)) return 'pptx';
+  if (isDocxFile(f)) return 'docx';
+  if (isXlsxFile(f)) return 'xlsx';
+  return null;
 }
 
 // Lazy-load pdf.js from CDN only when a PDF is first attached.
@@ -124,6 +145,81 @@ async function readPdfFile(file, id, onProgress) {
     kind: 'text', size: file.size, textContent: text, truncated, pageCount: total };
 }
 
+// Lazy-load office document parsing libraries from CDN only when first needed.
+function _mkLoader(url, globalName) {
+  let p = null;
+  return () => {
+    if (p) return p;
+    p = new Promise((resolve, reject) => {
+      if (window[globalName]) { resolve(window[globalName]); return; }
+      const s = document.createElement('script'); s.src = url;
+      s.onload  = () => { if (window[globalName]) resolve(window[globalName]); else reject(new Error(globalName + ' did not initialise')); };
+      s.onerror = () => { p = null; reject(new Error('Could not load ' + globalName + ' library — check your connection')); };
+      document.head.appendChild(s);
+    });
+    return p;
+  };
+}
+const loadJsZip   = _mkLoader('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js', 'JSZip');
+const loadMammoth = _mkLoader('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js', 'mammoth');
+const loadSheetJs = _mkLoader('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
+
+async function readPptxFile(file, id, onProgress) {
+  const JSZip = await loadJsZip();
+  const buf   = await file.arrayBuffer();
+  const zip   = await JSZip.loadAsync(buf);
+  const slideFiles = Object.keys(zip.files)
+    .filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))
+    .sort((a, b) => parseInt(a.match(/slide(\d+)\.xml$/)[1]) - parseInt(b.match(/slide(\d+)\.xml$/)[1]));
+  const total = slideFiles.length;
+  let text = '', truncated = false;
+  const decodeXml = s => s.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+  for (let i = 0; i < slideFiles.length; i++) {
+    if (text.length >= MAX_TEXT_CHARS) { truncated = true; break; }
+    const xml = await zip.files[slideFiles[i]].async('string');
+    const slideText = (xml.match(/<a:t[^>]*>([^<]*)<\/a:t>/g) || [])
+      .map(m => decodeXml(m.replace(/<[^>]+>/g, ''))).filter(s => s.trim()).join(' ');
+    const chunk = `[Slide ${i + 1}]\n${slideText}\n\n`;
+    const remaining = MAX_TEXT_CHARS - text.length;
+    if (chunk.length > remaining) { text += chunk.slice(0, remaining); truncated = true; break; }
+    text += chunk;
+    if (onProgress) onProgress(Math.round(((i + 1) / total) * 100));
+  }
+  return { id, name: file.name || 'presentation.pptx',
+    mime: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    kind: 'text', size: file.size, textContent: text, truncated, slideCount: total, docType: 'pptx' };
+}
+
+async function readDocxFile(file, id) {
+  const mammoth = await loadMammoth();
+  const buf = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer: buf });
+  let text = result.value || '';
+  const truncated = text.length > MAX_TEXT_CHARS;
+  if (truncated) text = text.slice(0, MAX_TEXT_CHARS);
+  return { id, name: file.name || 'document.docx',
+    mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    kind: 'text', size: file.size, textContent: text, truncated, docType: 'docx' };
+}
+
+async function readXlsxFile(file, id) {
+  const XLSX = await loadSheetJs();
+  const buf  = new Uint8Array(await file.arrayBuffer());
+  const wb   = XLSX.read(buf, { type: 'array' });
+  let text = '', truncated = false;
+  for (const sheetName of wb.SheetNames) {
+    if (text.length >= MAX_TEXT_CHARS) { truncated = true; break; }
+    const csv = XLSX.utils.sheet_to_csv(wb.Sheets[sheetName], { blankrows: false });
+    const chunk = `[Sheet: ${sheetName}]\n${csv}\n\n`;
+    const remaining = MAX_TEXT_CHARS - text.length;
+    if (chunk.length > remaining) { text += chunk.slice(0, remaining); truncated = true; break; }
+    text += chunk;
+  }
+  return { id, name: file.name || 'spreadsheet.xlsx',
+    mime: file.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    kind: 'text', size: file.size, textContent: text, truncated, sheetCount: wb.SheetNames.length, docType: 'xlsx' };
+}
+
 function readImageFile(file, id) {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
@@ -160,21 +256,25 @@ function fmtBytes(n) {
 
 async function addFiles(fileList) {
   const all = Array.from(fileList || []);
-  const accepted = all.filter(f => isImageFile(f) || isTextFile(f) || isPdfFile(f));
-  const rejected = all.filter(f => !isImageFile(f) && !isTextFile(f) && !isPdfFile(f));
+  const accepted = all.filter(f => isImageFile(f) || isTextFile(f) || isPdfFile(f) || isOfficeFile(f));
+  const rejected = all.filter(f => !isImageFile(f) && !isTextFile(f) && !isPdfFile(f) && !isOfficeFile(f));
   if (rejected.length) toast(`Unsupported: ${rejected.map(f => '"' + f.name + '"').join(', ')}`);
 
   for (const f of accepted) {
     if (attachments.length >= MAX_ATTACH) { toast(`Up to ${MAX_ATTACH} attachments`); break; }
-    const isImg = isImageFile(f);
-    const isPdf = isPdfFile(f);
-    const limit = isImg ? MAX_ATTACH_BYTES : MAX_TEXT_ATTACH_BYTES;
-    if (f.size > limit) { toast(`"${f.name}" is too large (max ${isImg ? '8' : '5'} MB)`); continue; }
+    const isImg    = isImageFile(f);
+    const isPdf    = isPdfFile(f);
+    const isOffice = isOfficeFile(f);
+    const docType  = isOffice ? officeDocType(f) : null;
+    const limit    = isImg ? MAX_ATTACH_BYTES : isOffice ? MAX_OFFICE_ATTACH_BYTES : MAX_TEXT_ATTACH_BYTES;
+    const limitMB  = isImg ? '8' : isOffice ? '10' : '5';
+    if (f.size > limit) { toast(`"${f.name}" is too large (max ${limitMB} MB)`); continue; }
 
     // Add pending placeholder so the chip appears immediately with a spinner
     const id = 'a' + Date.now().toString(36) + (_attc++).toString(36);
     attachments.push({ id, name: f.name, mime: isPdf ? 'application/pdf' : f.type,
-      kind: isImg ? 'image' : 'text', pending: true, size: f.size });
+      kind: isImg ? 'image' : 'text', pending: true, size: f.size,
+      ...(docType ? { docType } : {}) });
     renderAttachments(); updateSendEnabled();
 
     try {
@@ -186,6 +286,15 @@ async function addFiles(fileList) {
           const idx = attachments.findIndex(a => a.id === id);
           if (idx >= 0) { attachments[idx].progress = pct; renderAttachments(); }
         });
+      } else if (isPptxFile(f)) {
+        att = await readPptxFile(f, id, (pct) => {
+          const idx = attachments.findIndex(a => a.id === id);
+          if (idx >= 0) { attachments[idx].progress = pct; renderAttachments(); }
+        });
+      } else if (isDocxFile(f)) {
+        att = await readDocxFile(f, id);
+      } else if (isXlsxFile(f)) {
+        att = await readXlsxFile(f, id);
       } else {
         att = await readTextFile(f, id);
       }
@@ -212,18 +321,25 @@ function renderAttachments() {
       return `<div class="attach-thumb" title="${escapeHtml(a.name)}"><img src="${a.dataUrl}" alt="${escapeHtml(a.name)}">` +
         `<button class="at-x" data-id="${a.id}" title="Remove" aria-label="Remove ${escapeHtml(a.name)}">×</button></div>`;
     }
-    // text / PDF file chip
+    // text / PDF / office file chip
     if (a.pending) {
       const pctLabel = a.progress != null ? `${a.progress}%` : '';
-      const verb = a.mime === 'application/pdf' ? 'Extracting' : 'Reading';
+      const verb = (a.mime === 'application/pdf' || a.docType) ? 'Extracting' : 'Reading';
       return `<div class="attach-file-chip pending" title="${verb} ${escapeHtml(a.name)}…">` +
         `<span class="afc-spinner"></span><span class="afc-name">${escapeHtml(a.name)}</span>` +
         (pctLabel ? `<span class="afc-size">${pctLabel}</span>` : '') +
         `</div>`;
     }
-    const metaLabel = a.mime === 'application/pdf' && a.pageCount ? `${a.pageCount}p` : fmtBytes(a.size);
-    const tipText   = a.mime === 'application/pdf' && a.pageCount
+    const metaLabel = a.mime === 'application/pdf' && a.pageCount ? `${a.pageCount}p`
+      : a.docType === 'pptx' && a.slideCount != null ? `${a.slideCount} slides`
+      : a.docType === 'xlsx' && a.sheetCount != null ? `${a.sheetCount} sheets`
+      : fmtBytes(a.size);
+    const tipText = a.mime === 'application/pdf' && a.pageCount
       ? `${escapeHtml(a.name)} · ${a.pageCount} pages extracted${a.truncated ? ' (truncated)' : ''}`
+      : a.docType === 'pptx' && a.slideCount != null
+      ? `${escapeHtml(a.name)} · ${a.slideCount} slides extracted${a.truncated ? ' (truncated)' : ''}`
+      : a.docType === 'xlsx' && a.sheetCount != null
+      ? `${escapeHtml(a.name)} · ${a.sheetCount} sheets extracted${a.truncated ? ' (truncated)' : ''}`
       : `${escapeHtml(a.name)} · ${fmtBytes(a.size)}`;
     return `<div class="attach-file-chip" title="${tipText}">${DOC_ICON}<span class="afc-name">${escapeHtml(a.name)}</span><span class="afc-size">${metaLabel}</span>` +
       `<button class="at-x" data-id="${a.id}" title="Remove" aria-label="Remove ${escapeHtml(a.name)}">×</button></div>`;
@@ -239,9 +355,10 @@ function visionSplit() {
 function updateVisionNote() {
   const note = $('visionNote'); if (!note) return;
   const imgAtts = attachments.filter(a => a.kind === 'image' && !a.pending);
-  const pdfAtts = attachments.filter(a => a.kind === 'text' && !a.pending && a.mime === 'application/pdf');
-  const txtAtts = attachments.filter(a => a.kind === 'text' && !a.pending && a.mime !== 'application/pdf');
-  if (!imgAtts.length && !pdfAtts.length && !txtAtts.length) { note.hidden = true; note.innerHTML = ''; return; }
+  const pdfAtts    = attachments.filter(a => a.kind === 'text' && !a.pending && a.mime === 'application/pdf');
+  const officeAtts = attachments.filter(a => a.kind === 'text' && !a.pending && ['pptx','docx','xlsx'].includes(a.docType));
+  const txtAtts    = attachments.filter(a => a.kind === 'text' && !a.pending && a.mime !== 'application/pdf' && !['pptx','docx','xlsx'].includes(a.docType));
+  if (!imgAtts.length && !pdfAtts.length && !officeAtts.length && !txtAtts.length) { note.hidden = true; note.innerHTML = ''; return; }
   note.hidden = false;
   const parts = [];
   if (imgAtts.length) {
@@ -256,6 +373,11 @@ function updateVisionNote() {
     const n = pdfAtts.length, fw = n === 1 ? 'PDF' : 'PDFs';
     const truncNote = pdfAtts.some(a => a.truncated) ? ' <span class="vn-warn">(some truncated to 20 k chars)</span>' : '';
     parts.push(`📄 ${n} ${fw} — text extracted in-browser and sent to all models.${truncNote}`);
+  }
+  if (officeAtts.length) {
+    const n = officeAtts.length, fw = n === 1 ? 'document' : 'documents';
+    const truncNote = officeAtts.some(a => a.truncated) ? ' <span class="vn-warn">(some truncated)</span>' : '';
+    parts.push(`📎 ${n} office ${fw} — text extracted in-browser and sent to all models.${truncNote}`);
   }
   if (txtAtts.length) {
     const n = txtAtts.length, fw = n === 1 ? 'file' : 'files';

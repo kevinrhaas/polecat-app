@@ -93,7 +93,7 @@
       <div class="attach-strip" id="attachStrip" hidden></div>
       <textarea class="prompt-input" id="promptInput" placeholder="Type your prompt — sent to all selected models at once&#10;⌘↵ or Ctrl↵ to send · paste or drop images or PDFs to attach"></textarea>
       <div class="prompt-footer">
-        <button class="attach-btn" id="attachBtn" title="Attach images, PDFs, or text files" aria-label="Attach files">
+        <button class="attach-btn" id="attachBtn" title="Attach images, PDFs, Word, Excel, PowerPoint, or text files" aria-label="Attach files">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
         </button>
         <div class="model-chips" id="modelChips"></div>
@@ -104,7 +104,7 @@
       </div>
     </div>
     <div class="vision-note" id="visionNote" hidden></div>
-    <input type="file" id="fileInput" accept="image/*,text/*,.md,.csv,.json,.js,.ts,.py,.sh,.log,.yaml,.yml,.toml,.sql,.xml,.pdf,application/pdf" multiple hidden>
+    <input type="file" id="fileInput" accept="image/*,text/*,.md,.csv,.json,.js,.ts,.py,.sh,.log,.yaml,.yml,.toml,.sql,.xml,.pdf,application/pdf,.pptx,.docx,.xlsx,.xls,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple hidden>
     <div class="drop-hint" id="dropHint">Drop files to attach</div>
   </div>
 </div>
