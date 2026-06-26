@@ -27,6 +27,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write        # required by claude-code-action (OIDC)
 
 concurrency:
   group: self-improve
