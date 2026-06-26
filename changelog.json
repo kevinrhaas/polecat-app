@@ -3,6 +3,15 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "Agreement map polish",
+      "items": [
+        "The provenance panel and source attribution now respect reduced-motion preferences — no animations if you prefer stillness",
+        "Improved light-theme contrast for the contribution bars and stance badges (aligned / partial / outlier are now legible in both themes)",
+        "Switching to a new chat now cleanly clears any open attribution tooltip"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "Website: examples carousel polished",
       "items": [
         "Fixed the homepage examples carousel — each card now has a proper card background and clean uniform layout",

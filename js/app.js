@@ -467,6 +467,7 @@ function resetApp() {
   document.querySelectorAll('.tab-dot').forEach(d => d.classList.remove('loading', 'done'));
   setConsensusStep('');
   setChipsDisabled(false);
+  hideAttrTip();
   $('promptInput').focus();
 }
 
