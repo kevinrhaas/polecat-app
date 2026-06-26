@@ -1,3 +1,6 @@
 .DS_Store
 *.log
 node_modules/
+
+# local clone of the marketing site (separate repo)
+site/
