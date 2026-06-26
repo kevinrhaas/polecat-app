@@ -60,39 +60,102 @@ function buildStamp() {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-// ── Attachments (images: pick · paste · drop) ───────────────────────────────
-const MAX_ATTACH = 6;
-const MAX_ATTACH_BYTES = 8 * 1024 * 1024;   // ~8MB per image — providers reject much larger
-function readImageFile(file) {
+// ── Attachments (images + text/doc files) ────────────────────────────────────
+const MAX_ATTACH = 5;
+const MAX_ATTACH_BYTES = 8 * 1024 * 1024;       // ~8MB per image
+const MAX_TEXT_ATTACH_BYTES = 5 * 1024 * 1024;  // 5MB per text file (before reading)
+const MAX_TEXT_CHARS = 20000;                    // chars to inject per file (~5k tokens)
+
+const _TEXT_TYPES = new Set(['text/plain','text/markdown','text/csv','text/javascript',
+  'text/typescript','application/json','text/html','text/css','text/x-python',
+  'text/x-java-source','text/x-c','text/x-c++src','text/x-sh','text/x-shellscript']);
+const _TEXT_EXTS = new Set(['txt','md','csv','json','js','ts','py','sh','log','yaml','yml',
+  'toml','ini','conf','html','css','jsx','tsx','java','c','cpp','go','rb','rs','xml','sql']);
+function isImageFile(f) { return !!(f.type && f.type.startsWith('image/')); }
+function isTextFile(f) {
+  if (_TEXT_TYPES.has(f.type)) return true;
+  const ext = ((f.name || '').split('.').pop() || '').toLowerCase();
+  return _TEXT_EXTS.has(ext);
+}
+
+function readImageFile(file, id) {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
     r.onload = () => {
       const dataUrl = String(r.result);
       const comma = dataUrl.indexOf(',');
-      resolve({ id: 'a' + Date.now().toString(36) + (_attc++).toString(36), name: file.name || 'image', mime: file.type || 'image/png', data: dataUrl.slice(comma + 1), dataUrl });
+      resolve({ id, name: file.name || 'image', mime: file.type || 'image/png',
+        kind: 'image', size: file.size, data: dataUrl.slice(comma + 1), dataUrl });
     };
     r.onerror = reject;
     r.readAsDataURL(file);
   });
 }
-async function addFiles(fileList) {
-  const files = Array.from(fileList || []).filter(f => f.type && f.type.startsWith('image/'));
-  if (!files.length) { toast('Only images can be attached'); return; }
-  for (const f of files) {
-    if (attachments.length >= MAX_ATTACH) { toast(`Up to ${MAX_ATTACH} images`); break; }
-    if (f.size > MAX_ATTACH_BYTES) { toast(`"${f.name}" is too large (max 8MB)`); continue; }
-    try { attachments.push(await readImageFile(f)); } catch { toast('Could not read image'); }
-  }
-  renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled();
+function readTextFile(file, id) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => {
+      let text = String(r.result);
+      const truncated = text.length > MAX_TEXT_CHARS;
+      if (truncated) text = text.slice(0, MAX_TEXT_CHARS);
+      resolve({ id, name: file.name || 'file', mime: file.type || 'text/plain',
+        kind: 'text', size: file.size, textContent: text, truncated });
+    };
+    r.onerror = reject;
+    r.readAsText(file);
+  });
 }
+
+function fmtBytes(n) {
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(0) + ' KB';
+  return (n / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+async function addFiles(fileList) {
+  const all = Array.from(fileList || []);
+  const accepted = all.filter(f => isImageFile(f) || isTextFile(f));
+  const rejected = all.filter(f => !isImageFile(f) && !isTextFile(f));
+  if (rejected.length) toast(`Unsupported: ${rejected.map(f => '"' + f.name + '"').join(', ')}`);
+
+  for (const f of accepted) {
+    if (attachments.length >= MAX_ATTACH) { toast(`Up to ${MAX_ATTACH} attachments`); break; }
+    const isImg = isImageFile(f);
+    const limit = isImg ? MAX_ATTACH_BYTES : MAX_TEXT_ATTACH_BYTES;
+    if (f.size > limit) { toast(`"${f.name}" is too large (max ${isImg ? '8' : '5'} MB)`); continue; }
+
+    // Add pending placeholder so the chip appears immediately with a spinner
+    const id = 'a' + Date.now().toString(36) + (_attc++).toString(36);
+    attachments.push({ id, name: f.name, mime: f.type, kind: isImg ? 'image' : 'text', pending: true, size: f.size });
+    renderAttachments(); updateSendEnabled();
+
+    try {
+      const att = isImg ? await readImageFile(f, id) : await readTextFile(f, id);
+      const idx = attachments.findIndex(a => a.id === id);
+      if (idx >= 0) attachments[idx] = att;
+    } catch { toast(`Could not read "${f.name}"`); attachments = attachments.filter(a => a.id !== id); }
+    renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled();
+  }
+  if (!accepted.length) renderAttachments();
+}
+
 function removeAttachment(id) { attachments = attachments.filter(a => a.id !== id); renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled(); }
 function clearAttachments() { attachments = []; renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled(); }
+const DOC_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
 function renderAttachments() {
   const strip = $('attachStrip'); if (!strip) return;
   strip.hidden = attachments.length === 0;
-  strip.innerHTML = attachments.map(a =>
-    `<div class="attach-thumb" title="${escapeHtml(a.name)}"><img src="${a.dataUrl}" alt="${escapeHtml(a.name)}">` +
-    `<button class="at-x" data-id="${a.id}" title="Remove" aria-label="Remove ${escapeHtml(a.name)}">×</button></div>`).join('');
+  strip.innerHTML = attachments.map(a => {
+    if (a.kind === 'image') {
+      if (a.pending) return `<div class="attach-file-chip pending" title="Reading ${escapeHtml(a.name)}…"><span class="afc-spinner"></span><span class="afc-name">${escapeHtml(a.name)}</span></div>`;
+      return `<div class="attach-thumb" title="${escapeHtml(a.name)}"><img src="${a.dataUrl}" alt="${escapeHtml(a.name)}">` +
+        `<button class="at-x" data-id="${a.id}" title="Remove" aria-label="Remove ${escapeHtml(a.name)}">×</button></div>`;
+    }
+    // text file chip
+    if (a.pending) return `<div class="attach-file-chip pending" title="Reading ${escapeHtml(a.name)}…"><span class="afc-spinner"></span><span class="afc-name">${escapeHtml(a.name)}</span></div>`;
+    return `<div class="attach-file-chip" title="${escapeHtml(a.name)} · ${fmtBytes(a.size)}">${DOC_ICON}<span class="afc-name">${escapeHtml(a.name)}</span><span class="afc-size">${fmtBytes(a.size)}</span>` +
+      `<button class="at-x" data-id="${a.id}" title="Remove" aria-label="Remove ${escapeHtml(a.name)}">×</button></div>`;
+  }).join('');
   strip.querySelectorAll('.at-x').forEach(b => b.onclick = () => removeAttachment(b.dataset.id));
 }
 // How many currently-selected models can / can't read images.
@@ -103,19 +166,32 @@ function visionSplit() {
 }
 function updateVisionNote() {
   const note = $('visionNote'); if (!note) return;
-  if (!attachments.length) { note.hidden = true; note.innerHTML = ''; return; }
-  const { total, can, cannot } = visionSplit();
+  const imgAtts = attachments.filter(a => a.kind === 'image' && !a.pending);
+  const txtAtts = attachments.filter(a => a.kind === 'text' && !a.pending);
+  if (!imgAtts.length && !txtAtts.length) { note.hidden = true; note.innerHTML = ''; return; }
   note.hidden = false;
-  const n = attachments.length, imgWord = n === 1 ? 'image' : 'images';
-  if (!total) { note.innerHTML = `📎 ${n} ${imgWord} attached — add a model to send.`; return; }
-  if (cannot === 0) { note.innerHTML = `📎 ${n} ${imgWord} attached — <b>all ${total} models</b> can read ${n === 1 ? 'it' : 'them'}. 👁`; return; }
-  if (can === 0) { note.innerHTML = `<span class="vn-warn">⚠ None of your selected models can read images</span> — they'll receive your text only. Add a vision model (👁) like Claude, Gemini or GPT-4o.`; return; }
-  note.innerHTML = `📎 ${n} ${imgWord} attached — <b>${can} of ${total}</b> models can read ${n === 1 ? 'it' : 'them'} (👁); the other ${cannot} get <span class="vn-warn">text only</span>.`;
+  const parts = [];
+  if (imgAtts.length) {
+    const { total, can, cannot } = visionSplit();
+    const n = imgAtts.length, iw = n === 1 ? 'image' : 'images';
+    if (!total) parts.push(`📎 ${n} ${iw} attached — add a model to send.`);
+    else if (cannot === 0) parts.push(`📎 ${n} ${iw} attached — <b>all ${total} models</b> will see ${n === 1 ? 'it' : 'them'}. 👁`);
+    else if (can === 0) parts.push(`<span class="vn-warn">⚠ None of your selected models can read images</span> — they'll get text only. Add a vision model (👁).`);
+    else parts.push(`📎 ${n} ${iw} attached — <b>${can} of ${total}</b> models can read ${n === 1 ? 'it' : 'them'} (👁); the other ${cannot} get <span class="vn-warn">text only</span>.`);
+  }
+  if (txtAtts.length) {
+    const n = txtAtts.length, fw = n === 1 ? 'file' : 'files';
+    const truncNote = txtAtts.some(a => a.truncated) ? ' <span class="vn-warn">(some truncated)</span>' : '';
+    parts.push(`📄 ${n} text ${fw} — content sent to all models.${truncNote}`);
+  }
+  note.innerHTML = parts.join('<br>');
 }
 function updateSendEnabled() {
   const send = $('sendBtn'); if (!send) return;
-  const hasContent = $('promptInput').value.trim().length > 0 || attachments.length > 0;
-  send.disabled = !sels().length || !hasContent;
+  const hasPending = attachments.some(a => a.pending);
+  const hasContent = $('promptInput').value.trim().length > 0 || attachments.some(a => !a.pending);
+  send.disabled = !sels().length || !hasContent || hasPending;
+  send.title = hasPending ? 'Reading files…' : 'Send to all (⌘↵)';
 }
 
 // ── Model chips (prompt footer) ─────────────────────────────────────────────
@@ -133,7 +209,7 @@ function buildChips() {
   }
   updateSendEnabled();
 
-  const haveImages = attachments.length > 0;
+  const haveImages = attachments.some(a => a.kind === 'image' && !a.pending);
   list.forEach(sel => {
     const p = PROVIDERS[sel.provider];
     const st = statusOf(sel.provider, sel.model);
@@ -256,13 +332,15 @@ function scrollPairToTop(conv, pair) {
   const delta = pair.getBoundingClientRect().top - conv.getBoundingClientRect().top;
   conv.scrollTop += delta - 8;
 }
-// Thumbnails / file chips for image attachments on a user message.
-function attachThumbsHtml(images) {
-  if (!images || !images.length) return '';
-  return `<div class="msg-attachments">` + images.map(im =>
-    im.dataUrl ? `<img class="msg-thumb" src="${im.dataUrl}" alt="${escapeHtml(im.name || 'image')}" title="${escapeHtml(im.name || 'image')}">`
-              : `<span class="msg-file-chip">🖼 ${escapeHtml(im.name || 'image')}</span>`
-  ).join('') + `</div>`;
+// Thumbnails / file chips for attachments on a user message.
+function attachThumbsHtml(atts) {
+  if (!atts || !atts.length) return '';
+  return `<div class="msg-attachments">` + atts.map(im => {
+    if (im.kind === 'text') return `<span class="msg-file-chip">${DOC_ICON} ${escapeHtml(im.name || 'file')}</span>`;
+    return im.dataUrl
+      ? `<img class="msg-thumb" src="${im.dataUrl}" alt="${escapeHtml(im.name || 'image')}" title="${escapeHtml(im.name || 'image')}">`
+      : `<span class="msg-file-chip">🖼 ${escapeHtml(im.name || 'image')}</span>`;
+  }).join('') + `</div>`;
 }
 function userMsgHtml(userContent, images) {
   return `<div class="msg user"><span class="msg-label">You</span>` +
@@ -297,15 +375,15 @@ function finishBubble(pair, full) {
   copyBtn.hidden = false; copyBtn.onclick = () => copyText(full, copyBtn);
 }
 
-async function streamTo(sel, userContent, images) {
+async function streamTo(sel, userContent, images, displayAtts) {
   const co = getConvo(sel.id);
   const userMsg = { role: 'user', content: userContent };
-  if (images && images.length) userMsg.images = images;
+  if (images && images.length) userMsg.images = images;  // only image attachments for API
   co.push(userMsg);
   const conv = $('conv_' + sel.id);
   $('empty_' + sel.id)?.remove();
 
-  const pair = assistantPair(selectionLabel(sel), userContent, images);
+  const pair = assistantPair(selectionLabel(sel), userContent, displayAtts || images);
   conv.appendChild(pair); scrollPairToTop(conv, pair);
   const bubble = pair.querySelector('.msg.assistant .msg-bubble');
 
@@ -387,8 +465,21 @@ function startSuggestionRotation() {
 // ── Broadcast ───────────────────────────────────────────────────────────────
 async function sendAll() {
   const text = $('promptInput').value.trim();
-  const images = attachments.slice();
-  if (!text && !images.length) return;
+  const readyAtts = attachments.filter(a => !a.pending);
+  const imgAtts   = readyAtts.filter(a => a.kind === 'image');
+  const textFiles = readyAtts.filter(a => a.kind === 'text');
+
+  // Inject text file contents as labelled blocks prepended to the user message
+  let userText = text;
+  if (textFiles.length) {
+    const blocks = textFiles.map(tf => {
+      const trunc = tf.truncated ? `\n[File truncated to ${MAX_TEXT_CHARS.toLocaleString()} characters]` : '';
+      return `<file name="${tf.name}">\n${tf.textContent}${trunc}\n</file>`;
+    }).join('\n\n');
+    userText = blocks + (text ? '\n\n' + text : '');
+  }
+
+  if (!userText && !imgAtts.length) return;
   const list = sels();
   if (!list.length) { openConfig('models'); return; }
 
@@ -411,7 +502,7 @@ async function sendAll() {
 
   try {
     await Promise.allSettled(list.map(async sel => {
-      const r = await streamTo(sel, text, images);
+      const r = await streamTo(sel, userText, imgAtts, readyAtts);
       order.push(sel.id); results[sel.id] = r;
     }));
 
@@ -420,7 +511,7 @@ async function sendAll() {
       await runConsensus();
       setConsensusDot(false); setConsensusStep('');
     }
-    recordTurn(text, images);
+    recordTurn(text, readyAtts);
   } finally {
     document.body.classList.remove('processing');
     setChipsDisabled(false); updateSendEnabled();
@@ -430,22 +521,24 @@ async function sendAll() {
 // Save this round into the current conversation thread (unless private mode).
 // Image data isn't persisted (it would blow past localStorage quota); we keep
 // lightweight metadata so restored chats can still show what was attached.
-function recordTurn(prompt, images) {
+function recordTurn(prompt, atts) {
   if (cfg.private) return;
   if (!order.length) return;
   const answers = {};
   order.forEach(id => { answers[id] = results[id] ?? null; });
   if (!currentThread) {
+    const firstAtt = atts && atts[0];
+    const titleFallback = firstAtt ? (firstAtt.kind === 'image' ? '🖼 ' : '📄 ') + firstAtt.name : 'Untitled';
     currentThread = {
       id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-      title: (prompt || (images && images.length ? '🖼 ' + images[0].name : 'Untitled')).slice(0, 80),
+      title: (prompt || titleFallback).slice(0, 80),
       createdAt: Date.now(), updatedAt: Date.now(),
       selections: sels().map(s => ({ id: s.id, provider: s.provider, model: s.model })),
       turns: [],
     };
     history.unshift(currentThread);
   }
-  const attMeta = (images && images.length) ? images.map(im => ({ name: im.name, mime: im.mime })) : undefined;
+  const attMeta = (atts && atts.length) ? atts.map(a => ({ name: a.name, mime: a.mime, kind: a.kind || 'image' })) : undefined;
   currentThread.turns.push({ prompt, answers, attachments: attMeta, consensus: cfg.consensus ? (lastConsensusText || null) : null });
   currentThread.updatedAt = Date.now();
   saveHistory(history);
@@ -1409,8 +1502,8 @@ function init() {
     if (!isTouch) { e.preventDefault(); sendAll(); }    // desktop: plain Enter sends
   });
   $('promptInput').placeholder = isTouch
-    ? 'Type your prompt — sent to all selected models at once\nTap ➤ to send · paste or attach an image'
-    : 'Type your prompt — sent to all selected models at once\nEnter to send · Shift+Enter for a new line · paste or drop an image';
+    ? 'Type your prompt — sent to all selected models at once\nTap ➤ to send · attach images or text files'
+    : 'Type your prompt — sent to all selected models at once\nEnter to send · Shift+Enter for new line · paste or drop images / text files';
   $('promptInput').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; updateSendEnabled(); });
   $('sbTheme').onclick = () => applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
 
@@ -1420,7 +1513,11 @@ function init() {
   $('promptInput').addEventListener('paste', (e) => {
     const items = e.clipboardData?.items; if (!items) return;
     const files = [];
-    for (const it of items) { if (it.kind === 'file' && it.type.startsWith('image/')) { const f = it.getAsFile(); if (f) files.push(f); } }
+    for (const it of items) {
+      if (it.kind === 'file' && (it.type.startsWith('image/') || isTextFile({ type: it.type, name: '' }))) {
+        const f = it.getAsFile(); if (f) files.push(f);
+      }
+    }
     if (files.length) { e.preventDefault(); addFiles(files); }
   });
   // Greeting quick-start suggestions → rotating, clickable example questions.

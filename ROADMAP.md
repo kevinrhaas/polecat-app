@@ -109,7 +109,7 @@ Polecat's privacy promise. (PPTX was the operator's concrete blocker — priorit
   never appears frozen. Build this *with each parser phase* (F1–F4), not in F6.
 
 **Phases** (one per run; keep each a single focused commit)
-- [ ] **F1 — Generalize attachments from images-only to any file.** Picker accepts
+- [x] **F1 — Generalize attachments from images-only to any file.** Picker accepts
       docs + images; drag/drop/paste; ≤5 files; size caps; file chips with a type
       icon + name + size + remove. Plain-text family (txt, md, csv, json, code, log)
       is read and injected as text immediately.

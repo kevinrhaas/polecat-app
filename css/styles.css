@@ -130,6 +130,18 @@ header {
 .attach-thumb .at-x { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; border: none; background: rgba(0,0,0,.62); color: #fff; cursor: pointer; font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center; padding: 0; }
 .attach-thumb .at-x:hover { background: #f87171; }
 
+/* file chip in the attach strip (non-image docs) */
+.attach-file-chip { display: inline-flex; align-items: center; gap: 5px; height: 36px; padding: 0 8px 0 10px;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+  font-size: 12px; color: var(--text-2); max-width: 200px; flex-shrink: 0; }
+.attach-file-chip svg { flex-shrink: 0; color: var(--text-3); }
+.afc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; color: var(--text); }
+.afc-size { color: var(--text-3); font-size: 11px; flex-shrink: 0; }
+.attach-file-chip .at-x { background: none; border: none; color: var(--text-3); cursor: pointer; font-size: 14px; line-height: 1; padding: 0 1px; border-radius: 4px; flex-shrink: 0; }
+.attach-file-chip .at-x:hover { color: #f87171; }
+.attach-file-chip.pending { opacity: .7; }
+.afc-spinner { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--text-2); animation: tab-spin .65s linear infinite; flex-shrink: 0; }
+
 /* vision capability note under composer */
 .vision-note { font-size: 11.5px; color: var(--text-2); padding: 2px 6px; line-height: 1.45; }
 .vision-note b { color: var(--text); }
@@ -217,6 +229,7 @@ header {
 .msg.user .msg-attachments { justify-content: flex-end; }
 .msg-thumb { width: 130px; max-width: 46vw; height: auto; max-height: 160px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); display: block; cursor: zoom-in; }
 .msg-file-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-2); background: var(--surface-3); border: 1px solid var(--border); border-radius: 100px; padding: 4px 10px; }
+.msg-file-chip svg { flex-shrink: 0; }
 .loading-dots { display: flex; gap: 4px; padding: 6px 2px; }
 .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); animation: bounce-dot 1.2s ease-in-out infinite; }
 .dot:nth-child(2) { animation-delay: .18s; } .dot:nth-child(3) { animation-delay: .36s; }

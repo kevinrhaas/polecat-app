@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "Attach text files & docs",
+      "items": [
+        "You can now attach text files — .txt, .md, .csv, .json, .py, .js, .ts, .sh, .log, .yaml, .sql, and many more",
+        "File content is injected into your message so every model receives it, fully in-browser — nothing is uploaded",
+        "A clear spinner shows while each file is being read; send is disabled until all files are ready",
+        "Images continue to work exactly as before, with vision indicators for models that can read them",
+        "File chips in the attach strip and message thread show the filename and size at a glance"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "Agreement map polish",
       "items": [
         "The provenance panel and source attribution now respect reduced-motion preferences — no animations if you prefer stillness",
