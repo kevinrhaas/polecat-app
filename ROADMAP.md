@@ -159,12 +159,15 @@ confusing, with a consistent icon language and zero emoji.
 
 ## WEBSITE (kevinrhaas/polecat) — the loop's Part 2 should advance these too
 
-- [x] **BUG (FIXED 2026-06-26): the homepage examples section was UNSTYLED.** Root
-      cause: prior runs embedded the carousel inside a `<section class="band">` wrapper
-      whose styles conflicted. Fixed by replacing the entire band+carousel block with
-      the exact `<section class="pcx">` from `website/examples-carousel.html` (no outer
-      wrapper; only `id="cases"` added to preserve the nav anchor). Cards, carousel, and
-      consensus rows now render correctly.
+- [x] **BUG (ACTUALLY FIXED 2026-06-26): the homepage examples section was UNSTYLED.**
+      The earlier "fixes" (band-wrapper removal, no-JS rebuild, etc.) never worked in
+      production. **Real root cause:** the entire `#cases` section used curly/smart
+      quotes (`”`, `’`) as HTML attribute delimiters — `class=”pcx”` instead of
+      `class="pcx"` — so browsers never matched any `.pcx` selectors and the section
+      rendered as raw text. Fixed in `kevinrhaas/polecat` by replacing all smart quotes
+      with straight ASCII quotes (copy entities untouched), verified via headless render.
+      LESSON: when pasting verified HTML drop-ins, ensure the editor does NOT smart-quote
+      attribute delimiters; verify with an actual browser render, not just visual diff.
 
 - [x] **Fun, real example carousel.** Build it from the operator-curated REAL
       content in `website/examples.json` (6 examples: cooking, history, music,
