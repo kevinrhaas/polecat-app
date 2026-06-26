@@ -314,7 +314,19 @@ async function addFiles(fileList) {
       if (idx >= 0) attachments[idx] = att;
     } catch (err) {
       toast(`Could not read "${f.name}"${err?.message ? ': ' + err.message : ''}`);
-      attachments = attachments.filter(a => a.id !== id);
+      // Show error chip briefly so the user sees which file failed, then auto-remove
+      const eIdx = attachments.findIndex(a => a.id === id);
+      if (eIdx >= 0) {
+        attachments[eIdx] = { ...attachments[eIdx], error: true };
+        renderAttachments(); updateSendEnabled();
+        setTimeout(() => {
+          attachments = attachments.filter(a => a.id !== id);
+          renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled();
+        }, 2500);
+        continue;
+      } else {
+        attachments = attachments.filter(a => a.id !== id);
+      }
     }
     renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled();
   }
@@ -323,11 +335,25 @@ async function addFiles(fileList) {
 
 function removeAttachment(id) { attachments = attachments.filter(a => a.id !== id); renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled(); }
 function clearAttachments() { attachments = []; renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled(); }
-const DOC_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
+const DOC_ICON  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
+const FAIL_ICON  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;color:#f87171" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+// Inline SVG icons for the vision/attachment note (replaces emoji per North-star directive)
+const VN_CLIP  = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`;
+const VN_DOC   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+const VN_WARN  = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+const VN_LOCK  = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
 function renderAttachments() {
   const strip = $('attachStrip'); if (!strip) return;
   strip.hidden = attachments.length === 0;
   strip.innerHTML = attachments.map(a => {
+    // Error state — shown briefly before auto-removal so user sees which file failed
+    if (a.error) {
+      return `<div class="attach-file-chip error" title="Could not read ${escapeHtml(a.name)}" role="alert">` +
+        FAIL_ICON +
+        `<span class="afc-name">${escapeHtml(a.name)}</span>` +
+        `<span class="afc-size afc-err-label">failed</span>` +
+        `</div>`;
+    }
     if (a.kind === 'image') {
       if (a.pending) return `<div class="attach-file-chip pending" title="Reading ${escapeHtml(a.name)}…"><span class="afc-spinner"></span><span class="afc-name">${escapeHtml(a.name)}</span></div>`;
       return `<div class="attach-thumb" title="${escapeHtml(a.name)}"><img src="${a.dataUrl}" alt="${escapeHtml(a.name)}">` +
@@ -376,10 +402,10 @@ function updateVisionNote() {
   if (imgAtts.length) {
     const { total, can, cannot } = visionSplit();
     const n = imgAtts.length, iw = n === 1 ? 'image' : 'images';
-    if (!total) parts.push(`📎 ${n} ${iw} attached — add a model to send.`);
-    else if (cannot === 0) parts.push(`📎 ${n} ${iw} attached — <b>all ${total} models</b> will see ${n === 1 ? 'it' : 'them'}. 👁`);
-    else if (can === 0) parts.push(`<span class="vn-warn">⚠ None of your selected models can read images</span> — they'll get text only. Add a vision model (👁).`);
-    else parts.push(`📎 ${n} ${iw} attached — <b>${can} of ${total}</b> models can read ${n === 1 ? 'it' : 'them'} (👁); the other ${cannot} get <span class="vn-warn">text only</span>.`);
+    if (!total) parts.push(`${VN_CLIP} ${n} ${iw} attached — add a model to send.`);
+    else if (cannot === 0) parts.push(`${VN_CLIP} ${n} ${iw} attached — <b>all ${total} models</b> will see ${n === 1 ? 'it' : 'them'}.`);
+    else if (can === 0) parts.push(`<span class="vn-warn">${VN_WARN} None of your selected models can read images</span> — they'll get text only. Add a vision model.`);
+    else parts.push(`${VN_CLIP} ${n} ${iw} attached — <b>${can} of ${total}</b> models can read ${n === 1 ? 'it' : 'them'}; the other ${cannot} get <span class="vn-warn">text only</span>.`);
   }
   if (pdfAtts.length) {
     const n = pdfAtts.length, fw = n === 1 ? 'PDF' : 'PDFs';
@@ -388,20 +414,20 @@ function updateVisionNote() {
     const hasRaw = pdfAtts.some(a => a.rawData);
     if (hasRaw && nativeSels.length > 0 && nativeSels.length < allSels.length) {
       const names = [...new Set(nativeSels.map(s => PROVIDERS[s.provider].short))].join(', ');
-      parts.push(`📄 ${n} ${fw} — sent natively (full fidelity) to ${escapeHtml(names)}; text extracted for other models.`);
+      parts.push(`${VN_DOC} ${n} ${fw} — sent natively (full fidelity) to ${escapeHtml(names)}; text extracted for other models.`);
     } else if (hasRaw && nativeSels.length > 0 && nativeSels.length === allSels.length) {
-      parts.push(`📄 ${n} ${fw} — sent natively (full-fidelity PDF, not just extracted text).`);
+      parts.push(`${VN_DOC} ${n} ${fw} — sent natively (full-fidelity PDF, not just extracted text).`);
     } else {
-      parts.push(`📄 ${n} ${fw} — text extracted in-browser, sent to all models.`);
+      parts.push(`${VN_DOC} ${n} ${fw} — text extracted in your browser, sent to all models.`);
     }
   }
   if (officeAtts.length) {
     const n = officeAtts.length, fw = n === 1 ? 'document' : 'documents';
-    parts.push(`📎 ${n} office ${fw} — text extracted in-browser, sent to all models.`);
+    parts.push(`${VN_CLIP} ${n} office ${fw} — text extracted in your browser, sent to all models.`);
   }
   if (txtAtts.length) {
     const n = txtAtts.length, fw = n === 1 ? 'file' : 'files';
-    parts.push(`📄 ${n} text ${fw} — content sent to all models.`);
+    parts.push(`${VN_DOC} ${n} text ${fw} — content sent to all models.`);
   }
   // Show total context budget used by all extracted text files
   const allExtracted = [...pdfAtts, ...officeAtts, ...txtAtts].filter(a => a.textContent != null);
@@ -417,6 +443,10 @@ function updateVisionNote() {
         parts.push(`Context: ~${kChars} chars of ${budgetK}k budget${pct >= 80 ? ' <span class="vn-warn">(budget nearly full)</span>' : ''}`);
       }
     }
+  }
+  // Privacy reassurance — shown whenever any non-image file is attached
+  if (pdfAtts.length || officeAtts.length || txtAtts.length) {
+    parts.push(`<span class="vn-privacy">${VN_LOCK} Read in your browser — nothing is uploaded to any server.</span>`);
   }
   note.innerHTML = parts.join('<br>');
 }

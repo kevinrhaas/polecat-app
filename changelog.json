@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "Attachment polish: privacy note, error feedback & mobile",
+      "items": [
+        "When you attach a document, a clear note confirms files are read in your browser — nothing is ever uploaded to a server",
+        "If a file can't be read, the chip briefly turns red so you can see exactly which one failed — then clears itself",
+        "Attachment icons in the notes area are now clean SVG icons instead of emoji, matching the rest of the UI",
+        "Remove buttons on attachments are larger on mobile for easier tapping",
+        "Screen readers now announce attachment status changes via a live region"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "Native PDF support for Claude and Gemini",
       "items": [
         "PDFs attached to Claude or Gemini models are now sent as native document blocks — the model reads the actual PDF, not just extracted text",

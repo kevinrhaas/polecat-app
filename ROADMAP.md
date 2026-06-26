@@ -125,7 +125,7 @@ Polecat's privacy promise. (PPTX was the operator's concrete blocker — priorit
       Anthropic PDF document blocks, Gemini inline_data application/pdf, OpenAI file
       input. **Prioritize native PDF for Claude/Gemini/GPT** (higher fidelity); keep
       client-side text extraction as the universal fallback for models that can't.
-- [ ] **F6 — Polish.** Refine error states, mobile, a11y, a privacy note ("files are
+- [x] **F6 — Polish.** Refine error states, mobile, a11y, a privacy note ("files are
       read in your browser, never uploaded"), and "What's new". (Progress indicator
       is NOT here — it's a core requirement built in F1–F4.)
 
