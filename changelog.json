@@ -3,6 +3,13 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "Crisper Settings",
+      "items": [
+        "Settings now opens sharp instead of momentarily blurred — no more clicking to make it readable"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "See how every consensus was built",
       "items": [
         "✦ New \"How this was formed\" panel below each consensus — collapsible, mobile-friendly",

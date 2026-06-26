@@ -23,6 +23,10 @@ genuinely innovative. Hold this bar on every change. Concretely:
   and flawless on desktop AND mobile, light AND dark.
 - **Lean into the differentiator.** The multi-model + consensus/arbitration story
   is the magic — make it effortless, legible, and impressive.
+- **No emoji in the UI.** Use ONE consistent set of simple, modern, monochrome
+  SVG icons (match the existing header stroke-icon style: 24×24, `currentColor`,
+  ~2px stroke). Never add new emoji; replace existing emoji with proper icons as
+  you touch each area. (Emoji in model/provider data labels are fine to keep.)
 - **Innovate forward, don't thrash.** Press toward groundbreaking, genuinely new
   capability — but evolve, don't wildly rewrite. Never regress existing features.
 
@@ -79,6 +83,25 @@ Polecat's signature differentiator vs single-model chat (Gemini/Claude).
 **Done when:** a typical multi-model consensus shows an accurate, honest, and
 beautiful breakdown of contribution + agreement/disagreement, on desktop and
 mobile, with zero impact on time-to-first-answer.
+
+---
+
+## EPIC 2 — Settings & icon-system refresh  ⭐ (next after EPIC 1)
+
+Make the chrome (settings, sidebar, overlays) sleek, modern, simpler and less
+confusing, with a consistent icon language and zero emoji.
+
+- [x] **Fix the settings blur-on-open bug** — the modal rendered blurred until a
+      click; moved `backdrop-filter` to a `::before` layer so the panel is never
+      inside a blurred ancestor. (Apply the same pattern to the welcome, export,
+      and lightbox overlays — they share the bug.)
+- [ ] **Consistent SVG icon set.** Replace UI emoji with simple modern stroke
+      icons (sidebar ⚙/◐/⤓/⤒/🗑, the ✨ CTA, 👁/⊘ vision marks, key-help 🔑/💸,
+      welcome-slide glyphs, etc.). One coherent style; accessible labels/titles.
+- [ ] **Settings IA cleanup.** Audit the Models/Keys/Arbitration/Support tabs:
+      simplify, group sensibly, clearer labels & helper text, less clutter,
+      better mobile. A beginner should grok it instantly. Reorder/rename freely.
+- [ ] **Apply blur-layer fix to remaining overlays** (welcome, export, lightbox).
 
 ---
 
