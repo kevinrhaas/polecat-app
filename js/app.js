@@ -106,6 +106,76 @@ function readTextFile(file, id) {
   });
 }
 
+// ── PDF text extraction (lazy pdf.js from CDN, F2) ───────────────────────────
+const MAX_PDF_BYTES = 10 * 1024 * 1024;          // 10MB per PDF (before reading)
+const PDFJS_VER = '3.11.174';
+const PDFJS_SRC = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VER}/pdf.min.js`;
+const PDFJS_WORKER = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VER}/pdf.worker.min.js`;
+let _pdfjsPromise = null;
+// Load pdf.js on demand the first time a PDF is attached. Guards for offline /
+// CDN-blocked environments by rejecting so the caller can degrade gracefully.
+function loadPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (_pdfjsPromise) return _pdfjsPromise;
+  _pdfjsPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = PDFJS_SRC;
+    s.async = true;
+    s.onload = () => {
+      const lib = window.pdfjsLib;
+      if (!lib) { _pdfjsPromise = null; reject(new Error('pdf.js unavailable')); return; }
+      try { lib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER; } catch {}
+      resolve(lib);
+    };
+    s.onerror = () => { _pdfjsPromise = null; reject(new Error('Could not load the PDF reader')); };
+    document.head.appendChild(s);
+  });
+  return _pdfjsPromise;
+}
+
+function isPdfFile(f) {
+  if (f.type === 'application/pdf') return true;
+  return ((f.name || '').split('.').pop() || '').toLowerCase() === 'pdf';
+}
+
+// Extract selectable text from a PDF, page by page, with light page markers and
+// a char cap. onProgress(page, total) drives the per-file progress indicator.
+function readPdfFile(file, id, onProgress) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onerror = reject;
+    r.onload = async () => {
+      try {
+        const pdfjs = await loadPdfJs();
+        const doc = await pdfjs.getDocument({ data: new Uint8Array(r.result) }).promise;
+        const numPages = doc.numPages;
+        const blocks = [];
+        let chars = 0, truncated = false;
+        for (let p = 1; p <= numPages; p++) {
+          if (onProgress) onProgress(p, numPages);
+          const page = await doc.getPage(p);
+          const content = await page.getTextContent();
+          const txt = content.items.map(it => it.str).join(' ')
+            .replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').trim();
+          const block = `[Page ${p}]\n${txt}`;
+          if (chars + block.length > MAX_TEXT_CHARS) {
+            const room = Math.max(0, MAX_TEXT_CHARS - chars);
+            if (room) blocks.push(block.slice(0, room));
+            truncated = true; break;
+          }
+          blocks.push(block); chars += block.length + 2;
+        }
+        try { doc.destroy(); } catch {}
+        const text = blocks.join('\n\n').trim();
+        if (!text) { reject(new Error('No selectable text')); return; }
+        resolve({ id, name: file.name || 'document.pdf', mime: 'application/pdf',
+          kind: 'text', size: file.size, textContent: text, truncated, isPdf: true, pageCount: numPages });
+      } catch (e) { reject(e); }
+    };
+    r.readAsArrayBuffer(file);
+  });
+}
+
 function fmtBytes(n) {
   if (n < 1024) return n + ' B';
   if (n < 1024 * 1024) return (n / 1024).toFixed(0) + ' KB';
@@ -114,15 +184,17 @@ function fmtBytes(n) {
 
 async function addFiles(fileList) {
   const all = Array.from(fileList || []);
-  const accepted = all.filter(f => isImageFile(f) || isTextFile(f));
-  const rejected = all.filter(f => !isImageFile(f) && !isTextFile(f));
+  const ok = f => isImageFile(f) || isPdfFile(f) || isTextFile(f);
+  const accepted = all.filter(ok);
+  const rejected = all.filter(f => !ok(f));
   if (rejected.length) toast(`Unsupported: ${rejected.map(f => '"' + f.name + '"').join(', ')}`);
 
   for (const f of accepted) {
     if (attachments.length >= MAX_ATTACH) { toast(`Up to ${MAX_ATTACH} attachments`); break; }
     const isImg = isImageFile(f);
-    const limit = isImg ? MAX_ATTACH_BYTES : MAX_TEXT_ATTACH_BYTES;
-    if (f.size > limit) { toast(`"${f.name}" is too large (max ${isImg ? '8' : '5'} MB)`); continue; }
+    const isPdf = !isImg && isPdfFile(f);
+    const limit = isImg ? MAX_ATTACH_BYTES : (isPdf ? MAX_PDF_BYTES : MAX_TEXT_ATTACH_BYTES);
+    if (f.size > limit) { toast(`"${f.name}" is too large (max ${isImg ? '8' : (isPdf ? '10' : '5')} MB)`); continue; }
 
     // Add pending placeholder so the chip appears immediately with a spinner
     const id = 'a' + Date.now().toString(36) + (_attc++).toString(36);
@@ -130,13 +202,37 @@ async function addFiles(fileList) {
     renderAttachments(); updateSendEnabled();
 
     try {
-      const att = isImg ? await readImageFile(f, id) : await readTextFile(f, id);
+      let att;
+      if (isImg) att = await readImageFile(f, id);
+      else if (isPdf) att = await readPdfFile(f, id, (p, n) => setAttachProgress(id, p, n));
+      else att = await readTextFile(f, id);
       const idx = attachments.findIndex(a => a.id === id);
       if (idx >= 0) attachments[idx] = att;
-    } catch { toast(`Could not read "${f.name}"`); attachments = attachments.filter(a => a.id !== id); }
+    } catch (e) {
+      if (isPdf) {
+        // Graceful degradation: keep the file as a labelled note so models still
+        // know it was attached (CDN blocked, scanned/image-only PDF, parse failure).
+        const note = `[Attached "${f.name}" — could not extract text in-browser (the PDF may be scanned/image-only, or the PDF reader was unavailable).]`;
+        const fallback = { id, name: f.name, mime: 'application/pdf', kind: 'text', size: f.size,
+          textContent: note, truncated: false, isPdf: true, failed: true };
+        const idx = attachments.findIndex(a => a.id === id);
+        if (idx >= 0) attachments[idx] = fallback; else attachments.push(fallback);
+        toast(`Couldn't read text from "${f.name}" — attached as a note`);
+      } else {
+        toast(`Could not read "${f.name}"`); attachments = attachments.filter(a => a.id !== id);
+      }
+    }
     renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled();
   }
   if (!accepted.length) renderAttachments();
+}
+
+// Live per-file progress while a slow parse (PDF) runs — updates the pending chip.
+function setAttachProgress(id, page, total) {
+  const a = attachments.find(x => x.id === id);
+  if (!a || !a.pending) return;
+  a.progressText = total > 1 ? `page ${page}/${total}` : 'reading…';
+  renderAttachments();
 }
 
 function removeAttachment(id) { attachments = attachments.filter(a => a.id !== id); renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled(); }
@@ -151,8 +247,11 @@ function renderAttachments() {
       return `<div class="attach-thumb" title="${escapeHtml(a.name)}"><img src="${a.dataUrl}" alt="${escapeHtml(a.name)}">` +
         `<button class="at-x" data-id="${a.id}" title="Remove" aria-label="Remove ${escapeHtml(a.name)}">×</button></div>`;
     }
-    // text file chip
-    if (a.pending) return `<div class="attach-file-chip pending" title="Reading ${escapeHtml(a.name)}…"><span class="afc-spinner"></span><span class="afc-name">${escapeHtml(a.name)}</span></div>`;
+    // text / pdf file chip
+    if (a.pending) {
+      const prog = a.progressText ? `<span class="afc-size">${escapeHtml(a.progressText)}</span>` : '';
+      return `<div class="attach-file-chip pending" title="Reading ${escapeHtml(a.name)}…"><span class="afc-spinner"></span><span class="afc-name">${escapeHtml(a.name)}</span>${prog}</div>`;
+    }
     return `<div class="attach-file-chip" title="${escapeHtml(a.name)} · ${fmtBytes(a.size)}">${DOC_ICON}<span class="afc-name">${escapeHtml(a.name)}</span><span class="afc-size">${fmtBytes(a.size)}</span>` +
       `<button class="at-x" data-id="${a.id}" title="Remove" aria-label="Remove ${escapeHtml(a.name)}">×</button></div>`;
   }).join('');
@@ -182,7 +281,10 @@ function updateVisionNote() {
   if (txtAtts.length) {
     const n = txtAtts.length, fw = n === 1 ? 'file' : 'files';
     const truncNote = txtAtts.some(a => a.truncated) ? ' <span class="vn-warn">(some truncated)</span>' : '';
-    parts.push(`📄 ${n} text ${fw} — content sent to all models.${truncNote}`);
+    const failNote = txtAtts.some(a => a.failed) ? ' <span class="vn-warn">(one couldn\'t be read — sent as a note)</span>' : '';
+    const hasPdf = txtAtts.some(a => a.isPdf);
+    const kindWord = hasPdf ? 'extracted text' : 'text';
+    parts.push(`📄 ${n} ${fw} — ${kindWord} sent to all models.${truncNote}${failNote}`);
   }
   note.innerHTML = parts.join('<br>');
 }
@@ -1502,8 +1604,8 @@ function init() {
     if (!isTouch) { e.preventDefault(); sendAll(); }    // desktop: plain Enter sends
   });
   $('promptInput').placeholder = isTouch
-    ? 'Type your prompt — sent to all selected models at once\nTap ➤ to send · attach images or text files'
-    : 'Type your prompt — sent to all selected models at once\nEnter to send · Shift+Enter for new line · paste or drop images / text files';
+    ? 'Type your prompt — sent to all selected models at once\nTap ➤ to send · attach images, PDFs or text files'
+    : 'Type your prompt — sent to all selected models at once\nEnter to send · Shift+Enter for new line · paste or drop images, PDFs or text files';
   $('promptInput').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; updateSendEnabled(); });
   $('sbTheme').onclick = () => applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
 

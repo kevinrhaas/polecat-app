@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "Attach PDFs",
+      "items": [
+        "You can now attach PDF documents (up to 10 MB) and ask every model to analyze them",
+        "Text is extracted right in your browser with light page markers — nothing is uploaded, matching Polecat's privacy promise",
+        "The PDF reader loads only when you attach a PDF, so the app stays light",
+        "A live per-page progress indicator shows on each file chip while text is being extracted",
+        "Scanned or image-only PDFs (and offline cases) degrade gracefully — the file is attached with a clear note instead of failing silently"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "Attach text files & docs",
       "items": [
         "You can now attach text files — .txt, .md, .csv, .json, .py, .js, .ts, .sh, .log, .yaml, .sql, and many more",

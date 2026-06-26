@@ -113,8 +113,13 @@ Polecat's privacy promise. (PPTX was the operator's concrete blocker — priorit
       docs + images; drag/drop/paste; ≤5 files; size caps; file chips with a type
       icon + name + size + remove. Plain-text family (txt, md, csv, json, code, log)
       is read and injected as text immediately.
-- [ ] **F2 — PDF text extraction** via pdf.js (lazy CDN); inject text with light page
-      markers; cap length.
+- [x] **F2 — PDF text extraction** via pdf.js (lazy CDN); inject text with light page
+      markers; cap length. Lazy-loads pdf.js 3.11.174 from cdnjs only when a PDF is
+      attached; extracts text page-by-page with `[Page N]` markers, caps at MAX_TEXT_CHARS
+      (truncation flag), shows a live per-page progress indicator on the file chip, and
+      degrades gracefully (scanned/image-only PDF, or CDN blocked → attach the file as a
+      labelled note). PDFs ride the existing `kind:'text'` injection path so they flow to
+      every model, including text-only ones.
 - [ ] **F3 — Office docs** (PPTX first, then DOCX, XLSX) via in-browser unzip
       (JSZip) / mammoth / SheetJS — extract slide/sheet/doc text.
 - [ ] **F4 — Prompt injection & budgeting.** Fold extracted content into the message
