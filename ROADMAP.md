@@ -120,8 +120,14 @@ Polecat's privacy promise. (PPTX was the operator's concrete blocker — priorit
       degrades gracefully (scanned/image-only PDF, or CDN blocked → attach the file as a
       labelled note). PDFs ride the existing `kind:'text'` injection path so they flow to
       every model, including text-only ones.
-- [ ] **F3 — Office docs** (PPTX first, then DOCX, XLSX) via in-browser unzip
-      (JSZip) / mammoth / SheetJS — extract slide/sheet/doc text.
+- [x] **F3 — Office docs** (PPTX first, then DOCX, XLSX) via in-browser unzip
+      (JSZip) / mammoth / SheetJS — extract slide/sheet/doc text. PPTX: JSZip unzips
+      `ppt/slides/slideN.xml`, pulls `<a:t>` runs with `[Slide N]` markers. DOCX:
+      mammoth `extractRawText`. XLSX: SheetJS `sheet_to_csv` per sheet with `[Sheet: …]`
+      markers. All lazy-load their parser from cdnjs only when that type is attached,
+      share the capped-block budget + per-slide/-sheet progress indicator, ride the
+      `kind:'text'` injection path, and degrade to a labelled note on failure. A generic
+      `loadScript()` + `pushCapped()` helper now backs both F2 and F3.
 - [ ] **F4 — Prompt injection & budgeting.** Fold extracted content into the message
       as labelled blocks ("Attached: deck.pptx" + text), shared across all selected
       models; token-budget + truncation notice; works with consensus/arbitration.

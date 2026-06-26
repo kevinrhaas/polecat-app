@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "Attach PowerPoint, Word & Excel files",
+      "items": [
+        "You can now attach Office documents — PPTX, DOCX and XLSX — and have every model analyze them",
+        "PowerPoint text is pulled slide-by-slide, Word documents as clean prose, and Excel sheets as readable tables",
+        "Everything is parsed right in your browser (JSZip / Mammoth / SheetJS, loaded only when needed) — nothing is uploaded",
+        "A live per-slide/-sheet progress indicator shows on each file chip while text is extracted",
+        "Unreadable or empty files degrade gracefully — attached with a clear note instead of failing silently"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "Attach PDFs",
       "items": [
         "You can now attach PDF documents (up to 10 MB) and ask every model to analyze them",

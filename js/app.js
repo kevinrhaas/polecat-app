@@ -106,38 +106,62 @@ function readTextFile(file, id) {
   });
 }
 
-// ── PDF text extraction (lazy pdf.js from CDN, F2) ───────────────────────────
-const MAX_PDF_BYTES = 10 * 1024 * 1024;          // 10MB per PDF (before reading)
+// ── Rich documents: lazy parser libs from CDN (F2 PDF, F3 Office) ────────────
+const MAX_DOC_BYTES = 10 * 1024 * 1024;          // 10MB per rich doc (before reading)
+
+// Generic one-shot lazy <script> loader keyed by URL. Resolves with the named
+// global once the script runs; rejects (and lets a retry re-attempt) on failure
+// so offline / CDN-blocked environments degrade gracefully.
+const _scriptCache = {};
+function loadScript(src, globalName) {
+  if (globalName && window[globalName]) return Promise.resolve(window[globalName]);
+  if (_scriptCache[src]) return _scriptCache[src];
+  _scriptCache[src] = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onload = () => {
+      const g = globalName ? window[globalName] : true;
+      if (globalName && !g) { delete _scriptCache[src]; reject(new Error(globalName + ' unavailable')); return; }
+      resolve(g);
+    };
+    s.onerror = () => { delete _scriptCache[src]; reject(new Error('Could not load ' + src)); };
+    document.head.appendChild(s);
+  });
+  return _scriptCache[src];
+}
+
+// Append a labelled block to `blocks`, respecting the shared char budget.
+// Returns false once the budget is exhausted (caller should stop). `st` is
+// { chars, truncated }.
+function pushCapped(blocks, st, block) {
+  if (st.chars + block.length > MAX_TEXT_CHARS) {
+    const room = Math.max(0, MAX_TEXT_CHARS - st.chars);
+    if (room) blocks.push(block.slice(0, room));
+    st.truncated = true; return false;
+  }
+  blocks.push(block); st.chars += block.length + 2; return true;
+}
+
+function decodeXmlEntities(s) {
+  return s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'").replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&amp;/g, '&');
+}
+
+// ── PDF (F2) ──
 const PDFJS_VER = '3.11.174';
 const PDFJS_SRC = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VER}/pdf.min.js`;
 const PDFJS_WORKER = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VER}/pdf.worker.min.js`;
-let _pdfjsPromise = null;
-// Load pdf.js on demand the first time a PDF is attached. Guards for offline /
-// CDN-blocked environments by rejecting so the caller can degrade gracefully.
 function loadPdfJs() {
-  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
-  if (_pdfjsPromise) return _pdfjsPromise;
-  _pdfjsPromise = new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = PDFJS_SRC;
-    s.async = true;
-    s.onload = () => {
-      const lib = window.pdfjsLib;
-      if (!lib) { _pdfjsPromise = null; reject(new Error('pdf.js unavailable')); return; }
-      try { lib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER; } catch {}
-      resolve(lib);
-    };
-    s.onerror = () => { _pdfjsPromise = null; reject(new Error('Could not load the PDF reader')); };
-    document.head.appendChild(s);
+  return loadScript(PDFJS_SRC, 'pdfjsLib').then(lib => {
+    try { lib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER; } catch {}
+    return lib;
   });
-  return _pdfjsPromise;
 }
-
 function isPdfFile(f) {
   if (f.type === 'application/pdf') return true;
   return ((f.name || '').split('.').pop() || '').toLowerCase() === 'pdf';
 }
-
 // Extract selectable text from a PDF, page by page, with light page markers and
 // a char cap. onProgress(page, total) drives the per-file progress indicator.
 function readPdfFile(file, id, onProgress) {
@@ -149,31 +173,98 @@ function readPdfFile(file, id, onProgress) {
         const pdfjs = await loadPdfJs();
         const doc = await pdfjs.getDocument({ data: new Uint8Array(r.result) }).promise;
         const numPages = doc.numPages;
-        const blocks = [];
-        let chars = 0, truncated = false;
+        const blocks = []; const st = { chars: 0, truncated: false };
         for (let p = 1; p <= numPages; p++) {
           if (onProgress) onProgress(p, numPages);
           const page = await doc.getPage(p);
           const content = await page.getTextContent();
           const txt = content.items.map(it => it.str).join(' ')
             .replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').trim();
-          const block = `[Page ${p}]\n${txt}`;
-          if (chars + block.length > MAX_TEXT_CHARS) {
-            const room = Math.max(0, MAX_TEXT_CHARS - chars);
-            if (room) blocks.push(block.slice(0, room));
-            truncated = true; break;
-          }
-          blocks.push(block); chars += block.length + 2;
+          if (!pushCapped(blocks, st, `[Page ${p}]\n${txt}`)) break;
         }
         try { doc.destroy(); } catch {}
         const text = blocks.join('\n\n').trim();
         if (!text) { reject(new Error('No selectable text')); return; }
         resolve({ id, name: file.name || 'document.pdf', mime: 'application/pdf',
-          kind: 'text', size: file.size, textContent: text, truncated, isPdf: true, pageCount: numPages });
+          kind: 'text', size: file.size, textContent: text, truncated: st.truncated, isPdf: true, pageCount: numPages });
       } catch (e) { reject(e); }
     };
     r.readAsArrayBuffer(file);
   });
+}
+
+// ── Office docs: PPTX / DOCX / XLSX (F3) ──
+const JSZIP_SRC   = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+const MAMMOTH_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+const SHEETJS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+
+// Returns 'pptx' | 'docx' | 'xlsx' | null
+function officeKind(f) {
+  const ext = ((f.name || '').split('.').pop() || '').toLowerCase();
+  if (ext === 'pptx' || ext === 'docx' || ext === 'xlsx') return ext;
+  const m = f.type || '';
+  if (m.includes('presentationml')) return 'pptx';
+  if (m.includes('wordprocessingml')) return 'docx';
+  if (m.includes('spreadsheetml')) return 'xlsx';
+  return null;
+}
+function isOfficeFile(f) { return !!officeKind(f); }
+
+// PPTX = a zip of slideN.xml; pull <a:t> runs, one line per paragraph (<a:p>).
+function pptxSlideText(xml) {
+  return xml.split('</a:p>').map(p => {
+    const runs = []; const re = /<a:t>([\s\S]*?)<\/a:t>/g; let m;
+    while ((m = re.exec(p))) runs.push(decodeXmlEntities(m[1]));
+    return runs.join('');
+  }).filter(s => s.trim()).join('\n').replace(/[ \t]+/g, ' ').trim();
+}
+async function readPptxFile(file, id, onProgress) {
+  const buf = await file.arrayBuffer();
+  const JSZip = await loadScript(JSZIP_SRC, 'JSZip');
+  const zip = await JSZip.loadAsync(buf);
+  const slideNo = n => parseInt((n.match(/slide(\d+)\.xml$/) || [])[1] || '0', 10);
+  const names = Object.keys(zip.files)
+    .filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))
+    .sort((a, b) => slideNo(a) - slideNo(b));
+  const blocks = []; const st = { chars: 0, truncated: false };
+  for (let i = 0; i < names.length; i++) {
+    if (onProgress) onProgress(i + 1, names.length);
+    const xml = await zip.files[names[i]].async('string');
+    const txt = pptxSlideText(xml);
+    if (txt && !pushCapped(blocks, st, `[Slide ${i + 1}]\n${txt}`)) break;
+  }
+  const text = blocks.join('\n\n').trim();
+  if (!text) throw new Error('No slide text');
+  return { id, name: file.name, mime: file.type || 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    kind: 'text', size: file.size, textContent: text, truncated: st.truncated, isOffice: true, office: 'pptx' };
+}
+async function readDocxFile(file, id, onProgress) {
+  if (onProgress) onProgress(1, 1);
+  const buf = await file.arrayBuffer();
+  const mammoth = await loadScript(MAMMOTH_SRC, 'mammoth');
+  const res = await mammoth.extractRawText({ arrayBuffer: buf });
+  let text = ((res && res.value) || '').replace(/\n{3,}/g, '\n\n').trim();
+  if (!text) throw new Error('No document text');
+  const truncated = text.length > MAX_TEXT_CHARS;
+  if (truncated) text = text.slice(0, MAX_TEXT_CHARS);
+  return { id, name: file.name, mime: file.type, kind: 'text', size: file.size,
+    textContent: text, truncated, isOffice: true, office: 'docx' };
+}
+async function readXlsxFile(file, id, onProgress) {
+  const buf = await file.arrayBuffer();
+  const XLSX = await loadScript(SHEETJS_SRC, 'XLSX');
+  const wb = XLSX.read(buf, { type: 'array' });
+  const blocks = []; const st = { chars: 0, truncated: false };
+  for (let i = 0; i < wb.SheetNames.length; i++) {
+    if (onProgress) onProgress(i + 1, wb.SheetNames.length);
+    const name = wb.SheetNames[i];
+    const csv = XLSX.utils.sheet_to_csv(wb.Sheets[name]).trim();
+    if (csv && !pushCapped(blocks, st, `[Sheet: ${name}]\n${csv}`)) break;
+  }
+  const text = blocks.join('\n\n').trim();
+  if (!text) throw new Error('No sheet data');
+  return { id, name: file.name, mime: file.type, kind: 'text', size: file.size,
+    textContent: text, truncated: st.truncated, isOffice: true, office: 'xlsx' };
 }
 
 function fmtBytes(n) {
@@ -184,7 +275,7 @@ function fmtBytes(n) {
 
 async function addFiles(fileList) {
   const all = Array.from(fileList || []);
-  const ok = f => isImageFile(f) || isPdfFile(f) || isTextFile(f);
+  const ok = f => isImageFile(f) || isPdfFile(f) || isOfficeFile(f) || isTextFile(f);
   const accepted = all.filter(ok);
   const rejected = all.filter(f => !ok(f));
   if (rejected.length) toast(`Unsupported: ${rejected.map(f => '"' + f.name + '"').join(', ')}`);
@@ -193,28 +284,36 @@ async function addFiles(fileList) {
     if (attachments.length >= MAX_ATTACH) { toast(`Up to ${MAX_ATTACH} attachments`); break; }
     const isImg = isImageFile(f);
     const isPdf = !isImg && isPdfFile(f);
-    const limit = isImg ? MAX_ATTACH_BYTES : (isPdf ? MAX_PDF_BYTES : MAX_TEXT_ATTACH_BYTES);
-    if (f.size > limit) { toast(`"${f.name}" is too large (max ${isImg ? '8' : (isPdf ? '10' : '5')} MB)`); continue; }
+    const office = (!isImg && !isPdf) ? officeKind(f) : null;
+    const isRichDoc = isPdf || !!office;   // PDF + Office share the 10MB cap and the note-fallback
+    const limit = isImg ? MAX_ATTACH_BYTES : (isRichDoc ? MAX_DOC_BYTES : MAX_TEXT_ATTACH_BYTES);
+    if (f.size > limit) { toast(`"${f.name}" is too large (max ${isImg ? '8' : (isRichDoc ? '10' : '5')} MB)`); continue; }
 
     // Add pending placeholder so the chip appears immediately with a spinner
     const id = 'a' + Date.now().toString(36) + (_attc++).toString(36);
     attachments.push({ id, name: f.name, mime: f.type, kind: isImg ? 'image' : 'text', pending: true, size: f.size });
     renderAttachments(); updateSendEnabled();
 
+    const prog = (p, n) => setAttachProgress(id, p, n);
     try {
       let att;
       if (isImg) att = await readImageFile(f, id);
-      else if (isPdf) att = await readPdfFile(f, id, (p, n) => setAttachProgress(id, p, n));
+      else if (isPdf) att = await readPdfFile(f, id, prog);
+      else if (office === 'pptx') att = await readPptxFile(f, id, prog);
+      else if (office === 'docx') att = await readDocxFile(f, id, prog);
+      else if (office === 'xlsx') att = await readXlsxFile(f, id, prog);
       else att = await readTextFile(f, id);
       const idx = attachments.findIndex(a => a.id === id);
       if (idx >= 0) attachments[idx] = att;
     } catch (e) {
-      if (isPdf) {
-        // Graceful degradation: keep the file as a labelled note so models still
-        // know it was attached (CDN blocked, scanned/image-only PDF, parse failure).
-        const note = `[Attached "${f.name}" — could not extract text in-browser (the PDF may be scanned/image-only, or the PDF reader was unavailable).]`;
-        const fallback = { id, name: f.name, mime: 'application/pdf', kind: 'text', size: f.size,
-          textContent: note, truncated: false, isPdf: true, failed: true };
+      if (isRichDoc) {
+        // Graceful degradation: keep the file as a labelled note so models still know
+        // it was attached (CDN blocked, scanned/image-only PDF, empty/parse failure).
+        const why = isPdf ? 'the PDF may be scanned/image-only, or the PDF reader was unavailable'
+          : 'the document reader was unavailable or the file had no extractable text';
+        const note = `[Attached "${f.name}" — could not extract text in-browser (${why}).]`;
+        const fallback = { id, name: f.name, mime: f.type, kind: 'text', size: f.size,
+          textContent: note, truncated: false, failed: true, isPdf, isOffice: !!office, office: office || undefined };
         const idx = attachments.findIndex(a => a.id === id);
         if (idx >= 0) attachments[idx] = fallback; else attachments.push(fallback);
         toast(`Couldn't read text from "${f.name}" — attached as a note`);
@@ -282,8 +381,8 @@ function updateVisionNote() {
     const n = txtAtts.length, fw = n === 1 ? 'file' : 'files';
     const truncNote = txtAtts.some(a => a.truncated) ? ' <span class="vn-warn">(some truncated)</span>' : '';
     const failNote = txtAtts.some(a => a.failed) ? ' <span class="vn-warn">(one couldn\'t be read — sent as a note)</span>' : '';
-    const hasPdf = txtAtts.some(a => a.isPdf);
-    const kindWord = hasPdf ? 'extracted text' : 'text';
+    const hasExtract = txtAtts.some(a => a.isPdf || a.isOffice);
+    const kindWord = hasExtract ? 'extracted text' : 'text';
     parts.push(`📄 ${n} ${fw} — ${kindWord} sent to all models.${truncNote}${failNote}`);
   }
   note.innerHTML = parts.join('<br>');
@@ -1604,8 +1703,8 @@ function init() {
     if (!isTouch) { e.preventDefault(); sendAll(); }    // desktop: plain Enter sends
   });
   $('promptInput').placeholder = isTouch
-    ? 'Type your prompt — sent to all selected models at once\nTap ➤ to send · attach images, PDFs or text files'
-    : 'Type your prompt — sent to all selected models at once\nEnter to send · Shift+Enter for new line · paste or drop images, PDFs or text files';
+    ? 'Type your prompt — sent to all selected models at once\nTap ➤ to send · attach images, PDFs, Office docs or text files'
+    : 'Type your prompt — sent to all selected models at once\nEnter to send · Shift+Enter for new line · paste or drop images, PDFs, Office docs or text files';
   $('promptInput').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; updateSendEnabled(); });
   $('sbTheme').onclick = () => applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
 
