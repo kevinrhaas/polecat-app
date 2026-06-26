@@ -105,6 +105,15 @@ function officeDocType(f) {
   return null;
 }
 
+// Convert an ArrayBuffer to base64 without hitting stack limits on large files.
+function _bufToBase64(buf) {
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  const chunk = 8192;
+  for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  return btoa(binary);
+}
+
 // Lazy-load pdf.js from CDN only when a PDF is first attached.
 const _PDF_JS  = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
 const _PDF_WRK = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -127,6 +136,8 @@ function loadPdfJs() {
 async function readPdfFile(file, id, onProgress) {
   const pdfjs = await loadPdfJs();
   const buf   = await file.arrayBuffer();
+  // Store base64 so capable providers (Anthropic, Gemini) can receive the PDF natively.
+  const rawData = _bufToBase64(buf);
   const pdf   = await pdfjs.getDocument({ data: buf }).promise;
   const total = pdf.numPages;
   let text = '', truncated = false;
@@ -143,7 +154,7 @@ async function readPdfFile(file, id, onProgress) {
     if (onProgress) onProgress(Math.round((i / total) * 100));
   }
   return { id, name: file.name || 'document.pdf', mime: 'application/pdf',
-    kind: 'text', size: file.size, textContent: text, truncated, pageCount: total };
+    kind: 'text', size: file.size, textContent: text, truncated, pageCount: total, rawData };
 }
 
 // Lazy-load office document parsing libraries from CDN only when first needed.
@@ -372,7 +383,17 @@ function updateVisionNote() {
   }
   if (pdfAtts.length) {
     const n = pdfAtts.length, fw = n === 1 ? 'PDF' : 'PDFs';
-    parts.push(`📄 ${n} ${fw} — text extracted in-browser, sent to all models.`);
+    const allSels = sels();
+    const nativeSels = allSels.filter(s => PROVIDERS[s.provider]?.nativePdf);
+    const hasRaw = pdfAtts.some(a => a.rawData);
+    if (hasRaw && nativeSels.length > 0 && nativeSels.length < allSels.length) {
+      const names = [...new Set(nativeSels.map(s => PROVIDERS[s.provider].short))].join(', ');
+      parts.push(`📄 ${n} ${fw} — sent natively (full fidelity) to ${escapeHtml(names)}; text extracted for other models.`);
+    } else if (hasRaw && nativeSels.length > 0 && nativeSels.length === allSels.length) {
+      parts.push(`📄 ${n} ${fw} — sent natively (full-fidelity PDF, not just extracted text).`);
+    } else {
+      parts.push(`📄 ${n} ${fw} — text extracted in-browser, sent to all models.`);
+    }
   }
   if (officeAtts.length) {
     const n = officeAtts.length, fw = n === 1 ? 'document' : 'documents';
@@ -588,10 +609,11 @@ function finishBubble(pair, full) {
   copyBtn.hidden = false; copyBtn.onclick = () => copyText(full, copyBtn);
 }
 
-async function streamTo(sel, userContent, images, displayAtts) {
+async function streamTo(sel, userContent, images, displayAtts, nativePdfs = null) {
   const co = getConvo(sel.id);
   const userMsg = { role: 'user', content: userContent };
-  if (images && images.length) userMsg.images = images;  // only image attachments for API
+  if (images && images.length) userMsg.images = images;         // image attachments for API
+  if (nativePdfs && nativePdfs.length) userMsg.pdfs = nativePdfs; // native PDF blocks for Anthropic/Gemini
   co.push(userMsg);
   const conv = $('conv_' + sel.id);
   $('empty_' + sel.id)?.remove();
@@ -708,16 +730,25 @@ async function sendAll() {
   const imgAtts   = readyAtts.filter(a => a.kind === 'image');
   const textFiles = readyAtts.filter(a => a.kind === 'text');
 
-  // Inject text file contents as labelled blocks prepended to the user message.
-  // Total char budget is enforced so many files can't silently overflow context.
-  let userText = text;
+  // PDFs with rawData can be passed natively to Anthropic/Gemini instead of extracted text.
+  const rawPdfAtts     = textFiles.filter(a => a.mime === 'application/pdf' && a.rawData);
+  const otherTextFiles = textFiles.filter(a => !(a.mime === 'application/pdf' && a.rawData));
+
+  // userTextFull: all extracted text (used for providers without native PDF support).
+  let userTextFull = text;
   if (textFiles.length) {
     const built = buildTextBlocks(textFiles);
     if (built.truncated) toast(`Context capped at ${(MAX_TOTAL_TEXT_CHARS / 1000).toFixed(0)}k characters — some file content was trimmed`);
-    if (built.parts.length) userText = built.parts.join('\n\n') + (text ? '\n\n' + text : '');
+    if (built.parts.length) userTextFull = built.parts.join('\n\n') + (text ? '\n\n' + text : '');
+  }
+  // userTextNoPdf: non-PDF extracted text only (PDFs are sent natively for capable providers).
+  let userTextNoPdf = text;
+  if (otherTextFiles.length) {
+    const built = buildTextBlocks(otherTextFiles);
+    if (built.parts.length) userTextNoPdf = built.parts.join('\n\n') + (text ? '\n\n' + text : '');
   }
 
-  if (!userText && !imgAtts.length) return;
+  if (!userTextFull && !imgAtts.length && !rawPdfAtts.length) return;
   const list = sels();
   if (!list.length) { openConfig('models'); return; }
 
@@ -740,7 +771,10 @@ async function sendAll() {
 
   try {
     await Promise.allSettled(list.map(async sel => {
-      const r = await streamTo(sel, userText, imgAtts, readyAtts);
+      const useNative = PROVIDERS[sel.provider]?.nativePdf && rawPdfAtts.length > 0;
+      const userText  = useNative ? userTextNoPdf : userTextFull;
+      const nativePdfs = useNative ? rawPdfAtts : null;
+      const r = await streamTo(sel, userText, imgAtts, readyAtts, nativePdfs);
       order.push(sel.id); results[sel.id] = r;
     }));
 

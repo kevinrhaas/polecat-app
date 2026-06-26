@@ -3,6 +3,17 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "Native PDF support for Claude and Gemini",
+      "items": [
+        "PDFs attached to Claude or Gemini models are now sent as native document blocks — the model reads the actual PDF, not just extracted text",
+        "Higher-fidelity analysis: layout, tables, and formatting are preserved for capable models",
+        "Text extraction remains the universal fallback for other providers (OpenRouter, Groq, etc.) — no regressions",
+        "The attachment note now tells you exactly which models are receiving your PDF natively vs. as extracted text",
+        "When mixing Claude/Gemini with text-only providers, each model gets the best format it supports — automatically"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "Smarter file context: budget cap + clearer labels",
       "items": [
         "Attached files now share a 60k-character context budget — all models get the right amount without silently overflowing",

@@ -39,6 +39,7 @@ export const PROVIDERS = {
     placeholder: 'sk-ant-api03-…',
     keyUrl: 'https://console.anthropic.com', keyLabel: 'console.anthropic.com',
     openUrl: 'https://claude.ai/new',
+    nativePdf: true,
     models: [
       { value: 'claude-opus-4-8',            label: 'Opus 4.8',   price: '$$$$', vision: true },
       { value: 'claude-sonnet-4-6',          label: 'Sonnet 4.6', price: '$$$',  vision: true },
@@ -55,6 +56,7 @@ export const PROVIDERS = {
     placeholder: 'AIzaSy…',
     keyUrl: 'https://aistudio.google.com', keyLabel: 'aistudio.google.com',
     openUrl: 'https://gemini.google.com/app',
+    nativePdf: true,
     models: [
       { value: 'gemini-3.5-flash',       label: '3.5 Flash', price: '$$',  vision: true },
       { value: 'gemini-3.1-pro-preview', label: '3.1 Pro',   price: '$$$', vision: true },
@@ -206,12 +208,16 @@ async function* streamWithTimeout(resp, extract, onFirst) {
 // target model is vision-capable (opts.vision) — otherwise the model gets the
 // text alone (so a mixed line-up "just works", text-only models silently skip).
 function hasImages(m) { return m.role === 'user' && Array.isArray(m.images) && m.images.length > 0; }
+function hasPdfs(m) { return m.role === 'user' && Array.isArray(m.pdfs) && m.pdfs.length > 0; }
 function claudeContent(m, vision) {
-  if (!vision || !hasImages(m)) return m.content;
-  return [
-    ...m.images.map(im => ({ type: 'image', source: { type: 'base64', media_type: im.mime, data: im.data } })),
-    ...(m.content ? [{ type: 'text', text: m.content }] : []),
-  ];
+  if (!hasPdfs(m) && (!vision || !hasImages(m))) return m.content;
+  const parts = [];
+  if (hasPdfs(m))
+    for (const pdf of m.pdfs) parts.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdf.rawData } });
+  if (vision && hasImages(m))
+    for (const im of m.images) parts.push({ type: 'image', source: { type: 'base64', media_type: im.mime, data: im.data } });
+  if (m.content) parts.push({ type: 'text', text: m.content });
+  return parts;
 }
 function oaiContent(m, vision) {
   if (!vision || !hasImages(m)) return m.content;
@@ -224,13 +230,15 @@ function oaiContent(m, vision) {
 // ── Anthropic ───────────────────────────────────────────────────────────────
 async function* apiClaude(messages, key, model, opts = {}) {
   const { signal, done } = reqSignal(opts);
+  const hasPdfMsg = messages.some(hasPdfs);
   try {
+    const headers = {
+      'x-api-key': key, 'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true', 'content-type': 'application/json',
+    };
+    if (hasPdfMsg) headers['anthropic-beta'] = 'pdfs-2024-09-25';
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST', signal,
-      headers: {
-        'x-api-key': key, 'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true', 'content-type': 'application/json',
-      },
+      method: 'POST', signal, headers,
       body: JSON.stringify({
         model: model || 'claude-opus-4-8', max_tokens: opts.maxTokens || 8096, stream: true,
         messages: messages.map(m => ({ role: m.role, content: claudeContent(m, opts.vision) })),
@@ -247,12 +255,14 @@ function geminiContents(messages, vision) {
   for (const m of messages) {
     const role = m.role === 'assistant' ? 'model' : 'user';
     const parts = [];
+    if (hasPdfs(m)) for (const pdf of m.pdfs) parts.push({ inline_data: { mime_type: 'application/pdf', data: pdf.rawData } });
     if (vision && hasImages(m)) for (const im of m.images) parts.push({ inline_data: { mime_type: im.mime, data: im.data } });
     if (m.content) parts.push({ text: m.content });
     if (!parts.length) parts.push({ text: '' });
     const last = out[out.length - 1];
-    // merge consecutive same-role text turns, but never merge a turn carrying images
-    if (last && last.role === role && !(vision && hasImages(m))) last.parts.push(...parts);
+    const hasMedia = hasPdfs(m) || (vision && hasImages(m));
+    // merge consecutive same-role text turns, but never merge a turn carrying media
+    if (last && last.role === role && !hasMedia) last.parts.push(...parts);
     else out.push({ role, parts });
   }
   return out;

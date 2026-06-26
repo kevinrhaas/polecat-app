@@ -120,7 +120,7 @@ Polecat's privacy promise. (PPTX was the operator's concrete blocker — priorit
 - [x] **F4 — Prompt injection & budgeting.** Fold extracted content into the message
       as labelled blocks ("Attached: deck.pptx" + text), shared across all selected
       models; token-budget + truncation notice; works with consensus/arbitration.
-- [ ] **F5 — Native document passing — APPROVED (operator said yes to native PDF).**
+- [x] **F5 — Native document passing — APPROVED (operator said yes to native PDF).**
       For capable providers, pass the document natively instead of extracted text:
       Anthropic PDF document blocks, Gemini inline_data application/pdf, OpenAI file
       input. **Prioritize native PDF for Claude/Gemini/GPT** (higher fidelity); keep
