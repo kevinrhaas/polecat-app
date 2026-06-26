@@ -3,6 +3,15 @@
   "entries": [
     {
       "date": "2026-06-26",
+      "title": "See what went into every consensus",
+      "items": [
+        "✦ Each consensus answer now shows the models it was blended from, with the arbiter marked ⚖️",
+        "Tap any contributing model to jump straight to its full, raw reply",
+        "Makes the cross-model synthesis transparent — verify the sources in one click"
+      ]
+    },
+    {
+      "date": "2026-06-26",
       "title": "See which model answered fastest",
       "items": [
         "⏱ Each model's reply now shows how long it took — watch the multi-model race in real time",

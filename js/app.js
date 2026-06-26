@@ -457,6 +457,30 @@ async function getSilentText(sel, messages) {
   for await (const chunk of makeGen(sel, messages, cfg)) text += chunk;
   return text;
 }
+// Attribution footer under a finished consensus answer: which models fed it,
+// which one arbitrated, and a tap-through to each model's raw reply. Makes the
+// cross-model synthesis transparent — the heart of what Polecat does.
+function consensusSourcesEl(arbiterSel) {
+  const contributors = order.filter(id => results[id]).map(id => selById(id)).filter(Boolean);
+  if (contributors.length < 2) return null;               // nothing to "blend" — skip
+  const strat = activeStrategy(cfg);
+  const arbId = arbiterSel && arbiterSel.id;
+  const chips = contributors.map(s => {
+    const isArb = s.id === arbId;
+    const label = selectionLabel(s);
+    return `<button class="cs-chip${isArb ? ' cs-arbiter' : ''}" data-tab="${escapeHtml(s.id)}" ` +
+      `style="--c:${PROVIDERS[s.provider].color}" ` +
+      `title="${isArb ? 'Final arbiter — wrote this consensus. ' : ''}Open ${escapeHtml(label)}'s full answer">` +
+      `<span class="cs-dot"></span>${escapeHtml(label)}${isArb ? ' ⚖️' : ''}</button>`;
+  }).join('');
+  const wrap = el('div', 'consensus-sources');
+  wrap.innerHTML =
+    `<span class="cs-label">✦ Blended from ${contributors.length} models · ${escapeHtml(strat.name)}</span>` +
+    `<div class="cs-chips">${chips}</div>`;
+  wrap.querySelectorAll('.cs-chip').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+  return wrap;
+}
+
 async function streamToConsensus(sel, messages) {
   const conv = $('conv_consensus');
   consensusPhase = 'done'; $('consensus-progress')?.remove(); $('empty_consensus')?.remove();
@@ -468,7 +492,11 @@ async function streamToConsensus(sel, messages) {
   const t0 = performance.now();
   for await (const chunk of makeGen(sel, messages, cfg)) { full += chunk; bubble.innerHTML = renderMarkdown(full); scrollBottom(conv); }
   finishBubble(pair, full);
-  if (full) setMsgTime(pair, performance.now() - t0);
+  if (full) {
+    setMsgTime(pair, performance.now() - t0);
+    const sources = consensusSourcesEl(sel);
+    if (sources) { pair.querySelector('.msg.assistant').appendChild(sources); scrollBottom(conv); }
+  }
   lastConsensusText = full;
   return full;
 }
