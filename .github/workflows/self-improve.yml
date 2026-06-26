@@ -127,6 +127,19 @@ jobs:
 
             Keep each part to a single focused commit. Prefer quality over quantity.
 
+      # Surface agent-level failures (e.g. API out of credit / spend cap): the
+      # action reports the step "success" even when the model call errored, so
+      # check its result JSON and fail the job loudly if is_error is true.
+      - name: Fail if the agent errored
+        if: always()
+        run: |
+          f=/home/runner/work/_temp/claude-execution-output.json
+          if [ -f "$f" ] && grep -Eq '"is_error":[[:space:]]*true' "$f"; then
+            echo "::error::Claude agent returned is_error=true (likely API credit/spend-limit or auth). Check console.anthropic.com billing."
+            exit 1
+          fi
+          echo "Agent result OK (no is_error)."
+
       # Prints the website repo's latest commit so each run is auditable (the
       # action itself hides the agent transcript). No-op if GH_PAT isn't set.
       - name: Verify website update
