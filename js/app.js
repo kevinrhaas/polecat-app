@@ -353,6 +353,11 @@ async function sendAll() {
   setChipsDisabled(true);
   document.body.classList.add('processing');
   pruneTabs(); ensureTabs();
+  // Consensus is the headline — focus its tab on send so the reader watches the
+  // live multi-model race (each model checking in ✓/✗) and then the synthesis,
+  // instead of being parked on one model's stream. Matches the history-restore
+  // behaviour, so live and restored chats land in the same place.
+  if (cfg.consensus && $('tab_consensus')) switchTab('consensus');
   if (cfg.consensus) refreshConsensusProgress();
 
   try {
