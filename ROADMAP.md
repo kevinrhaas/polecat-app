@@ -86,7 +86,51 @@ mobile, with zero impact on time-to-first-answer.
 
 ---
 
-## EPIC 2 — Settings & icon-system refresh  ⭐ (next after EPIC 1)
+## EPIC 2 — Files & documents as attachments  ⭐⭐ (operator-requested, high priority)
+
+**Vision:** let users attach not just images but **documents** — PPTX, PDF, DOCX,
+XLSX, CSV, TXT, MD, code, JSON — and analyze them across models. Everything stays
+**100% in the browser** (no server): text is extracted client-side, matching
+Polecat's privacy promise. (PPTX was the operator's concrete blocker — prioritize it.)
+
+**Principles**
+- Up to **5 attachments**; per-file size cap (~10MB) + a sensible total cap. Clear,
+  friendly errors for unsupported types / too-large files.
+- **Extract text client-side** and inject it as a labelled context block so EVERY
+  model can use it (including free text-only models). Images keep the native vision path.
+- **Lazy-load** parser libraries from CDN only when a matching file is attached
+  (keep the app light); guard for offline/CDN-blocked.
+- Truncate very large extractions to a token budget with a visible "(truncated)"
+  note; mind free-demo/context limits.
+- Graceful degradation: if a type can't be parsed, attach the filename + a note.
+
+**Phases** (one per run; keep each a single focused commit)
+- [ ] **F1 — Generalize attachments from images-only to any file.** Picker accepts
+      docs + images; drag/drop/paste; ≤5 files; size caps; file chips with a type
+      icon + name + size + remove. Plain-text family (txt, md, csv, json, code, log)
+      is read and injected as text immediately.
+- [ ] **F2 — PDF text extraction** via pdf.js (lazy CDN); inject text with light page
+      markers; cap length.
+- [ ] **F3 — Office docs** (PPTX first, then DOCX, XLSX) via in-browser unzip
+      (JSZip) / mammoth / SheetJS — extract slide/sheet/doc text.
+- [ ] **F4 — Prompt injection & budgeting.** Fold extracted content into the message
+      as labelled blocks ("Attached: deck.pptx" + text), shared across all selected
+      models; token-budget + truncation notice; works with consensus/arbitration.
+- [ ] **F5 — Native document passing (enhancement)** for capable providers
+      (Anthropic PDF document blocks, Gemini inline_data application/pdf, OpenAI file
+      input) when the model supports it — better than text-only for those models.
+- [ ] **F6 — Polish.** Parsing progress indicator, error states, mobile, a11y, a
+      privacy note ("files are read in your browser, never uploaded"), "What's new".
+
+**Open question (non-blocking):** default is *extract-text-for-all* (universal). Native
+PDF/doc passing to capable models is F5 (enhancement) — confirm if it should jump ahead.
+
+**Done when:** a user can attach a PPTX (and PDF/DOCX/XLSX/text) and ask all models
+to analyze it, fully client-side, with clean limits and clear feedback.
+
+---
+
+## EPIC 3 — Settings & icon-system refresh  ⭐ (next after EPIC 1)
 
 Make the chrome (settings, sidebar, overlays) sleek, modern, simpler and less
 confusing, with a consistent icon language and zero emoji.
