@@ -263,9 +263,19 @@ function assistantPair(label, userContent, images) {
   pair.innerHTML =
     userMsgHtml(userContent, images) +
     `<div class="msg assistant"><div class="msg-head"><span class="msg-label">${escapeHtml(label)}</span>` +
+    `<span class="msg-time" hidden></span>` +
     `<button class="copy-btn" title="Copy" hidden>${COPY_SVG}</button></div>` +
     `<div class="msg-bubble"><div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></div>`;
   return pair;
+}
+// Show how long a model took to respond — makes the parallel multi-model race tangible.
+function setMsgTime(pair, ms) {
+  const t = pair?.querySelector('.msg-time'); if (!t || !(ms >= 0)) return;
+  const secs = ms / 1000;
+  const label = (secs < 10 ? secs.toFixed(1) : Math.round(secs)) + 's';
+  t.textContent = label;
+  t.title = `Responded in ${label}`;
+  t.hidden = false;
 }
 function finishBubble(pair, full) {
   const bubble = pair.querySelector('.msg.assistant .msg-bubble');
@@ -290,11 +300,13 @@ async function streamTo(sel, userContent, images) {
   const dot = $('tdot_' + sel.id); dot?.classList.add('loading');
   markRun(sel.id, 'streaming');
   let full = '';
+  const t0 = performance.now();
   try {
     const gen = makeGen(sel, co, cfg);
     bubble.innerHTML = '';
     for await (const chunk of gen) { full += chunk; bubble.innerHTML = renderMarkdown(full); scrollBottom(conv); }
     finishBubble(pair, full);
+    if (full) setMsgTime(pair, performance.now() - t0);
     co.push({ role: 'assistant', content: full });
     markRun(sel.id, 'done');
     return full;
@@ -453,8 +465,10 @@ async function streamToConsensus(sel, messages) {
   const bubble = pair.querySelector('.msg.assistant .msg-bubble');
   let full = '';
   bubble.innerHTML = '';
+  const t0 = performance.now();
   for await (const chunk of makeGen(sel, messages, cfg)) { full += chunk; bubble.innerHTML = renderMarkdown(full); scrollBottom(conv); }
   finishBubble(pair, full);
+  if (full) setMsgTime(pair, performance.now() - t0);
   lastConsensusText = full;
   return full;
 }

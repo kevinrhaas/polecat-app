@@ -270,6 +270,8 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 
 /* result copy button */
 .msg-head { display: flex; align-items: center; gap: 8px; }
+.msg-time { font-size: 10px; color: var(--text-3); font-variant-numeric: tabular-nums; letter-spacing: .2px; display: inline-flex; align-items: center; gap: 3px; opacity: .85; }
+.msg-time::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: .55; }
 .copy-btn { background: none; border: none; color: var(--text-3); cursor: pointer; padding: 2px; border-radius: 5px; display: inline-flex; line-height: 0; opacity: .7; transition: all .15s; }
 .copy-btn:hover { color: var(--text); background: var(--surface-3); opacity: 1; }
 .copy-btn.copied { color: #34d399; }

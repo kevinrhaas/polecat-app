@@ -1,6 +1,14 @@
 {
-  "updated": "2026-06-25",
+  "updated": "2026-06-26",
   "entries": [
+    {
+      "date": "2026-06-26",
+      "title": "See which model answered fastest",
+      "items": [
+        "⏱ Each model's reply now shows how long it took — watch the multi-model race in real time",
+        "The consensus answer shows its own synthesis time too"
+      ]
+    },
     {
       "date": "2026-06-25",
       "title": "Free demo + a whole new chat experience",
