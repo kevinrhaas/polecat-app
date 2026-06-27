@@ -198,23 +198,15 @@ confusing, with a consistent icon language and zero emoji.
 - [x] Shareable read-only consensus links (client-side encoded, no server). Share button on every consensus answer; URL-encoded payload (base64, UTF-8 safe); read-only modal with model responses + consensus + CTA.
 
 ### Operator-requested (carry-over from session 2026-06-27)
-- [ ] **BUG (HIGH): non-vision models get no hint an image was attached → confused
-  answers.** Repro: attach an image, ask "your thoughts on this", with a text-only
-  model selected (e.g. Free demo · Llama 3.3 70B). The image is silently stripped,
-  the model gets only the bare prompt and replies "I'm not sure what you'd like my
-  thoughts on…". Fix: when sending to a model that can't view images (`opts.vision`
-  false) and the message carries `images`, inject a short text placeholder into the
-  content — e.g. `[The user attached N image(s) that this model can't view. If the
-  question depends on the image, say you can't see it and ask for a text description;
-  otherwise answer as best you can.]`. Apply in ALL three content builders in
-  `providers.js` (`oaiContent`, `claudeContent`, `geminiContents`) on the
-  no-vision+images path (display unchanged — only API content). The composer already
-  warns the user; this tells the *model*.
-- [ ] **Show the time in Central Time (CT) on the "updated" stamps (operator-requested).**
-  Add the CT time to the What's-new panel (the `updated` stamp + per-entry) and to the
-  website footer "Last updated" (`kevinrhaas/polecat`), e.g. `2026-06-26 22:53 CT`.
-  Use `TZ='America/Chicago' date '+%Y-%m-%d %H:%M'` (DST-aware; note the CT date can
-  differ from UTC). Going forward, stamp changelog entries with a CT time too.
+- [x] **BUG (HIGH): non-vision models get no hint an image was attached → confused
+  answers.** Fixed: all three content builders (`oaiContent`, `claudeContent`,
+  `geminiContents`) now inject `[The user attached N image(s) that this model can't
+  view…]` when `opts.vision` is false and images are present. Vision models
+  are unaffected.
+- [x] **Show the time in Central Time (CT) on the "updated" stamps (operator-requested).**
+  App changelog entries now carry a `time: "HH:MM CT"` field; What's-new panel
+  shows it next to the date. Top-level `updated` also carries the full timestamp.
+  Website footer updated in the same run.
 - [ ] **Polecat Model Server — website mention + public key page.** The provider is
   live (`polecatms`, modelserver.polecat.live, CORS enabled). In a website (Part 2)
   pass, add the free first-party model server to polecat.live's feature set. NOTE: a

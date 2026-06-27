@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-27",
+  "updated": "2026-06-27 15:42 CT",
   "entries": [
+    {
+      "date": "2026-06-27",
+      "time": "15:42 CT",
+      "title": "Image context for text-only models",
+      "items": [
+        "When you attach an image and a model can't view it, it now receives a short note explaining an image was attached — so it can say \"I can't see that image, can you describe it?\" rather than giving a confused non-answer",
+        "Applies to all text-only models across all providers (Free demo, OpenRouter, Groq, Hugging Face, Polecat Model Server)",
+        "Vision-capable models (Claude, Gemini, GPT-4o, etc.) are unaffected — they still receive the image directly",
+        "Timestamps in What's new now show Central Time (CT) so you always know when changes landed"
+      ]
+    },
     {
       "date": "2026-06-27",
       "title": "New provider: Polecat Model Server",

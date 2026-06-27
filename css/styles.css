@@ -579,6 +579,7 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .wn-list::-webkit-scrollbar { width: 5px; } .wn-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 .wn-entry { border-left: 2px solid color-mix(in srgb, var(--brand-b) 55%, var(--border)); padding-left: 12px; }
 .wn-date { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-3); }
+.wn-time { font-weight: 400; text-transform: none; letter-spacing: 0; opacity: .7; }
 .wn-etitle { font-size: 14px; font-weight: 700; margin: 2px 0 5px; }
 .wn-items { list-style: none; display: flex; flex-direction: column; gap: 5px; padding: 0; }
 .wn-items li { font-size: 13px; color: var(--text-2); line-height: 1.45; padding-left: 16px; position: relative; }

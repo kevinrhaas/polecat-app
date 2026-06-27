@@ -2003,7 +2003,7 @@ function openWhatsNew() {
     `<div class="exp-title">${STAR_SVG} What's new</div>` +
     `<div class="exp-sub">Polecat keeps getting better${_changelog.updated ? ` · updated ${escapeHtml(_changelog.updated)}` : ''}.</div>` +
     `<div class="wn-list">` + (_changelog.entries || []).map(e =>
-      `<div class="wn-entry"><div class="wn-date">${escapeHtml(e.date || '')}</div>` +
+      `<div class="wn-entry"><div class="wn-date">${escapeHtml(e.date || '')}${e.time ? ' <span class="wn-time">' + escapeHtml(e.time) + '</span>' : ''}</div>` +
       `<div class="wn-etitle">${escapeHtml(e.title || '')}</div>` +
       `<ul class="wn-items">${(e.items || []).map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`).join('') +
     `</div>` +

@@ -233,22 +233,34 @@ async function* streamWithTimeout(resp, extract, onFirst) {
 // ── Image attachments ─────────────────────────────────────────────────────
 // A message may carry `images: [{ mime, data(base64) }]`. Each provider wants a
 // different shape; these builders fold images into the content only when the
-// target model is vision-capable (opts.vision) — otherwise the model gets the
-// text alone (so a mixed line-up "just works", text-only models silently skip).
+// target model is vision-capable (opts.vision).
+// For non-vision models that DO have images, we inject a short note so the model
+// knows it's missing context rather than receiving an ambiguous bare prompt.
 function hasImages(m) { return m.role === 'user' && Array.isArray(m.images) && m.images.length > 0; }
 function hasPdfs(m) { return m.role === 'user' && Array.isArray(m.pdfs) && m.pdfs.length > 0; }
+function imageBlindNote(n) {
+  return `[The user attached ${n} image${n === 1 ? '' : 's'} that this model can't view. If the question depends on the image, say you can't see it and ask for a text description; otherwise answer as best you can.]`;
+}
 function claudeContent(m, vision) {
-  if (!hasPdfs(m) && (!vision || !hasImages(m))) return m.content;
+  const note = !vision && hasImages(m) ? '\n\n' + imageBlindNote(m.images.length) : '';
+  if (!hasPdfs(m) && (!vision || !hasImages(m))) return (m.content || '') + note;
   const parts = [];
   if (hasPdfs(m))
     for (const pdf of m.pdfs) parts.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdf.rawData } });
   if (vision && hasImages(m))
     for (const im of m.images) parts.push({ type: 'image', source: { type: 'base64', media_type: im.mime, data: im.data } });
-  if (m.content) parts.push({ type: 'text', text: m.content });
+  const textContent = (m.content || '') + note;
+  if (textContent) parts.push({ type: 'text', text: textContent });
   return parts;
 }
 function oaiContent(m, vision) {
-  if (!vision || !hasImages(m)) return m.content;
+  if (!vision || !hasImages(m)) {
+    if (!vision && hasImages(m)) {
+      const note = imageBlindNote(m.images.length);
+      return m.content ? m.content + '\n\n' + note : note;
+    }
+    return m.content;
+  }
   return [
     ...(m.content ? [{ type: 'text', text: m.content }] : []),
     ...m.images.map(im => ({ type: 'image_url', image_url: { url: `data:${im.mime};base64,${im.data}` } })),
@@ -286,7 +298,9 @@ function geminiContents(messages, vision) {
     const parts = [];
     if (hasPdfs(m)) for (const pdf of m.pdfs) parts.push({ inline_data: { mime_type: 'application/pdf', data: pdf.rawData } });
     if (vision && hasImages(m)) for (const im of m.images) parts.push({ inline_data: { mime_type: im.mime, data: im.data } });
-    if (m.content) parts.push({ text: m.content });
+    const note = !vision && hasImages(m) ? '\n\n' + imageBlindNote(m.images.length) : '';
+    const textContent = (m.content || '') + note;
+    if (textContent) parts.push({ text: textContent });
     if (!parts.length) parts.push({ text: '' });
     const last = out[out.length - 1];
     const hasMedia = hasPdfs(m) || (vision && hasImages(m));
