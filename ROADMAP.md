@@ -136,6 +136,17 @@ Polecat's privacy promise. (PPTX was the operator's concrete blocker — priorit
       fair water-fill allocation (small files kept whole, the remainder split evenly among
       large ones) so several big docs can't blow a smaller/free model's context. Visible
       truncation notices both in the injected text and the composer's attachment note.
+- [ ] **F4b — Collapse attached-file content in the chat bubble (operator-requested, DO NEXT).**
+      Right now the full extracted file text is dumped raw into the user message bubble (see
+      a PPTX filling the whole screen). The model must still receive the complete text — only
+      the *display* changes. In `userMsgHtml`/`renderStaticPair`, detect the injected
+      `<file name="…" type="…">…</file>` blocks and render each as a **collapsed disclosure**
+      (a styled `<details>`, closed by default) labelled with the file name + type + a hint
+      like "click to view extracted text"; show the user's actual typed prompt normally above
+      them. Keep the header line out of the visible bubble. Make it accessible (keyboard-
+      toggleable, aria), tidy on mobile, and consistent in both live and history-restored
+      messages. Do NOT change what gets sent to the models (`userText` stays full).
+
 - [ ] **F5 — Native document passing — APPROVED (operator said yes to native PDF).**
       For capable providers, pass the document natively instead of extracted text:
       Anthropic PDF document blocks, Gemini inline_data application/pdf, OpenAI file
