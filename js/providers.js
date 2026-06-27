@@ -19,6 +19,23 @@ import { providerKey } from './config.js';
 // Set to '' to hide the demo entirely.
 export const DEMO_PROXY_URL = 'https://polecat-app.kevinrhaas.workers.dev';
 
+// Polecat's own free community model server (OpenAI-compatible: FastAPI + Ollama
+// behind Caddy). BYO-key (sk-ms-…) so the box stays healthy — no shared key to
+// abuse. To ENABLE it, set POLECAT_MS_URL to the deployed origin (no trailing
+// slash). It stays hidden while '' (same pattern as the demo).
+//   ⚠ Browser-direct calls require CORS on the server: Access-Control-Allow-Origin
+//     for https://polecat.live (+ OPTIONS preflight, allow Authorization +
+//     Content-Type). If Caddy can't send those, front it with a Worker proxy and
+//     point POLECAT_MS_URL at the proxy instead.
+//   POLECAT_MS_KEY_URL → the captcha-gated "get a free key" page once it exists.
+// Server is live at 'https://modelserver.polecat.live' but does NOT yet send CORS
+// headers (verified 2026-06-27: OPTIONS preflight → 405, no Access-Control-Allow-
+// Origin), so browser-direct calls are blocked. Flip this to the URL the moment the
+// server adds CORS (FastAPI CORSMiddleware allow_origins=["https://polecat.live"],
+// or a Caddy header block) — or point it at a CORS-adding Worker proxy.
+export const POLECAT_MS_URL     = '';   // → 'https://modelserver.polecat.live' once CORS is live
+export const POLECAT_MS_KEY_URL = '';   // → the captcha get-key page once it exists
+
 export const PROVIDERS = {
   demo: {
     id: 'demo', name: 'Free demo', short: 'Free demo', vendor: 'Polecat',
@@ -136,9 +153,26 @@ export const PROVIDERS = {
       { value: 'openai/gpt-oss-120b',                 label: 'GPT-OSS 120B',   price: 'open', free: true },
     ],
   },
+
+  // ── Polecat's own free community model server (OpenAI-compatible) ────────
+  polecatms: {
+    id: 'polecatms', name: 'Polecat Model Server', short: 'Polecat MS', vendor: 'Polecat',
+    color: '#06b6d4', kind: 'openai-compatible',
+    baseUrl: POLECAT_MS_URL + '/v1',
+    placeholder: 'sk-ms-…',
+    keyUrl: POLECAT_MS_KEY_URL || POLECAT_MS_URL, keyLabel: POLECAT_MS_KEY_URL ? 'get a free key' : 'modelserver.polecat.live',
+    allowCustomModel: true,
+    rateNote: "Polecat's own free community server — bring a free sk-ms- key. Per-key rate limits apply; be kind so it stays up for everyone.",
+    models: [
+      { value: 'qwen2.5:7b',     label: 'Qwen2.5 7B',     price: 'free', free: true },
+      { value: 'llama3.2:3b',    label: 'Llama 3.2 3B',   price: 'free', free: true },
+      { value: 'deepseek-r1:7b', label: 'DeepSeek-R1 7B', price: 'free', free: true },
+    ],
+  },
 };
 
-if (!DEMO_PROXY_URL) delete PROVIDERS.demo;   // demo disabled → hide it entirely
+if (!DEMO_PROXY_URL) delete PROVIDERS.demo;        // demo disabled → hide it entirely
+if (!POLECAT_MS_URL) delete PROVIDERS.polecatms;   // model server URL unset → hide it
 
 export const PROVIDER_IDS = Object.keys(PROVIDERS);
 

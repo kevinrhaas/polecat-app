@@ -214,6 +214,34 @@ confusing, with a consistent icon language and zero emoji.
 
 ---
 
+## EPIC 4 — Polecat Model Server provider  ⭐ (our own free first-party models)
+
+Add Polecat's own free community model server (`modelserver.polecat.live`,
+OpenAI-compatible FastAPI + Ollama) as a provider. BYO `sk-ms-` key (no shared key
+to abuse); gating is captcha self-serve + a friends tier. Server work lives in
+`kevinrhaas/solution-engineering/model-server` (not in the loop's repos).
+
+- [x] **App integration.** Added `polecatms` provider in `providers.js` (kind
+      `openai-compatible`, baseUrl `<POLECAT_MS_URL>/v1`, `sk-ms-…` placeholder,
+      curated Ollama models + live `/v1/models` browsing). Gated behind
+      `POLECAT_MS_URL` (empty ⇒ hidden), so flipping it on is one line.
+- [ ] **BLOCKED on server CORS (do NOT enable until fixed).** Verified 2026-06-27
+      the server sends no CORS headers (OPTIONS preflight → 405), so browser-direct
+      calls are blocked. Fix on the server: FastAPI `CORSMiddleware`
+      `allow_origins=["https://polecat.live"]`, `allow_methods=["GET","POST","OPTIONS"]`,
+      `allow_headers=["Authorization","Content-Type"]` (or a Caddy header block; or
+      front it with a CORS-adding Worker proxy). THEN set `POLECAT_MS_URL` to
+      `https://modelserver.polecat.live` and verify a real-browser send works.
+- [ ] **BLOCKED on server (captcha get-key page).** Self-serve `/get-key` behind
+      Cloudflare Turnstile that mints a low-quota `sk-ms-` key; global mint cap +
+      per-IP cap + server concurrency cap as backstops. Friends tier issued from the
+      console (optionally a secret code on the page). Then set `POLECAT_MS_KEY_URL`.
+- [ ] **When unblocked:** curate the model list from live `/v1/models`, add a
+      changelog entry + a website mention, and confirm consensus/arbitration works
+      with the new models.
+
+---
+
 ## WEBSITE (kevinrhaas/polecat) — the loop's Part 2 should advance these too
 
 - [x] **BUG (ACTUALLY FIXED 2026-06-26): the homepage examples section was UNSTYLED.**
