@@ -1,7 +1,18 @@
 {
   "updated": "2026-06-27",
-  "updatedTime": "01:39 UTC",
+  "updatedTime": "03:15 UTC",
   "entries": [
+    {
+      "date": "2026-06-27",
+      "time": "03:15 UTC",
+      "title": "New provider: Polecat Model Server",
+      "items": [
+        "Polecat now has its own free, first-party model server you can add as a provider — open-source models (Qwen, Llama, DeepSeek and more) served by us",
+        "Bring a free sk-ms- key and mix these models into your consensus line-up alongside Claude, Gemini, GPT and the rest",
+        "Runs fully in your browser like every other provider — your key stays on your device",
+        "Please be kind to it — it's a small community server with per-key rate limits so it stays up for everyone"
+      ]
+    },
     {
       "date": "2026-06-27",
       "time": "01:39 UTC",

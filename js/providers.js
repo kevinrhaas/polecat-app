@@ -28,12 +28,9 @@ export const DEMO_PROXY_URL = 'https://polecat-app.kevinrhaas.workers.dev';
 //     Content-Type). If Caddy can't send those, front it with a Worker proxy and
 //     point POLECAT_MS_URL at the proxy instead.
 //   POLECAT_MS_KEY_URL → the captcha-gated "get a free key" page once it exists.
-// Server is live at 'https://modelserver.polecat.live' but does NOT yet send CORS
-// headers (verified 2026-06-27: OPTIONS preflight → 405, no Access-Control-Allow-
-// Origin), so browser-direct calls are blocked. Flip this to the URL the moment the
-// server adds CORS (FastAPI CORSMiddleware allow_origins=["https://polecat.live"],
-// or a Caddy header block) — or point it at a CORS-adding Worker proxy.
-export const POLECAT_MS_URL     = '';   // → 'https://modelserver.polecat.live' once CORS is live
+// Live as of 2026-06-27 — CORS enabled in Caddy (OPTIONS → 204 with
+// Access-Control-Allow-Origin), so browser-direct calls work. Set to '' to hide.
+export const POLECAT_MS_URL     = 'https://modelserver.polecat.live';
 export const POLECAT_MS_KEY_URL = '';   // → the captcha get-key page once it exists
 
 export const PROVIDERS = {

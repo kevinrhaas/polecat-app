@@ -223,22 +223,22 @@ to abuse); gating is captcha self-serve + a friends tier. Server work lives in
 
 - [x] **App integration.** Added `polecatms` provider in `providers.js` (kind
       `openai-compatible`, baseUrl `<POLECAT_MS_URL>/v1`, `sk-ms-…` placeholder,
-      curated Ollama models + live `/v1/models` browsing). Gated behind
-      `POLECAT_MS_URL` (empty ⇒ hidden), so flipping it on is one line.
-- [ ] **BLOCKED on server CORS (do NOT enable until fixed).** Verified 2026-06-27
-      the server sends no CORS headers (OPTIONS preflight → 405), so browser-direct
-      calls are blocked. Fix on the server: FastAPI `CORSMiddleware`
-      `allow_origins=["https://polecat.live"]`, `allow_methods=["GET","POST","OPTIONS"]`,
-      `allow_headers=["Authorization","Content-Type"]` (or a Caddy header block; or
-      front it with a CORS-adding Worker proxy). THEN set `POLECAT_MS_URL` to
-      `https://modelserver.polecat.live` and verify a real-browser send works.
-- [ ] **BLOCKED on server (captcha get-key page).** Self-serve `/get-key` behind
+      curated Ollama models + live `/v1/models` browsing).
+- [x] **Server CORS (done 2026-06-27).** Enabled CORS in the Caddy `@open` (/v1/*)
+      handle: `Access-Control-Allow-Origin *`, methods GET/POST/OPTIONS, headers
+      Authorization/Content-Type, with an OPTIONS→204 preflight short-circuit.
+      Verified preflight returns 204 + ACAO. `POLECAT_MS_URL` is now enabled.
+- [ ] **Verify installed model list.** The curated defaults (`qwen2.5:7b`,
+      `llama3.2:3b`, `deepseek-r1:7b`) are guesses from API.md — confirm against the
+      server's real `/v1/models` and update the `polecatms.models` list to match.
+- [ ] **BLOCKED on server (captcha get-key page) — needed for public self-serve.**
+      Until this exists, keys are admin-minted from the console only (the provider is
+      visible but the public can't get a key). Build self-serve `/get-key` behind
       Cloudflare Turnstile that mints a low-quota `sk-ms-` key; global mint cap +
-      per-IP cap + server concurrency cap as backstops. Friends tier issued from the
-      console (optionally a secret code on the page). Then set `POLECAT_MS_KEY_URL`.
-- [ ] **When unblocked:** curate the model list from live `/v1/models`, add a
-      changelog entry + a website mention, and confirm consensus/arbitration works
-      with the new models.
+      per-IP cap + server concurrency cap as backstops; friends tier from the console
+      (optionally a secret code). Then set `POLECAT_MS_KEY_URL` to that page.
+- [ ] **Website mention** (in a website sync pass): add the first-party free model
+      server to polecat.live's feature set.
 
 ---
 
