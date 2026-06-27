@@ -19,6 +19,13 @@ import { providerKey } from './config.js';
 // Set to '' to hide the demo entirely.
 export const DEMO_PROXY_URL = 'https://polecat-app.kevinrhaas.workers.dev';
 
+// Polecat's own free community model server (OpenAI-compatible: FastAPI + Ollama
+// behind Caddy, CORS-enabled). BYO `sk-ms-…` key so the box stays healthy — no
+// shared key to abuse. Set POLECAT_MS_URL to '' to hide the provider entirely.
+// POLECAT_MS_KEY_URL → the captcha-gated "get a free key" page once it exists.
+export const POLECAT_MS_URL     = 'https://modelserver.polecat.live';
+export const POLECAT_MS_KEY_URL = '';
+
 export const PROVIDERS = {
   demo: {
     id: 'demo', name: 'Free demo', short: 'Free demo', vendor: 'Polecat',
@@ -138,9 +145,30 @@ export const PROVIDERS = {
       { value: 'openai/gpt-oss-120b',                 label: 'GPT-OSS 120B',   price: 'open', free: true },
     ],
   },
+
+  // ── Polecat's own free community model server (OpenAI-compatible) ────────
+  polecatms: {
+    id: 'polecatms', name: 'Polecat Model Server', short: 'Polecat MS', vendor: 'Polecat',
+    color: '#06b6d4', kind: 'openai-compatible',
+    baseUrl: POLECAT_MS_URL + '/v1',
+    placeholder: 'sk-ms-…',
+    keyUrl: POLECAT_MS_KEY_URL || POLECAT_MS_URL, keyLabel: POLECAT_MS_KEY_URL ? 'get a free key' : 'modelserver.polecat.live',
+    allowCustomModel: true,
+    rateNote: "Polecat's own free community server — bring a free sk-ms- key. Per-key rate limits apply; be kind so it stays up for everyone.",
+    models: [
+      { value: 'qwen2.5:32b',     label: 'Qwen2.5 32B',    price: 'free', free: true },
+      { value: 'deepseek-r1:32b', label: 'DeepSeek-R1 32B', price: 'free', free: true },
+      { value: 'mistral:7b',      label: 'Mistral 7B',     price: 'free', free: true },
+      { value: 'phi3.5:latest',   label: 'Phi-3.5',        price: 'free', free: true },
+      { value: 'llama3.2:3b',     label: 'Llama 3.2 3B',   price: 'free', free: true },
+      { value: 'gemma2:2b',       label: 'Gemma2 2B',      price: 'free', free: true },
+      { value: 'qwen2.5:3b',      label: 'Qwen2.5 3B',     price: 'free', free: true },
+    ],
+  },
 };
 
-if (!DEMO_PROXY_URL) delete PROVIDERS.demo;   // demo disabled → hide it entirely
+if (!DEMO_PROXY_URL) delete PROVIDERS.demo;        // demo disabled → hide it entirely
+if (!POLECAT_MS_URL) delete PROVIDERS.polecatms;   // model server URL unset → hide it
 
 export const PROVIDER_IDS = Object.keys(PROVIDERS);
 
