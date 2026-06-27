@@ -3,6 +3,14 @@
   "entries": [
     {
       "date": "2026-06-27",
+      "title": "First-run Consensus tip + demo handoff polish",
+      "items": [
+        "After your first synthesized answer, a small callout appears below the Consensus tab explaining you can tap any model tab to see its individual response — shown once, auto-dismisses",
+        "When you click 'Try it free', the example question chips now animate in with a staggered entrance to draw your eye to them"
+      ]
+    },
+    {
+      "date": "2026-06-27",
       "title": "Centered composer on the empty state",
       "items": [
         "When there are no messages yet, the prompt box and greeting now sit together in the center of the screen — Gemini/ChatGPT style",

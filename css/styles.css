@@ -206,6 +206,39 @@ header {
 .tab-step:empty { display: none; }
 .tab-inner { display: flex; flex-direction: column; justify-content: center; }
 
+/* First-run Consensus tab callout — shown once, auto-dismisses */
+.cons-onboard-tip {
+  position: fixed; z-index: 500;
+  background: var(--surface-2); border: 1px solid color-mix(in srgb, var(--consensus) 38%, var(--border));
+  border-radius: 8px; padding: 10px 28px 10px 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.22);
+  font-size: 12.5px; color: var(--text-2); line-height: 1.5; max-width: 260px;
+  animation: cons-tip-in .3s ease both;
+  pointer-events: auto;
+}
+.cons-onboard-tip::before {
+  content: ''; position: absolute; top: -5px; left: 16px;
+  width: 8px; height: 8px;
+  background: var(--surface-2);
+  border-left: 1px solid color-mix(in srgb, var(--consensus) 38%, var(--border));
+  border-top: 1px solid color-mix(in srgb, var(--consensus) 38%, var(--border));
+  transform: rotate(45deg);
+}
+.cons-onboard-tip strong { color: var(--text); }
+.cons-onboard-dismiss { position: absolute; right: 7px; top: 7px; background: none; border: none; cursor: pointer; color: var(--text-3); font-size: 16px; line-height: 1; padding: 0 3px; transition: color .12s; }
+.cons-onboard-dismiss:hover { color: var(--text-2); }
+.cons-onboard-tip.tip-out { opacity: 0; transform: translateY(-5px); transition: opacity .3s, transform .3s; }
+@keyframes cons-tip-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .cons-onboard-tip { animation: none; } .cons-onboard-tip.tip-out { transition: none; } }
+
+/* Demo handoff — staggered chip entrance after "Try it free" */
+@keyframes cg-chip-enter { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+.cg-suggest.demo-ready .cg-chip { animation: cg-chip-enter .35s ease both; }
+.cg-suggest.demo-ready .cg-chip:nth-child(2) { animation-delay: .06s; }
+.cg-suggest.demo-ready .cg-chip:nth-child(3) { animation-delay: .12s; }
+.cg-suggest.demo-ready .cg-chip:nth-child(4) { animation-delay: .18s; }
+@media (prefers-reduced-motion: reduce) { .cg-suggest.demo-ready .cg-chip { animation: none; } }
+
 .tab-panel { display: none; height: 100%; flex-direction: column; }
 .tab-panel.active { display: flex; }
 .conversation { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 0; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }

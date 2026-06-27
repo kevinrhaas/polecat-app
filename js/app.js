@@ -18,6 +18,7 @@ import { $, el, escapeHtml, nl2br, renderMarkdown, highlightBubble, toast, apply
 
 const DONATE_URL = 'https://ko-fi.com/polecatlive';
 const WELCOME_KEY = 'polecat_welcomed';
+const CONS_HINT_KEY = 'polecat_cons_hint';
 const COPY_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 // EPIC 1 · P4 — layers icon for the inline attribution toggle
 const ATTR_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`;
@@ -898,6 +899,7 @@ async function sendAll() {
       setConsensusDot(true);
       await runConsensus();
       setConsensusDot(false); setConsensusStep('');
+      maybeShowConsHint();
     }
     recordTurn(text, readyAtts);
   } finally {
@@ -1084,6 +1086,26 @@ function showConsensusStatic(text, isError = false) {
     if (mb && sharePayload) mb.onclick = () => copyThreadAsMarkdown(sharePayload, mb);
   }
 }
+// Show a positioned callout below the Consensus tab the first time a consensus appears.
+// Teaches new users that model tabs above hold individual responses.
+function maybeShowConsHint() {
+  if (localStorage.getItem(CONS_HINT_KEY)) return;
+  const tab = $('tab_consensus'); if (!tab) return;
+  localStorage.setItem(CONS_HINT_KEY, '1');
+  const rect = tab.getBoundingClientRect();
+  const tip = el('div', 'cons-onboard-tip');
+  const left = Math.max(8, Math.min(rect.left, window.innerWidth - 276));
+  tip.style.top = (rect.bottom + 6) + 'px';
+  tip.style.left = left + 'px';
+  tip.innerHTML = '<strong>That\'s your synthesized answer.</strong> Tap any model tab above to read each one\'s individual response.' +
+    '<button class="cons-onboard-dismiss" aria-label="Dismiss tip">×</button>';
+  document.body.appendChild(tip);
+  const dismiss = () => { tip.classList.add('tip-out'); setTimeout(() => tip.remove(), 340); };
+  const tid = setTimeout(dismiss, 7000);
+  tip.querySelector('.cons-onboard-dismiss').onclick = () => { clearTimeout(tid); dismiss(); };
+  tab.addEventListener('click', () => { clearTimeout(tid); dismiss(); }, { once: true });
+}
+
 async function runConsensus() {
   const ordered = order.filter(id => results[id]).map(id => ({ selection: selById(id) || { id, provider: 'openai', model: '' }, text: results[id] }));
   consensusPhase = 'arbitrating'; consensusStatusText = 'Reviewing responses…'; refreshConsensusProgress();
@@ -1356,6 +1378,9 @@ function startFreeDemo() {
   const t = $('cgTry'); if (t) t.hidden = true;
   const hint = $('cgHint'); if (hint) hint.hidden = false;
   buildChips(); showGreeting(); renderSuggestions();        // keep the example questions visible
+  // Brief staggered entrance on the suggestion chips to draw attention after overlay closes.
+  const _sug = $('cgSuggest');
+  if (_sug) { _sug.classList.add('demo-ready'); setTimeout(() => _sug.classList.remove('demo-ready'), 700); }
   $('promptInput').focus();
   toast('Free demo ready — pick a question below or type your own');
 }
