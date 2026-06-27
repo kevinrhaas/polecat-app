@@ -3,6 +3,16 @@
   "entries": [
     {
       "date": "2026-06-27",
+      "title": "Custom system prompt",
+      "items": [
+        "Set a system prompt in Settings → Models that applies to all selected models at once",
+        "Works natively with each provider: Claude's system field, Gemini's systemInstruction, and OpenAI's system role",
+        "Leave it blank for default behavior — or try \"Reply in Spanish\" or \"You are a senior Python engineer\"",
+        "Saved to your browser just like your API keys — persists across sessions"
+      ]
+    },
+    {
+      "date": "2026-06-27",
       "title": "Smart follow-up suggestions after every consensus",
       "items": [
         "After each consensus answer, 2–3 clickable follow-up question chips appear below the answer",

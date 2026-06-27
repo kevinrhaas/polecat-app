@@ -1479,7 +1479,7 @@ function setConfigTab(name) {
   $('modal')?.scrollTo?.(0, 0);
 }
 function openConfig(tab) {
-  renderModels(); renderKeys(); renderArbitration(); renderDonate();
+  renderModels(); renderKeys(); renderArbitration(); renderDonate(); renderSystemPrompt();
   const stored = cfg.ui.lastTab;
   setConfigTab(tab || (VALID_TABS.has(stored) ? stored : 'models'));
   $('configModal').classList.add('open');
@@ -1614,6 +1614,19 @@ function renderAddRow() {
   $('browseBtn').onclick = () => openBrowse(provSel.value);
   $('browseSearch').oninput = (e) => renderBrowse(e.target.value);
   refresh();
+}
+
+function renderSystemPrompt() {
+  const area = $('sysPromptArea'); if (!area) return;
+  const val = cfg.systemPrompt || '';
+  area.innerHTML =
+    `<div class="sys-prompt-section">` +
+    `<label class="mini-label" for="sysPromptInput">System prompt <span class="mini-note">optional — applies to all models</span></label>` +
+    `<textarea class="field-input sys-prompt-ta" id="sysPromptInput" rows="3" ` +
+    `placeholder='E.g. "Reply in French" or "You are a senior Python engineer…" — leave blank for default.'>${escapeHtml(val)}</textarea>` +
+    `<div class="switch-sub">Sent to every model before your first message. One instruction, every model.</div>` +
+    `</div>`;
+  $('sysPromptInput').oninput = (e) => { cfg.systemPrompt = e.target.value; persist(); };
 }
 
 function addModel(provider, model, viaAddBtn) {

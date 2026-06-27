@@ -44,6 +44,7 @@ function normalize(cfg) {
   cfg.modelStatus = (cfg.modelStatus && typeof cfg.modelStatus === 'object') ? cfg.modelStatus : {};
   cfg.ui          = (cfg.ui && typeof cfg.ui === 'object') ? cfg.ui : {};
   cfg.private     = cfg.private === true;             // private mode: don't record history
+  cfg.systemPrompt = typeof cfg.systemPrompt === 'string' ? cfg.systemPrompt : '';
   cfg.selections.forEach(s => { if (!s.id) s.id = newId(); });
   return cfg;
 }

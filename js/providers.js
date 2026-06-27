@@ -237,12 +237,13 @@ async function* apiClaude(messages, key, model, opts = {}) {
       'anthropic-dangerous-direct-browser-access': 'true', 'content-type': 'application/json',
     };
     if (hasPdfMsg) headers['anthropic-beta'] = 'pdfs-2024-09-25';
+    const body = {
+      model: model || 'claude-opus-4-8', max_tokens: opts.maxTokens || 8096, stream: true,
+      messages: messages.map(m => ({ role: m.role, content: claudeContent(m, opts.vision) })),
+    };
+    if (opts.systemPrompt) body.system = opts.systemPrompt;
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST', signal, headers,
-      body: JSON.stringify({
-        model: model || 'claude-opus-4-8', max_tokens: opts.maxTokens || 8096, stream: true,
-        messages: messages.map(m => ({ role: m.role, content: claudeContent(m, opts.vision) })),
-      }),
+      method: 'POST', signal, headers, body: JSON.stringify(body),
     });
     if (!resp.ok) { const e = await resp.json().catch(() => ({})); throw new Error(e.error?.message || `HTTP ${resp.status}`); }
     yield* streamWithTimeout(resp, (_, d) => d?.type === 'content_block_delta' && d?.delta?.type === 'text_delta' ? d.delta.text : null, done);
@@ -272,6 +273,7 @@ async function* apiGemini(messages, key, model, opts = {}) {
   const { signal, done } = reqSignal(opts);
   try {
     const body = { contents: geminiContents(messages, opts.vision) };
+    if (opts.systemPrompt) body.systemInstruction = { parts: [{ text: opts.systemPrompt }] };
     if (opts.maxTokens) body.generationConfig = { maxOutputTokens: opts.maxTokens };
     const resp = await fetch(
       `${PROVIDERS.gemini.baseUrl}/models/${m}:streamGenerateContent?key=${key}&alt=sse`,
@@ -286,7 +288,9 @@ async function* apiGemini(messages, key, model, opts = {}) {
 async function* apiOpenAICompatible(messages, key, model, provider, opts = {}) {
   const { signal, done } = reqSignal(opts);
   try {
-    const body = { model, stream: true, messages: messages.map(m => ({ role: m.role, content: oaiContent(m, opts.vision) })) };
+    const oaiMessages = messages.map(m => ({ role: m.role, content: oaiContent(m, opts.vision) }));
+    if (opts.systemPrompt) oaiMessages.unshift({ role: 'system', content: opts.systemPrompt });
+    const body = { model, stream: true, messages: oaiMessages };
     if (opts.maxTokens) body.max_tokens = opts.maxTokens;
     const headers = { 'content-type': 'application/json', ...(provider.extraHeaders || {}) };
     if (key) headers['authorization'] = `Bearer ${key}`;   // demo proxy needs none — it holds the key
@@ -305,8 +309,9 @@ export function makeGen(selection, messages, cfg, opts = {}) {
   const p   = PROVIDERS[selection.provider];
   const key = providerKey(cfg, selection.provider);
   if (!p) throw new Error(`Unknown provider: ${selection.provider}`);
+  const sysp = (cfg.systemPrompt || '').trim();
   // Only forward images to models we know can read them.
-  opts = { ...opts, vision: modelSupportsVision(selection.provider, selection.model) };
+  opts = { ...opts, vision: modelSupportsVision(selection.provider, selection.model), ...(sysp ? { systemPrompt: sysp } : {}) };
   if (p.kind === 'anthropic') return apiClaude(messages, key, selection.model, opts);
   if (p.kind === 'gemini')    return apiGemini(messages, key, selection.model, opts);
   return apiOpenAICompatible(messages, key, selection.model, p, opts);
