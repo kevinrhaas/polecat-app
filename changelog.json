@@ -1,8 +1,19 @@
 {
-  "updated": "2026-06-26",
+  "updated": "2026-06-27",
+  "updatedTime": "01:39 UTC",
   "entries": [
     {
+      "date": "2026-06-27",
+      "time": "01:39 UTC",
+      "title": "Timestamps in What's new",
+      "items": [
+        "Each What's new entry now shows the time it shipped, not just the date — useful as Polecat keeps improving throughout the day",
+        "The 'updated' stamp at the top now includes the time of the most recent change"
+      ]
+    },
+    {
       "date": "2026-06-26",
+      "time": "23:55 UTC",
       "title": "Smarter handling of large attachments",
       "items": [
         "Attached files are now labelled by type (PDF, PowerPoint, Word, Excel, text) when sent to the models, so answers can reference them clearly",

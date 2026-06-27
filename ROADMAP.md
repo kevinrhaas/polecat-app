@@ -6,6 +6,11 @@ real, shippable, non-breaking increment — then ticks the box and adds a
 `changelog.json` entry. Small standalone polish is the fallback when no epic step
 can be safely advanced.
 
+**Changelog stamping (every run):** each new `changelog.json` entry MUST include a
+`"time"` field with the current UTC time (e.g. `"14:05 UTC"`) alongside `"date"`,
+and the run MUST bump the top-level `"updated"` (date) and `"updatedTime"` (UTC
+time). The What's-new panel shows these, so the hourly cadence is visible.
+
 ---
 
 ## North star & standing directives (apply judgement EVERY run)

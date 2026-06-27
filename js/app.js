@@ -1666,9 +1666,9 @@ function openWhatsNew() {
   ov.innerHTML =
     `<div class="exp-card wn-card">` +
     `<div class="exp-title">✨ What's new</div>` +
-    `<div class="exp-sub">Polecat keeps getting better${_changelog.updated ? ` · updated ${escapeHtml(_changelog.updated)}` : ''}.</div>` +
+    `<div class="exp-sub">Polecat keeps getting better${_changelog.updated ? ` · updated ${escapeHtml(_changelog.updated)}${_changelog.updatedTime ? ` ${escapeHtml(_changelog.updatedTime)}` : ''}` : ''}.</div>` +
     `<div class="wn-list">` + (_changelog.entries || []).map(e =>
-      `<div class="wn-entry"><div class="wn-date">${escapeHtml(e.date || '')}</div>` +
+      `<div class="wn-entry"><div class="wn-date">${escapeHtml(e.date || '')}${e.time ? ` · ${escapeHtml(e.time)}` : ''}</div>` +
       `<div class="wn-etitle">${escapeHtml(e.title || '')}</div>` +
       `<ul class="wn-items">${(e.items || []).map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`).join('') +
     `</div>` +
