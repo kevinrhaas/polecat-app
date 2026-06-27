@@ -3,6 +3,15 @@
   "entries": [
     {
       "date": "2026-06-27",
+      "title": "Per-model regenerate",
+      "items": [
+        "Each model response now has a ↺ button — click it to ask that one model to try again without re-running all the others",
+        "The regenerated response streams in live, just like the original, and the conversation history stays intact",
+        "After regenerating, a gentle nudge suggests sending a follow-up to refresh the consensus with the updated answer"
+      ]
+    },
+    {
+      "date": "2026-06-27",
       "title": "First-run Consensus tip + demo handoff polish",
       "items": [
         "After your first synthesized answer, a small callout appears below the Consensus tab explaining you can tap any model tab to see its individual response — shown once, auto-dismisses",

@@ -35,6 +35,7 @@ const ARB_ICON    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none"
 const ZAP_SVG     = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
 const SHARE_SVG   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
 const COPY_MD_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
+const REGEN_SVG   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.85"/></svg>`;
 
 let cfg = loadCfg();
 const convos = {};                  // selectionId -> [{role, content}]
@@ -750,7 +751,10 @@ async function streamTo(sel, userContent, images, displayAtts, nativePdfs = null
     // the answer grows below it, so the reader keeps their place (Gemini-style).
     for await (const chunk of gen) { full += chunk; bubble.innerHTML = renderMarkdown(full); }
     finishBubble(pair, full);
-    if (full) setMsgTime(pair, performance.now() - t0);
+    if (full) {
+      setMsgTime(pair, performance.now() - t0);
+      addRegenBtn(sel, pair);
+    }
     co.push({ role: 'assistant', content: full });
     markRun(sel.id, 'done');
     return full;
@@ -758,6 +762,81 @@ async function streamTo(sel, userContent, images, displayAtts, nativePdfs = null
     const msg = err?.name === 'AbortError' ? 'Request timed out' : err.message;
     bubble.innerHTML = `<span class="msg-error">Error: ${escapeHtml(msg)}</span>`;
     co.pop();
+    markRun(sel.id, 'error');
+    return null;
+  } finally {
+    if (dot) { dot.classList.remove('loading'); dot.classList.add('done'); setTimeout(() => dot.classList.remove('done'), 350); }
+  }
+}
+
+// ── Per-model regenerate ────────────────────────────────────────────────────
+// Adds a ↺ button to the finished pair's header so the user can ask one model
+// to try again without re-running every model. Only valid on the last response.
+function addRegenBtn(sel, pair) {
+  const msgHead = pair.querySelector('.msg.assistant .msg-head');
+  if (!msgHead) return;
+  const btn = el('button', 'copy-btn regen-btn');
+  btn.innerHTML = REGEN_SVG;
+  btn.title = 'Regenerate this response';
+  btn.setAttribute('aria-label', 'Regenerate response from ' + selectionLabel(sel));
+  btn.onclick = () => regenModel(sel, pair);
+  msgHead.appendChild(btn);
+}
+
+async function regenModel(sel, pair) {
+  const co = getConvo(sel.id);
+  const conv = $('conv_' + sel.id);
+  if (!conv) return;
+
+  // Guard: only allow regenerating the most recent pair in this conversation.
+  const allPairs = [...conv.querySelectorAll('.qa-pair')];
+  if (!allPairs.length || pair !== allPairs[allPairs.length - 1]) {
+    toast('Can only regenerate the most recent response');
+    return;
+  }
+  // Guard: last history entry must be an assistant message.
+  if (!co.length || co[co.length - 1].role !== 'assistant') {
+    toast('Nothing to regenerate');
+    return;
+  }
+
+  // Pop the old assistant message so the conversation ends with the user turn.
+  co.pop();
+
+  // Use lastPrompt (the user's original typed text) for a clean display.
+  const lastUser = [...co].reverse().find(m => m.role === 'user');
+  const displayText = lastPrompt || lastUser?.content || '';
+
+  // Replace the old DOM pair with a fresh streaming pair.
+  pair.remove();
+  const newPair = assistantPair(selectionLabel(sel), displayText, lastUser?.images || null);
+  conv.appendChild(newPair);
+  scrollPairToTop(conv, newPair);
+  const bubble = newPair.querySelector('.msg.assistant .msg-bubble');
+
+  const dot = $('tdot_' + sel.id);
+  dot?.classList.add('loading');
+  markRun(sel.id, 'streaming');
+  let full = '';
+  const t0 = performance.now();
+  bubble.innerHTML = '';
+  try {
+    const gen = makeGen(sel, co, cfg);
+    for await (const chunk of gen) { full += chunk; bubble.innerHTML = renderMarkdown(full); }
+    finishBubble(newPair, full);
+    if (full) {
+      setMsgTime(newPair, performance.now() - t0);
+      addRegenBtn(sel, newPair);
+    }
+    co.push({ role: 'assistant', content: full });
+    results[sel.id] = full;
+    markRun(sel.id, 'done');
+    if (cfg.consensus && full) toast('Response regenerated — ask a follow-up to refresh the consensus');
+    return full;
+  } catch (err) {
+    const msg = err?.name === 'AbortError' ? 'Request timed out' : err.message;
+    bubble.innerHTML = `<span class="msg-error">Error: ${escapeHtml(msg)}</span>`;
+    co.push({ role: 'assistant', content: '' });
     markRun(sel.id, 'error');
     return null;
   } finally {
