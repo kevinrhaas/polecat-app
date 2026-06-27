@@ -6,10 +6,14 @@ real, shippable, non-breaking increment — then ticks the box and adds a
 `changelog.json` entry. Small standalone polish is the fallback when no epic step
 can be safely advanced.
 
-**Changelog stamping (every run):** each new `changelog.json` entry MUST include a
-`"time"` field with the current UTC time (e.g. `"14:05 UTC"`) alongside `"date"`,
-and the run MUST bump the top-level `"updated"` (date) and `"updatedTime"` (UTC
-time). The What's-new panel shows these, so the hourly cadence is visible.
+**Changelog stamping (every run):** use **Central Time (`America/Chicago`, the
+operator's local zone)** for ALL stamps — both date and time — via
+`TZ='America/Chicago' date '+%Y-%m-%d %H:%M'` (DST-aware; note this can differ
+from the UTC date). Each new `changelog.json` entry MUST include a `"time"` field
+(e.g. `"22:53 CT"`) alongside `"date"` (the CT date), and the run MUST bump the
+top-level `"updated"` (CT date) and `"updatedTime"` (e.g. `"22:53 CT"`). Keep the
+website's "Last updated" stamp (`kevinrhaas/polecat`) in the same CT date+time
+format. The What's-new panel and site footer show these, so the cadence is visible.
 
 ---
 
@@ -267,6 +271,13 @@ to abuse); gating is captcha self-serve + a friends tier. Server work lives in
       cooking one.** Quality & consistency over quantity.
 - [ ] Keep the website's brand, "last updated" stamp, and changelog in sync with
       the app; emphasise the cross-model consensus differentiator.
+- [ ] **Show the time (in CT) on both "Last updated" stamps (operator-requested).**
+      Website footer (`kevinrhaas/polecat`) currently shows only `Last updated
+      2026-06-27` — add the Central time so it reads e.g. `Last updated 2026-06-26
+      22:53 CT`. The app's What's-new already renders a time; make sure the stamped
+      value is **CT** (not UTC) per the updated stamping directive. Use
+      `TZ='America/Chicago' date` for the value (date+time both in CT). Update the
+      footer template/whatever generates that line, and have the loop keep it current.
 
 ---
 

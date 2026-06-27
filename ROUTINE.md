@@ -64,10 +64,12 @@ Each run, do ONE focused, shippable, non-breaking increment:
    honest in the commit/summary about what you could not verify.
 4. Tick the box you completed in ROADMAP.md and add a user-facing
    changelog entry (changelog.json in polecat-app; CHANGELOG.md in
-   kevinrhaas/polecat for website changes). Each changelog.json entry must
-   include a "time" field with the current UTC time (e.g. "14:05 UTC") and
-   bump the top-level "updated" + "updatedTime". Keep website + app brand
-   and "last updated" stamps in sync.
+   kevinrhaas/polecat for website changes). Stamp everything in Central Time
+   (America/Chicago) via `TZ='America/Chicago' date '+%Y-%m-%d %H:%M'` — both
+   date and time. Each changelog.json entry needs a "time" field (e.g.
+   "22:53 CT") and the run bumps the top-level "updated" (CT date) +
+   "updatedTime". Keep the website's "Last updated" stamp in the same CT
+   date+time format; keep website + app brand and stamps in sync.
 5. Commit with a clear message and push. Keep each run to ONE increment,
    then stop. Do not open a pull request.
 
