@@ -197,6 +197,8 @@ confusing, with a consistent icon language and zero emoji.
 - [x] Keyboard shortcuts cheatsheet; [x] per-model "regenerate"; [x] copy-as-markdown.
 - [x] Shareable read-only consensus links (client-side encoded, no server). Share button on every consensus answer; URL-encoded payload (base64, UTF-8 safe); read-only modal with model responses + consensus + CTA.
 
+- [x] **Responses at a glance.** After each consensus, a compact strip of per-model preview cards appears right below the consensus answer — each card shows the model's opening paragraph + response time + a "Full reply →" link to switch to that tab. Makes the multi-model comparison immediately scannable without any tab-switching.
+
 ### Operator-requested (carry-over from session 2026-06-27)
 - [x] **BUG (HIGH): non-vision models get no hint an image was attached → confused
   answers.** Fixed: all three content builders (`oaiContent`, `claudeContent`,

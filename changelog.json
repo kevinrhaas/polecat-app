@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-27 16:30 CT",
+  "updated": "2026-06-27 17:15 CT",
   "entries": [
+    {
+      "date": "2026-06-27",
+      "time": "17:15 CT",
+      "title": "Responses at a glance — scan every model without tab-switching",
+      "items": [
+        "After each consensus, a new strip shows each model's opening take as a compact card — no need to click through tabs to compare",
+        "Each card shows the model's name, brand color, response time, and a plain-text snippet of its first paragraph",
+        "Tap or click 'Full reply →' on any card to jump straight to that model's complete response",
+        "The strip is collapsible — click the header to tuck it away if you want a cleaner view",
+        "Works with any number of models; only appears when two or more responded"
+      ]
+    },
     {
       "date": "2026-06-27",
       "time": "16:30 CT",

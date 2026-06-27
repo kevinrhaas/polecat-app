@@ -1345,6 +1345,92 @@ function renderProvenancePanel(pair, prov) {
   if (assistantMsg) assistantMsg.appendChild(panel);
 }
 
+// ── "Responses at a glance" snapshot strip ─────────────────────────────────
+// Strip markdown syntax and return the first substantive sentence/paragraph as
+// plain text — suitable for a compact preview card with no rendering overhead.
+function plainPreview(md, maxChars) {
+  if (!md) return '';
+  maxChars = maxChars || 200;
+  let t = md
+    .replace(/```[\s\S]*?```/gm, '')          // fenced code blocks
+    .replace(/`[^`\n]+`/g, '')                // inline code
+    .replace(/^#{1,6} /gm, '')                // ATX headers
+    .replace(/\*{1,2}([^*\n]+)\*{1,2}/g, '$1') // bold / italic
+    .replace(/_([^_\n]+)_/g, '$1')            // underscore italic
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // markdown links
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, '');   // images
+  const lines = t.split(/\n+/);
+  for (const raw of lines) {
+    const s = raw.trim().replace(/^[-*•>|\d.)]+\s*/, '').trim();
+    if (s.length > 18) return s.length > maxChars ? s.slice(0, maxChars - 1) + '…' : s;
+  }
+  const plain = t.trim();
+  return plain.length > maxChars ? plain.slice(0, maxChars - 1) + '…' : plain;
+}
+
+// Render compact per-model preview cards below the consensus answer. Shows each
+// model's opening sentence + response time + a link to switch to its full tab.
+function renderModelSnapshotsEl(pair) {
+  const assistantMsg = pair?.querySelector('.msg.assistant');
+  if (!assistantMsg || assistantMsg.querySelector('.model-snapshots')) return;
+
+  const entries = order
+    .filter(id => results[id])
+    .map(id => {
+      const sel = selById(id);
+      if (!sel) return null;
+      const conv = $('conv_' + id);
+      const lastP = conv?.querySelector('.qa-pair:last-child');
+      const timeEl = lastP?.querySelector('.msg-time');
+      const time = (timeEl && !timeEl.hidden) ? timeEl.textContent : '';
+      const preview = plainPreview(results[id]);
+      if (!preview) return null;
+      return { id, label: selectionLabel(sel), color: PROVIDERS[sel.provider]?.color || '#888', time, preview };
+    })
+    .filter(Boolean);
+
+  if (entries.length < 2) return;
+
+  const wrap = el('div', 'model-snapshots');
+
+  const toggle = el('button', 'ms-toggle');
+  toggle.setAttribute('aria-expanded', 'true');
+  toggle.innerHTML =
+    `<span class="ms-toggle-icon" aria-hidden="true">${CHEV_D}</span>` +
+    `<span class="ms-toggle-label">Responses at a glance</span>` +
+    `<span class="ms-count">${entries.length} models</span>`;
+
+  const body = el('div', 'ms-body');
+  body.setAttribute('role', 'list');
+  body.innerHTML = entries.map(e =>
+    `<div class="ms-card" style="--ms-c:${escapeHtml(e.color)}" role="listitem">` +
+    `<div class="ms-card-head">` +
+    `<span class="ms-dot" aria-hidden="true"></span>` +
+    `<span class="ms-label">${escapeHtml(e.label)}</span>` +
+    (e.time ? `<span class="ms-time">${escapeHtml(e.time)}</span>` : '') +
+    `</div>` +
+    `<div class="ms-card-text">${escapeHtml(e.preview)}</div>` +
+    `<button class="ms-read-btn" data-tab="${escapeHtml(e.id)}" ` +
+    `aria-label="Read ${escapeHtml(e.label)}'s full reply">Full reply →</button>` +
+    `</div>`
+  ).join('');
+
+  body.querySelectorAll('.ms-read-btn').forEach(btn => {
+    btn.onclick = () => switchTab(btn.dataset.tab);
+  });
+
+  toggle.onclick = () => {
+    const open = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!open));
+    toggle.querySelector('.ms-toggle-icon').innerHTML = open ? CHEV_R : CHEV_D;
+    body.hidden = open;
+  };
+
+  wrap.appendChild(toggle);
+  wrap.appendChild(body);
+  assistantMsg.appendChild(wrap);
+}
+
 // ── Follow-up question chips ────────────────────────────────────────────────
 // Derive 2–3 follow-up chips from provenance (disagreements, notable claims).
 // Falls back to universally useful generic questions when provenance is absent.
@@ -1398,6 +1484,10 @@ function onProvenance(data) {
   const pair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
   if (!pair) return;
   pair._provenance = lastConsensusProvenance;
+
+  // "Responses at a glance" — compact per-model preview strip, always shown first.
+  renderModelSnapshotsEl(pair);
+
   if (lastConsensusProvenance) renderProvenancePanel(pair, lastConsensusProvenance);
 
   // Follow-up chips — appear after the provenance panel, derived from its insights.
