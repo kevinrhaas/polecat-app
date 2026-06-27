@@ -63,6 +63,7 @@
       <span class="switch" id="privateSwitch" role="switch" aria-checked="false" tabindex="0"><span class="knob"></span></span>
     </div>
     <button class="sb-link" id="sbWhatsNew"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>What's new<span class="wn-dot" id="whatsNewDot" hidden></span></span></button>
+    <button class="sb-link" id="sbKbd"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h12"/></svg> Shortcuts <kbd style="font-size:9px;opacity:.55">?</kbd></button>
     <button class="sb-link" id="configBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings</button>
     <button class="sb-link" id="sbTheme"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor" stroke="none"/></svg> Theme</button>
     <button class="sb-link" id="sbExport"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export…</button>
@@ -301,6 +302,37 @@
     <div class="modal-foot share-foot">
       <span class="share-brand-note">Shared from <strong>Polecat</strong> — one prompt, every AI model</span>
       <a href="https://app.polecat.live" class="btn btn-solid" target="_blank" rel="noopener">Try it free →</a>
+    </div>
+  </div>
+</div>
+
+<!-- Keyboard shortcuts cheatsheet -->
+<div class="backdrop" id="kbdModal" aria-hidden="true">
+  <div class="modal kbd-modal" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+    <div class="modal-head">
+      <span class="modal-title">Keyboard shortcuts</span>
+      <button class="icon-btn icon-only" id="closeKbd" aria-label="Close">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="kbd-body">
+      <div class="kbd-group">
+        <div class="kbd-group-label">Composing</div>
+        <div class="kbd-row"><span class="kbd-keys"><kbd>Enter</kbd></span><span>Send prompt (desktop)</span></div>
+        <div class="kbd-row"><span class="kbd-keys"><kbd>Shift</kbd><span class="kbd-plus">+</span><kbd>Enter</kbd></span><span>New line</span></div>
+        <div class="kbd-row"><span class="kbd-keys"><kbd>⌘</kbd><span class="kbd-sep">/</span><kbd>Ctrl</kbd><span class="kbd-plus">+</span><kbd>↵</kbd></span><span>Send (always)</span></div>
+      </div>
+      <div class="kbd-group">
+        <div class="kbd-group-label">Actions</div>
+        <div class="kbd-row"><span class="kbd-keys"><kbd>?</kbd></span><span>These shortcuts</span></div>
+        <div class="kbd-row"><span class="kbd-keys"><kbd>⌘</kbd><span class="kbd-sep">/</span><kbd>Ctrl</kbd><span class="kbd-plus">+</span><kbd>,</kbd></span><span>Settings</span></div>
+        <div class="kbd-row"><span class="kbd-keys"><kbd>Esc</kbd></span><span>Close dialog</span></div>
+      </div>
+      <div class="kbd-group">
+        <div class="kbd-group-label">Attachments</div>
+        <div class="kbd-row"><span class="kbd-keys"><kbd>⌘</kbd><span class="kbd-sep">/</span><kbd>Ctrl</kbd><span class="kbd-plus">+</span><kbd>V</kbd></span><span>Paste image or file</span></div>
+        <div class="kbd-row"><span class="kbd-keys"><kbd>Drop</kbd></span><span>Drag files onto the composer</span></div>
+      </div>
     </div>
   </div>
 </div>

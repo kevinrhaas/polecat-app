@@ -3,6 +3,15 @@
   "entries": [
     {
       "date": "2026-06-27",
+      "title": "Keyboard shortcuts cheatsheet",
+      "items": [
+        "Press ? (when not typing) to open a compact cheatsheet of all keyboard shortcuts",
+        "New shortcut: ⌘, / Ctrl+, opens Settings from anywhere",
+        "Shortcuts button added to the sidebar footer for easy discovery"
+      ]
+    },
+    {
+      "date": "2026-06-27",
       "title": "Per-model regenerate",
       "items": [
         "Each model response now has a ↺ button — click it to ask that one model to try again without re-running all the others",

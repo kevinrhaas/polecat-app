@@ -186,14 +186,13 @@ confusing, with a consistent icon language and zero emoji.
   with two fast free models + light consensus (done), subtle first-time callout below
   the Consensus tab after first synthesis (done), staggered chip entrance after
   "Try it free" (done).
-- **README.md** for the repo (currently missing): what Polecat is, the
-  cross-model + consensus/arbitration differentiator, BYOK + zero-config free
-  demo, the Cloudflare proxy, privacy (100% in-browser), the hourly self-improve
-  loop, and links to app.polecat.live. Make it polished — it's the GitHub front door.
+- [x] **README.md** for the repo: what Polecat is, the cross-model + consensus/arbitration
+  differentiator, BYOK + zero-config free demo, the Cloudflare proxy, privacy
+  (100% in-browser), the hourly self-improve loop, and links to app.polecat.live.
 - [x] Gemini-style empty state: warm centered greeting with Polecat mascot logo
   (animated), cleaner subtitle copy; SVG plus icon in sidebar New chat button.
 - [x] Centered composer when empty: greeting + prompt box sit together in the
   viewport center (Gemini/ChatGPT style); composer docks to the bottom on the
   first send.
-- Keyboard shortcuts cheatsheet; [x] per-model "regenerate"; [x] copy-as-markdown.
+- [x] Keyboard shortcuts cheatsheet; [x] per-model "regenerate"; [x] copy-as-markdown.
 - [x] Shareable read-only consensus links (client-side encoded, no server). Share button on every consensus answer; URL-encoded payload (base64, UTF-8 safe); read-only modal with model responses + consensus + CTA.

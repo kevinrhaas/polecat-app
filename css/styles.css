@@ -739,3 +739,14 @@ body.is-empty .chat-greeting {
   padding-bottom: 4px;
 }
 body.is-empty .composer { margin-top: 8px; }
+
+/* ── Keyboard shortcuts cheatsheet ──────────────────────── */
+.kbd-modal { max-width: 360px; }
+.kbd-body { padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 16px; }
+.kbd-group { display: flex; flex-direction: column; }
+.kbd-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-3); padding-bottom: 7px; border-bottom: 1px solid var(--border); margin-bottom: 7px; }
+.kbd-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 4px 0; font-size: 13px; color: var(--text-2); }
+.kbd-row > span:last-child { text-align: right; }
+.kbd-keys { display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0; }
+.kbd-plus, .kbd-sep { font-size: 11px; color: var(--text-3); padding: 0 1px; }
+.kbd-body kbd { display: inline-block; font-family: inherit; font-size: 11px; font-weight: 500; background: var(--surface-2); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; color: var(--text); white-space: nowrap; line-height: 1.5; }

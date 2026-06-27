@@ -121,6 +121,8 @@ function closeShareModal() {
   if (modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
   if (location.hash.startsWith('#share=')) history.replaceState(null, '', location.pathname);
 }
+function openKbd() { const m = $('kbdModal'); if (m) { m.classList.add('open'); m.removeAttribute('aria-hidden'); } }
+function closeKbd() { const m = $('kbdModal'); if (m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); } }
 // Copy the full exchange — question + each model's answer + consensus — as markdown.
 // Useful for pasting into docs, Slack, Notion, etc.
 function copyThreadAsMarkdown(payload, btn) {
@@ -2092,6 +2094,19 @@ function init() {
   $('closeShare').onclick = closeShareModal;
   $('shareModal').onclick = (e) => { if (e.target === $('shareModal')) closeShareModal(); };
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('shareModal').classList.contains('open')) closeShareModal(); });
+
+  $('sbKbd').onclick = openKbd;
+  $('closeKbd').onclick = closeKbd;
+  $('kbdModal').onclick = (e) => { if (e.target === $('kbdModal')) closeKbd(); };
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('kbdModal').classList.contains('open')) closeKbd(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+      e.preventDefault(); openKbd();
+    }
+    if (e.key === ',' && (e.metaKey || e.ctrlKey) && !e.altKey) { e.preventDefault(); openConfig(); }
+  });
 
   const hasKeys = configuredProviders(cfg).length > 0 || (cfg.selections || []).some(s => s.provider === 'demo');
   const seen = !!localStorage.getItem(WELCOME_KEY);
