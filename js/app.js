@@ -21,6 +21,16 @@ const WELCOME_KEY = 'polecat_welcomed';
 const COPY_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 // EPIC 1 · P4 — layers icon for the inline attribution toggle
 const ATTR_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`;
+// EPIC 3 — consistent SVG icon set (no emoji in UI)
+const EYE_SVG     = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const EYE_OFF_SVG = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+const EYE_SVG_SM  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const GEAR_SM_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
+const SEARCH_SVG  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+const KEY_SVG     = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>`;
+const DOLLAR_SVG  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`;
+const STAR_SVG    = `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+const ARB_ICON    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>`;
 
 let cfg = loadCfg();
 const convos = {};                  // selectionId -> [{role, content}]
@@ -466,7 +476,7 @@ function buildChips() {
 
   if (!list.length) {
     const why = configuredProviders(cfg).length ? 'No models selected' : 'No models';
-    row.innerHTML = `<span class="no-config-hint">${why} — <button id="hintAdd">add one ⚙</button></span>`;
+    row.innerHTML = `<span class="no-config-hint">${why} — <button id="hintAdd">add one ${GEAR_SM_SVG}</button></span>`;
     $('hintAdd').onclick = () => openConfig('models');
     send.disabled = true;
     return;
@@ -485,8 +495,8 @@ function buildChips() {
     chip.style.setProperty('--c', p.color);
     chip.title = st && st.ok === false ? 'Last test failed: ' + (st.error || 'unavailable')
       : selectionLabel(sel) + (vision ? ' · reads images' : ' · text only (no image support)');
-    const visionMark = vision ? `<span class="m-chip-vision" title="Reads images">👁</span>`
-      : (haveImages ? `<span class="m-chip-novision" title="Can't read images — gets text only">⊘</span>` : '');
+    const visionMark = vision ? `<span class="m-chip-vision" title="Reads images">${EYE_SVG}</span>`
+      : (haveImages ? `<span class="m-chip-novision" title="Can't read images — gets text only">${EYE_OFF_SVG}</span>` : '');
     chip.innerHTML =
       `<span class="m-chip-dot"></span>` +
       `<span class="m-chip-label">${escapeHtml(selectionLabel(sel))}</span>` +
@@ -931,7 +941,7 @@ function consensusSourcesEl(arbiterSel) {
     return `<button class="cs-chip${isArb ? ' cs-arbiter' : ''}" data-tab="${escapeHtml(s.id)}" ` +
       `style="--c:${PROVIDERS[s.provider].color}" ` +
       `title="${isArb ? 'Final arbiter — wrote this consensus. ' : ''}Open ${escapeHtml(label)}'s full answer">` +
-      `<span class="cs-dot"></span>${escapeHtml(label)}${isArb ? ' ⚖️' : ''}</button>`;
+      `<span class="cs-dot"></span>${escapeHtml(label)}${isArb ? ' ' + ARB_ICON : ''}</button>`;
   }).join('');
   const wrap = el('div', 'consensus-sources');
   wrap.innerHTML =
@@ -1243,7 +1253,7 @@ function startFreeDemo() {
   const hint = $('cgHint'); if (hint) hint.hidden = false;
   buildChips(); showGreeting(); renderSuggestions();        // keep the example questions visible
   $('promptInput').focus();
-  toast('Free demo ready — pick a question below or type your own ✨');
+  toast('Free demo ready — pick a question below or type your own');
 }
 
 // ── Models tab ──────────────────────────────────────────────────────────────
@@ -1254,7 +1264,7 @@ function modelOptionsHtml(providerId, selected) {
   if (selected && !known)
     html += `<option value="${escapeHtml(selected)}" selected>${statusGlyph(providerId, selected)}${escapeHtml(selected)} (custom)</option>`;
   html += p.models.map(m =>
-    `<option value="${escapeHtml(m.value)}"${m.value === selected ? ' selected' : ''}>${statusGlyph(providerId, m.value)}${escapeHtml(m.label)}${m.price ? ' — ' + m.price : ''}${m.vision ? ' 👁' : ''}</option>`
+    `<option value="${escapeHtml(m.value)}"${m.value === selected ? ' selected' : ''}>${statusGlyph(providerId, m.value)}${escapeHtml(m.label)}${m.price ? ' — ' + m.price : ''}${m.vision ? ' · vision' : ''}</option>`
   ).join('');
   if (p.allowCustomModel) html += `<option value="__custom__">Custom model id…</option>`;
   return html;
@@ -1283,7 +1293,7 @@ function renderSelList() {
       `<span class="sel-dot" style="background:${p.color}"></span>` +
       `<span class="sel-name">${escapeHtml(p.short)}</span>` +
       `<select class="field-input sel-model"></select>` +
-      (vision ? `<span class="sel-vision" title="Reads images">👁</span>` : '') +
+      (vision ? `<span class="sel-vision" title="Reads images">${EYE_SVG_SM}</span>` : '') +
       (ready ? readyBadge : `<span class="sel-warn" title="Add a ${escapeHtml(p.name)} key in the Keys tab">no key</span>`) +
       `<button class="sel-x" title="Remove">×</button>`;
     const select = row.querySelector('.sel-model');
@@ -1321,7 +1331,7 @@ function renderAddRow() {
       `<button class="btn btn-solid" id="addModelBtn">Add</button>` +
       `</div>` +
       `<input class="field-input add-custom" id="addCustom" placeholder="custom model id" style="display:none">` +
-      `<div class="browse-bar"><button class="btn btn-ghost browse-btn" id="browseBtn" hidden>🔎 Browse all models</button></div>` +
+      `<div class="browse-bar"><button class="btn btn-ghost browse-btn" id="browseBtn" hidden>${SEARCH_SVG} Browse all models</button></div>` +
       `<div class="browse-panel" id="browsePanel" hidden><input class="field-input" id="browseSearch" placeholder="Search models…" autocomplete="off"><div class="browse-list" id="browseList"></div></div>`) +
     `<button class="btn btn-ghost test-all" id="testAllBtn">⚡ Test models</button>`;
 
@@ -1391,9 +1401,9 @@ const KEY_TIER = { demo: 'Free · no key', claude: 'Paid', gemini: 'Free tier + 
 function renderKeys() {
   const wrap = $('keyFields');
   wrap.innerHTML =
-    `<details class="key-help"><summary>🔑 What is an API key?</summary>` +
+    `<details class="key-help"><summary>${KEY_SVG} What is an API key?</summary>` +
     `<p>An API key is a short string of letters and numbers — like a passcode. Each provider (Anthropic, Google, OpenAI…) generates one for you so Polecat can use their models on your behalf. Paste it here: it's stored only in your browser and sent straight to that provider — never to us. You stay in control — revoke or regenerate it anytime in the provider's dashboard, and set spending limits there.</p></details>` +
-    `<details class="key-help"><summary>💸 What will it cost?</summary>` +
+    `<details class="key-help"><summary>${DOLLAR_SVG} What will it cost?</summary>` +
     `<p>You only ever pay the provider, for what you use — never Polecat.</p>` +
     `<ul>` +
     `<li><b>Free</b> — OpenRouter <code>:free</code> models, Groq's free tier, and Hugging Face credits cost <b>$0</b> (just rate-limited). Gemini also has a free tier.</li>` +
@@ -1403,10 +1413,10 @@ function renderKeys() {
   if (PROVIDERS.demo) {
     const card = el('div', 'demo-card');
     card.innerHTML =
-      `<div class="demo-card-head"><span class="demo-spark">✨</span><b>No key? Try it free.</b></div>` +
+      `<div class="demo-card-head"><span class="demo-spark">${STAR_SVG}</span><b>No key? Try it free.</b></div>` +
       `<div class="demo-card-sub">Run a free model through Polecat right now — no signup, no key. ` +
       `When you're ready, add your own free key below for unlimited use &amp; more models.</div>` +
-      `<button class="btn btn-solid demo-go" id="demoGoKeys">✨ Try it free — no setup</button>`;
+      `<button class="btn btn-solid demo-go" id="demoGoKeys">Try it free — no setup</button>`;
     wrap.appendChild(card);
     card.querySelector('#demoGoKeys').onclick = () => startFreeDemo();
   }
@@ -1720,7 +1730,7 @@ function openWhatsNew() {
   const ov = el('div', 'exp-overlay');
   ov.innerHTML =
     `<div class="exp-card wn-card">` +
-    `<div class="exp-title">✨ What's new</div>` +
+    `<div class="exp-title">${STAR_SVG} What's new</div>` +
     `<div class="exp-sub">Polecat keeps getting better${_changelog.updated ? ` · updated ${escapeHtml(_changelog.updated)}` : ''}.</div>` +
     `<div class="wn-list">` + (_changelog.entries || []).map(e =>
       `<div class="wn-entry"><div class="wn-date">${escapeHtml(e.date || '')}</div>` +
@@ -1738,7 +1748,7 @@ function openWhatsNew() {
 // ── Support ─────────────────────────────────────────────────────────────────
 function renderDonate() {
   const wrap = $('donateArea'); if (!wrap) return;
-  const tiers = ['☕ $1', '$2', '$5', 'More'];
+  const tiers = ['$1', '$2', '$5', 'More'];
   wrap.innerHTML =
     `<div class="donate-copy">Polecat is free and runs on your own API keys — tips just help offset hosting &amp; dev costs. Thank you! 🦡</div>` +
     `<div class="donate-row">` + tiers.map(t => `<a class="donate-btn" href="${DONATE_URL}" target="_blank" rel="noopener">${escapeHtml(t)}</a>`).join('') + `</div>`;

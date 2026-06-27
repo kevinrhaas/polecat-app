@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-26",
+  "updated": "2026-06-27",
   "entries": [
+    {
+      "date": "2026-06-27",
+      "title": "Consistent SVG icon set — no more emoji in the UI",
+      "items": [
+        "All sidebar buttons (Settings, Theme, Export, Import, Clear history, What's new) now use clean monochrome SVG icons instead of emoji",
+        "Welcome tour slides now feature proper SVG illustrations (compass, layers, sliders, clock, key) instead of emoji glyphs",
+        "Vision indicators in model chips and the settings panel are now proper eye icons (eye / eye-off SVG), not emoji",
+        "Key and cost help sections use key and dollar-sign icons; the demo card uses a star icon",
+        "One coherent icon style throughout: 24×24 viewBox, currentColor stroke, accessible aria-hidden labels"
+      ]
+    },
     {
       "date": "2026-06-26",
       "title": "Attachment polish: privacy note, error feedback & mobile",

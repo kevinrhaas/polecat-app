@@ -62,12 +62,12 @@
       <span>Private mode<br><span class="mini-note">don't save chats</span></span>
       <span class="switch" id="privateSwitch" role="switch" aria-checked="false" tabindex="0"><span class="knob"></span></span>
     </div>
-    <button class="sb-link" id="sbWhatsNew">✨&nbsp; What's new<span class="wn-dot" id="whatsNewDot" hidden></span></button>
-    <button class="sb-link" id="configBtn">⚙&nbsp; Settings</button>
-    <button class="sb-link" id="sbTheme">◐&nbsp; Theme</button>
-    <button class="sb-link" id="sbExport">⤓&nbsp; Export…</button>
-    <button class="sb-link" id="sbImport">⤒&nbsp; Import…</button>
-    <button class="sb-link danger" id="sbClear">🗑&nbsp; Clear history</button>
+    <button class="sb-link" id="sbWhatsNew"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>What's new<span class="wn-dot" id="whatsNewDot" hidden></span></span></button>
+    <button class="sb-link" id="configBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings</button>
+    <button class="sb-link" id="sbTheme"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor" stroke="none"/></svg> Theme</button>
+    <button class="sb-link" id="sbExport"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export…</button>
+    <button class="sb-link" id="sbImport"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import…</button>
+    <button class="sb-link danger" id="sbClear"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Clear history</button>
   </div>
 </aside>
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
@@ -79,7 +79,7 @@
       <div class="cg-glyph">✦</div>
       <div class="cg-title">Ask once. <span class="logo-grad">Hear from everyone.</span></div>
       <div class="cg-sub">Type below — your prompt goes to every selected model at once, then Polecat blends one answer. Attach an image and vision-capable models will read it.</div>
-      <button class="cg-try" id="cgTry" hidden>✨ Try it free — no key needed</button>
+      <button class="cg-try" id="cgTry" hidden>Try it free — no key needed</button>
       <div class="cg-suggest" id="cgSuggest"></div>
       <div class="cg-hint" id="cgHint" hidden>Pick a question to try it — or type your own.</div>
     </div>
@@ -127,7 +127,7 @@
     <div class="modal-body">
       <section class="cfg-section" data-tab="models" id="sec-models">
         <h3 class="cfg-h">Models <span class="cfg-sub">run any mix — even two from one provider</span></h3>
-        <div class="cfg-legend">👁 = reads images (vision) · attach photos in the chat box and these models will see them</div>
+        <div class="cfg-legend"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> = reads images (vision) · attach photos in the chat box and these models will see them</div>
         <div id="selList" class="sel-list"></div>
         <div id="addModelArea"></div>
       </section>
@@ -135,7 +135,7 @@
       <section class="cfg-section" data-tab="keys" id="sec-keys">
         <h3 class="cfg-h">API keys <span class="cfg-sub">stored only in this browser</span></h3>
         <div id="keyFields"></div>
-        <div class="security-note">🔒 Keys live in your browser's <strong>localStorage</strong> and are sent only to each provider (or a proxy you configure) — never to us.</div>
+        <div class="security-note"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Keys live in your browser's <strong>localStorage</strong> and are sent only to each provider (or a proxy you configure) — never to us.</div>
       </section>
 
       <section class="cfg-section" data-tab="arbitration" id="sec-arb">
@@ -201,7 +201,7 @@
       </div>
 
       <div class="welcome-slide" id="wslide-2">
-        <div class="welcome-slide-icon">🧭</div>
+        <div class="welcome-slide-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div>
         <div class="welcome-tagline">One model can be wrong.<br>Several rarely miss the same way.</div>
         <div class="welcome-steps">
           <div class="wstep"><span class="wstep-n">✓</span><span><b>Cross-check.</b> Where the models agree, you can trust it. Where they split, Polecat shows you — instead of betting on one model's blind spot.</span></div>
@@ -211,7 +211,7 @@
       </div>
 
       <div class="welcome-slide" id="wslide-3">
-        <div class="welcome-slide-icon">🧩</div>
+        <div class="welcome-slide-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div>
         <div class="welcome-tagline">Free and paid, together</div>
         <div class="welcome-desc">Run any mix in one prompt — free open models (Llama, GPT-OSS, Qwen) right next to paid flagships (Opus, Gemini, GPT-5).</div>
         <div class="welcome-steps">
@@ -222,7 +222,7 @@
       </div>
 
       <div class="welcome-slide" id="wslide-4">
-        <div class="welcome-slide-icon">⚖️</div>
+        <div class="welcome-slide-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></div>
         <div class="welcome-tagline">You control the verdict</div>
         <div class="welcome-desc">Consensus isn't a black box. Pick <b>how</b> it forms — <b>Best</b>, <b>Comprehensive</b>, <b>Validated</b>, or <b>Debate</b> — and <b>which model</b> gets the final say.</div>
         <div class="welcome-note-box"><b>Example:</b> let fast free models draft the research, then set <em>Claude Opus</em> as the arbiter for the final call — cheap exploration, premium judgment.</div>
@@ -230,23 +230,23 @@
       </div>
 
       <div class="welcome-slide" id="wslide-hist">
-        <div class="welcome-slide-icon">🕘</div>
+        <div class="welcome-slide-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
         <div class="welcome-tagline">Yours, on your device</div>
         <div class="welcome-desc">Every conversation is saved <b>locally</b> in the ☰ menu — revisit and <b>continue</b> any of them. Nothing leaves your browser.</div>
         <div class="welcome-steps">
-          <div class="wstep"><span class="wstep-n">🔎</span><span><b>Search, rename &amp; pin</b> — find any chat, retitle it, keep favorites on top.</span></div>
-          <div class="wstep"><span class="wstep-n">🕶</span><span><b>Private mode</b> for when you don't want a chat recorded.</span></div>
-          <div class="wstep"><span class="wstep-n">⤓</span><span><b>Export</b> your setup, keys &amp; history to move to another device.</span></div>
+          <div class="wstep"><span class="wstep-n"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><span><b>Search, rename &amp; pin</b> — find any chat, retitle it, keep favorites on top.</span></div>
+          <div class="wstep"><span class="wstep-n"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span><b>Private mode</b> for when you don't want a chat recorded.</span></div>
+          <div class="wstep"><span class="wstep-n"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 10 12 15 17 10"/><line x1="3" y1="20" x2="21" y2="20"/></svg></span><span><b>Export</b> your setup, keys &amp; history to move to another device.</span></div>
         </div>
       </div>
 
       <div class="welcome-slide" id="wslide-5">
-        <div class="welcome-slide-icon">🔑</div>
+        <div class="welcome-slide-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
         <div class="welcome-tagline">Bring your own keys</div>
         <div class="welcome-desc">Add at least one API key — <b>free</b> (OpenRouter, Groq, Hugging Face) or <b>paid</b> (Claude, Gemini, ChatGPT). Keys stay in your browser and go straight to each provider.</div>
         <div class="welcome-note-box">Free models cost <b>$0</b>; paid ones usually run <b>pennies per question</b>, and you set the limits. New to this? <b>Settings → Keys</b> explains what an API key is and what to expect to pay.</div>
-        <button class="cg-try" id="wTryDemo" style="margin-top:4px">✨ Try it free now — no key needed</button>
-        <div class="welcome-desc" style="font-size:13px">Polecat is free &amp; open — <a href="#" id="wDonate">leave a tip ☕</a> if it's useful (optional).</div>
+        <button class="cg-try" id="wTryDemo" style="margin-top:4px">Try it free now — no key needed</button>
+        <div class="welcome-desc" style="font-size:13px">Polecat is free &amp; open — <a href="#" id="wDonate">leave a tip</a> if it's useful (optional).</div>
       </div>
     </div>
 

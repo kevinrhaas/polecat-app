@@ -147,7 +147,7 @@ confusing, with a consistent icon language and zero emoji.
       click; moved `backdrop-filter` to a `::before` layer so the panel is never
       inside a blurred ancestor. (Apply the same pattern to the welcome, export,
       and lightbox overlays — they share the bug.)
-- [ ] **Consistent SVG icon set.** Replace UI emoji with simple modern stroke
+- [x] **Consistent SVG icon set.** Replace UI emoji with simple modern stroke
       icons (sidebar ⚙/◐/⤓/⤒/🗑, the ✨ CTA, 👁/⊘ vision marks, key-help 🔑/💸,
       welcome-slide glyphs, etc.). One coherent style; accessible labels/titles.
 - [ ] **Settings IA cleanup.** Audit the Models/Keys/Arbitration/Support tabs:
