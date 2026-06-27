@@ -176,8 +176,8 @@ confusing, with a consistent icon language and zero emoji.
       Show the "they disagreed → consensus reconciled" (and the one "they agreed →
       trust it") story. **Remove the old standalone "baking soda" example; keep the
       cooking one.** Quality & consistency over quantity.
-- [ ] Keep the website's brand, "last updated" stamp, and changelog in sync with
-      the app; emphasise the cross-model consensus differentiator.
+- [x] Keep the website's brand, "last updated" stamp, and changelog in sync with
+      the app; emphasise the cross-model consensus differentiator. (Ongoing — updated each run.)
 
 ---
 
