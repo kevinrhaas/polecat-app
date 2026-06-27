@@ -282,6 +282,20 @@ to abuse); gating is captcha self-serve + a friends tier. Server work lives in
 ---
 
 ## Backlog (smaller, pick up anytime)
+- **BUG (operator-reported, HIGH): non-vision models get no hint that an image was
+  attached → confused/limited answers.** Repro: attach an image, ask "your thoughts
+  on this", with a text-only model selected (e.g. Free demo · Llama 3.3 70B). The
+  image is silently stripped, the model receives only the bare prompt, and replies
+  "I'm not sure what you'd like my thoughts on…". Fix: when sending to a model that
+  can't view images (`opts.vision` false) and the message carries `images`, inject a
+  short text placeholder into the content so the model has context — e.g. `[The user
+  attached N image(s) that this model can't view. If the question depends on the
+  image, say you can't see it and ask for a text description; otherwise answer as
+  best you can.]`. Apply in ALL three content builders in `providers.js`
+  (`oaiContent`, `claudeContent`, `geminiContents`) on the no-vision+images path
+  (display is unchanged — only the API content gets the note). The composer already
+  warns the user via the vision-note; this tells the *model*. Bonus: in a consensus
+  line-up, the arbiter could note that some models couldn't see the image.
 - Onboarding/demo polish (ongoing): keep the first-run flow obvious & delightful —
   rotating clickable example questions on the empty state (done), demo starts with
   two fast free models + light consensus (done); next: a subtle first-time pointer
