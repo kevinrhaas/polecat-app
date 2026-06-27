@@ -228,9 +228,11 @@ to abuse); gating is captcha self-serve + a friends tier. Server work lives in
       handle: `Access-Control-Allow-Origin *`, methods GET/POST/OPTIONS, headers
       Authorization/Content-Type, with an OPTIONS→204 preflight short-circuit.
       Verified preflight returns 204 + ACAO. `POLECAT_MS_URL` is now enabled.
-- [ ] **Verify installed model list.** The curated defaults (`qwen2.5:7b`,
-      `llama3.2:3b`, `deepseek-r1:7b`) are guesses from API.md — confirm against the
-      server's real `/v1/models` and update the `polecatms.models` list to match.
+- [x] **Verify installed model list (done 2026-06-27).** Pinned `polecatms.models`
+      to the server's real `/v1/models`: qwen2.5 (32b/3b), deepseek-r1:32b, mistral:7b,
+      phi3.5, llama3.2:3b, gemma2:2b (smaller 0.5b–1.5b variants remain live-browsable).
+      Verified an end-to-end `/v1/chat/completions` call returns 200 + CORS + a valid
+      OpenAI-shaped response.
 - [ ] **BLOCKED on server (captcha get-key page) — needed for public self-serve.**
       Until this exists, keys are admin-minted from the console only (the provider is
       visible but the public can't get a key). Build self-serve `/get-key` behind

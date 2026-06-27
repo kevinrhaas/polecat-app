@@ -161,9 +161,13 @@ export const PROVIDERS = {
     allowCustomModel: true,
     rateNote: "Polecat's own free community server — bring a free sk-ms- key. Per-key rate limits apply; be kind so it stays up for everyone.",
     models: [
-      { value: 'qwen2.5:7b',     label: 'Qwen2.5 7B',     price: 'free', free: true },
-      { value: 'llama3.2:3b',    label: 'Llama 3.2 3B',   price: 'free', free: true },
-      { value: 'deepseek-r1:7b', label: 'DeepSeek-R1 7B', price: 'free', free: true },
+      { value: 'qwen2.5:32b',     label: 'Qwen2.5 32B',    price: 'free', free: true },
+      { value: 'deepseek-r1:32b', label: 'DeepSeek-R1 32B', price: 'free', free: true },
+      { value: 'mistral:7b',      label: 'Mistral 7B',     price: 'free', free: true },
+      { value: 'phi3.5:latest',   label: 'Phi-3.5',        price: 'free', free: true },
+      { value: 'llama3.2:3b',     label: 'Llama 3.2 3B',   price: 'free', free: true },
+      { value: 'gemma2:2b',       label: 'Gemma2 2B',      price: 'free', free: true },
+      { value: 'qwen2.5:3b',      label: 'Qwen2.5 3B',     price: 'free', free: true },
     ],
   },
 };
