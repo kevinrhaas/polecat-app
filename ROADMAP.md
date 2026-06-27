@@ -41,6 +41,22 @@ audit the menus/settings/onboarding, simplify and de-clutter, fix inconsistencie
 improve accessibility & mobile, tighten copy, and raise the overall craft. Treat
 it as ongoing curation so the app keeps getting *simpler* as it gets more capable.
 
+**Periodic website sync & enhancement pass (every several runs, by your own
+judgement):** treat the public marketing site (`kevinrhaas/polecat`,
+polecat.live) as a first-class product surface that must keep pace with the app.
+On this pass: audit the *current, complete* app feature set (multi-model +
+consensus/arbitration, the agreement map / provenance, attachments — images, PDF,
+PPTX/DOCX/XLSX with client-side extraction & budgeting, privacy/in-browser, BYOK +
+free demo, etc.) and make sure the website presents **all of it** accurately and
+compellingly. Capture **fresh screenshots/images** of the real app (use the keyless
+free demo / a headless render) whenever the UI has meaningfully changed, and
+replace stale shots in `assets/shots/`. Improve copy, structure, visuals, SEO/meta,
+and mobile; keep brand, the "last updated" stamp, and `CHANGELOG.md` in sync with
+the app. Goal: make the public site the **best it can be** — clearly ahead of every
+competitor and an honest, current reflection of everything Polecat does. Keep each
+run a single focused commit (one section / one improvement) rather than a giant
+rewrite, and never regress the existing site.
+
 ---
 
 ## EPIC 1 — Consensus provenance & agreement map  ⭐ (highest priority)

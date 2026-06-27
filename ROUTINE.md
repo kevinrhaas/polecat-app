@@ -74,6 +74,14 @@ Each run, do ONE focused, shippable, non-breaking increment:
 Hold the bar described in the ROADMAP's "North star": world-class, clean,
 beginner-friendly, delightful, mobile + desktop, light + dark, no emoji in
 the UI (use the existing monochrome SVG icon style).
+
+Every several runs (your judgement), instead of an app feature do a website
+sync & enhancement pass: audit the app's current, complete feature set and
+make the public site (kevinrhaas/polecat, polecat.live) present all of it
+accurately and compellingly — refresh screenshots/images of the real app
+(use the keyless free demo / a headless render), improve copy, structure,
+visuals, SEO and mobile, and keep brand + "last updated" + CHANGELOG.md in
+sync. Make the public site the best it can be. One focused commit per run.
 ```
 
 ## Good to know
