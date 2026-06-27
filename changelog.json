@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-27 15:42 CT",
+  "updated": "2026-06-27 16:30 CT",
   "entries": [
+    {
+      "date": "2026-06-27",
+      "time": "16:30 CT",
+      "title": "UI polish: SVG icons replace emoji in the consensus view",
+      "items": [
+        "The live model status indicators in the consensus progress screen now use animated SVG spinners instead of emoji — a spinning ring for 'waiting' and 'streaming', a check for done, an X for errors",
+        "The 'How this was formed' provenance toggle now uses a proper chevron SVG (▶/▼ replaced with consistent stroke icons)",
+        "Image attachment chips in the chat transcript now use an image SVG icon instead of the 🖼 emoji",
+        "History thread titles no longer use 🖼 / 📄 emoji prefixes for attachment-only conversations"
+      ]
+    },
     {
       "date": "2026-06-27",
       "time": "15:42 CT",

@@ -426,6 +426,7 @@ async function addFiles(fileList) {
 function removeAttachment(id) { attachments = attachments.filter(a => a.id !== id); renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled(); }
 function clearAttachments() { attachments = []; renderAttachments(); buildChips(); updateVisionNote(); updateSendEnabled(); }
 const DOC_ICON  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
+const IMG_ICON  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
 const FAIL_ICON  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;color:#f87171" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
 // Inline SVG icons for the vision/attachment note (replaces emoji per North-star directive)
 const VN_CLIP  = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`;
@@ -693,7 +694,7 @@ function attachThumbsHtml(atts) {
     if (im.kind === 'text') return `<span class="msg-file-chip">${DOC_ICON} ${escapeHtml(im.name || 'file')}</span>`;
     return im.dataUrl
       ? `<img class="msg-thumb" src="${im.dataUrl}" alt="${escapeHtml(im.name || 'image')}" title="${escapeHtml(im.name || 'image')}">`
-      : `<span class="msg-file-chip">🖼 ${escapeHtml(im.name || 'image')}</span>`;
+      : `<span class="msg-file-chip">${IMG_ICON} ${escapeHtml(im.name || 'image')}</span>`;
   }).join('') + `</div>`;
 }
 function userMsgHtml(userContent, images) {
@@ -999,7 +1000,7 @@ function recordTurn(prompt, atts) {
   order.forEach(id => { answers[id] = results[id] ?? null; });
   if (!currentThread) {
     const firstAtt = atts && atts[0];
-    const titleFallback = firstAtt ? (firstAtt.kind === 'image' ? '🖼 ' : '📄 ') + firstAtt.name : 'Untitled';
+    const titleFallback = firstAtt ? firstAtt.name : 'Untitled';
     currentThread = {
       id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
       title: (prompt || titleFallback).slice(0, 80),
@@ -1049,7 +1050,13 @@ function markRun(id, state) {
   runStatus[id] = state;
   if (cfg.consensus) refreshConsensusProgress();
 }
-const STAT_ICON = { done: '✓', error: '✗', streaming: '▶', pending: '⏳' };
+const _CP_CHECK  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`;
+const _CP_CROSS  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+const _CP_STREAM = `<span class="cp-stream-ind" aria-hidden="true"></span>`;
+const _CP_WAIT   = `<span class="cp-wait-ind"   aria-hidden="true"></span>`;
+const STAT_SVG = { done: _CP_CHECK, error: _CP_CROSS, streaming: _CP_STREAM, pending: _CP_WAIT };
+const CHEV_R = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>`;
+const CHEV_D = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>`;
 function refreshConsensusProgress() {
   const conv = $('conv_consensus');
   if (!conv || (consensusPhase !== 'waiting' && consensusPhase !== 'arbitrating')) return;
@@ -1070,7 +1077,7 @@ function refreshConsensusProgress() {
   const modelsHtml = ids.map(s => {
     const st = runStatus[s.id];
     return `<li class="cp-model cp-${st}"><span class="cp-dot" style="--c:${PROVIDERS[s.provider].color}"></span>` +
-      `<span class="cp-name">${escapeHtml(selectionLabel(s))}</span><span class="cp-stat">${STAT_ICON[st] || ''}</span></li>`;
+      `<span class="cp-name">${escapeHtml(selectionLabel(s))}</span><span class="cp-stat">${STAT_SVG[st] || ''}</span></li>`;
   }).join('');
 
   box.innerHTML =
@@ -1311,7 +1318,7 @@ function renderProvenancePanel(pair, prov) {
   const panel = el('div', 'provenance-panel');
   panel.innerHTML =
     `<button class="prov-toggle" aria-expanded="false" aria-controls="prov-body-${pair.id || ''}">` +
-    `<span class="prov-toggle-icon" aria-hidden="true">▶</span>` +
+    `<span class="prov-toggle-icon" aria-hidden="true">${CHEV_R}</span>` +
     `<span class="prov-toggle-label">How this was formed</span>` +
     (agreeLevel ? `<span class="prov-badge ${agreeLevel.cls}">${escapeHtml(agreeLevel.label)}</span>` : '') +
     (isLocal ? `<span class="prov-badge prov-local" title="Contribution estimated from text overlap — no extra model call">measured</span>` : '') +
@@ -1330,7 +1337,7 @@ function renderProvenancePanel(pair, prov) {
   toggleBtn.onclick = () => {
     const open = toggleBtn.getAttribute('aria-expanded') === 'true';
     toggleBtn.setAttribute('aria-expanded', String(!open));
-    toggleBtn.querySelector('.prov-toggle-icon').textContent = open ? '▶' : '▼';
+    toggleBtn.querySelector('.prov-toggle-icon').innerHTML = open ? CHEV_R : CHEV_D;
     body.hidden = open;
   };
 
