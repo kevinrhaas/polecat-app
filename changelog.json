@@ -3,6 +3,16 @@
   "entries": [
     {
       "date": "2026-06-27",
+      "title": "Smart follow-up suggestions after every consensus",
+      "items": [
+        "After each consensus answer, 2–3 clickable follow-up question chips appear below the answer",
+        "Chips are derived from the agreement map: if models disagreed on a point, a chip invites you to settle it; notable claims get a 'Tell me more' chip",
+        "When provenance isn't available, universal follow-ups appear (counterarguments, real-world examples, simpler explanation)",
+        "Clicking a chip fills the prompt input instantly — one tap to keep the conversation going"
+      ]
+    },
+    {
+      "date": "2026-06-27",
       "title": "Keyboard shortcuts cheatsheet",
       "items": [
         "Press ? (when not typing) to open a compact cheatsheet of all keyboard shortcuts",

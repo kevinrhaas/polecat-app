@@ -1338,6 +1338,51 @@ function renderProvenancePanel(pair, prov) {
   if (assistantMsg) assistantMsg.appendChild(panel);
 }
 
+// ── Follow-up question chips ────────────────────────────────────────────────
+// Derive 2–3 follow-up chips from provenance (disagreements, notable claims).
+// Falls back to universally useful generic questions when provenance is absent.
+function deriveFollowUps(prov) {
+  const chips = [];
+  if (prov?.disagreements?.length) {
+    const point = (prov.disagreements[0].point || '').trim();
+    if (point) {
+      const s = point.length > 66 ? point.slice(0, 63) + '…' : point;
+      chips.push('Settle the debate: ' + s);
+    }
+  }
+  if (prov?.notable?.length) {
+    const claim = (prov.notable[0].claim || '').trim();
+    if (claim) {
+      const s = claim.length > 60 ? claim.slice(0, 57) + '…' : claim;
+      chips.push('Tell me more: “' + s + '”');
+    }
+  }
+  const fallbacks = [
+    'What are the strongest counterarguments to this?',
+    'Give me a concrete real-world example.',
+    'What’s the most important nuance here?',
+    'Explain this more simply.',
+  ];
+  let fi = 0;
+  while (chips.length < 3 && fi < fallbacks.length) chips.push(fallbacks[fi++]);
+  return chips.slice(0, 3);
+}
+
+function renderFollowUpChips(pair, prov) {
+  const assistantMsg = pair.querySelector('.msg.assistant');
+  if (!assistantMsg || assistantMsg.querySelector('.followup-chips')) return;
+  const chips = deriveFollowUps(prov);
+  if (!chips.length) return;
+  const wrap = el('div', 'followup-chips');
+  wrap.innerHTML =
+    '<span class="followup-label">Ask a follow-up</span>' +
+    '<div class="followup-list">' +
+    chips.map(q => `<button class="followup-chip" data-q="${escapeHtml(q)}">${escapeHtml(q)}</button>`).join('') +
+    '</div>';
+  wrap.querySelectorAll('.followup-chip').forEach(b => b.onclick = () => fillPrompt(b.dataset.q));
+  assistantMsg.appendChild(wrap);
+}
+
 // EPIC 1 · P1 — receive the arbiter's machine-readable agreement map. Stamped
 // on the consensus pair and rendered as the provenance panel immediately after.
 // Also triggers P4: computes paragraph attribution and wires the toggle button.
@@ -1347,6 +1392,9 @@ function onProvenance(data) {
   if (!pair) return;
   pair._provenance = lastConsensusProvenance;
   if (lastConsensusProvenance) renderProvenancePanel(pair, lastConsensusProvenance);
+
+  // Follow-up chips — appear after the provenance panel, derived from its insights.
+  renderFollowUpChips(pair, lastConsensusProvenance);
 
   // P4 — Inline attribution (no extra model call, runs synchronously)
   if (!lastConsensusText) return;
