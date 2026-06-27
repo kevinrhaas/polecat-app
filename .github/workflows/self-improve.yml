@@ -16,10 +16,8 @@ name: Hourly self-improve
 # Test it any time with the "Run workflow" button (workflow_dispatch).
 
 on:
-  # PAUSED 2026-06-27 to save tokens — uncomment the schedule block below to resume
-  # the hourly runs. The manual "Run workflow" button (workflow_dispatch) still works.
-  # schedule:
-  #   - cron: '17 * * * *'      # hourly, off the :00 mark
+  schedule:
+    - cron: '17 * * * *'      # hourly, off the :00 mark
   workflow_dispatch:
     inputs:
       focus:
