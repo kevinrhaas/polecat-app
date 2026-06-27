@@ -192,7 +192,8 @@ confusing, with a consistent icon language and zero emoji.
   loop, and links to app.polecat.live. Make it polished — it's the GitHub front door.
 - [x] Gemini-style empty state: warm centered greeting with Polecat mascot logo
   (animated), cleaner subtitle copy; SVG plus icon in sidebar New chat button.
-  Next: consider a centered composer when empty that docks to the bottom after
-  the first message.
+- [x] Centered composer when empty: greeting + prompt box sit together in the
+  viewport center (Gemini/ChatGPT style); composer docks to the bottom on the
+  first send.
 - Keyboard shortcuts cheatsheet; per-model "regenerate"; [x] copy-as-markdown.
 - [x] Shareable read-only consensus links (client-side encoded, no server). Share button on every consensus answer; URL-encoded payload (base64, UTF-8 safe); read-only modal with model responses + consensus + CTA.

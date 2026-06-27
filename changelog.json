@@ -3,6 +3,15 @@
   "entries": [
     {
       "date": "2026-06-27",
+      "title": "Centered composer on the empty state",
+      "items": [
+        "When there are no messages yet, the prompt box and greeting now sit together in the center of the screen — Gemini/ChatGPT style",
+        "As soon as you send your first message, the layout smoothly transitions: the transcript expands above and the composer docks to the bottom",
+        "The greeting border and background disappear in the empty state so nothing competes with the logo and suggestion chips"
+      ]
+    },
+    {
+      "date": "2026-06-27",
       "title": "Copy the full thread as markdown",
       "items": [
         "New document icon on every Consensus answer — click it to copy the full exchange as clean markdown",

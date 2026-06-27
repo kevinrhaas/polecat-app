@@ -765,8 +765,8 @@ async function streamTo(sel, userContent, images, displayAtts, nativePdfs = null
 }
 
 // Greeting placeholder (shown before any conversation exists)
-function hideGreeting() { $('chatGreeting')?.classList.add('hidden'); }
-function showGreeting() { const g = $('chatGreeting'); if (g && !document.querySelector('.tab')) g.classList.remove('hidden'); }
+function hideGreeting() { $('chatGreeting')?.classList.add('hidden'); document.body.classList.remove('is-empty'); }
+function showGreeting() { const g = $('chatGreeting'); if (g && !document.querySelector('.tab')) { g.classList.remove('hidden'); document.body.classList.add('is-empty'); } }
 
 // Rotating, clickable example questions — show how it works at a glance.
 const SUGGESTIONS = [

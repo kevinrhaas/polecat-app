@@ -81,7 +81,7 @@ header {
 .app { position: relative; z-index: 1; flex: 1; min-height: 0; width: 100%; max-width: 1100px; margin: 0 auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
 
 /* Transcript area grows and scrolls above the composer */
-.responses { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.responses { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: background .25s, border-color .25s; }
 .tab-bar { flex-shrink: 0; }
 #tabPanels { flex: 1; min-height: 0; }
 #tabPanels:empty { flex: 0; }
@@ -688,3 +688,19 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .exp-opt { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 14px; cursor: pointer; }
 .exp-opt input { margin-top: 3px; flex-shrink: 0; width: 16px; height: 16px; accent-color: var(--brand-b); }
 .exp-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+/* ── Centered composer: greeting + composer sit together in the viewport center ── */
+/* Applied via body.is-empty when no messages exist yet; removed on first send. */
+body.is-empty .app { justify-content: center; gap: 0; }
+body.is-empty .responses {
+  flex: 0 0 auto;
+  background: transparent;
+  border-color: transparent;
+  overflow: visible;
+  border-radius: 0;
+}
+body.is-empty .chat-greeting {
+  flex: 0 0 auto;
+  padding-bottom: 4px;
+}
+body.is-empty .composer { margin-top: 8px; }
