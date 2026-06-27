@@ -194,5 +194,5 @@ confusing, with a consistent icon language and zero emoji.
   (animated), cleaner subtitle copy; SVG plus icon in sidebar New chat button.
   Next: consider a centered composer when empty that docks to the bottom after
   the first message.
-- Keyboard shortcuts cheatsheet; per-model "regenerate"; copy-as-markdown.
+- Keyboard shortcuts cheatsheet; per-model "regenerate"; [x] copy-as-markdown.
 - [x] Shareable read-only consensus links (client-side encoded, no server). Share button on every consensus answer; URL-encoded payload (base64, UTF-8 safe); read-only modal with model responses + consensus + CTA.

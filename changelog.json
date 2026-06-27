@@ -3,6 +3,15 @@
   "entries": [
     {
       "date": "2026-06-27",
+      "title": "Copy the full thread as markdown",
+      "items": [
+        "New document icon on every Consensus answer — click it to copy the full exchange as clean markdown",
+        "The copied markdown includes your question, each model's response (with its label), and the consensus — ready to paste into Slack, Notion, docs, or email",
+        "Joins the existing per-response copy and share buttons, all in one tidy row on the consensus panel"
+      ]
+    },
+    {
+      "date": "2026-06-27",
       "title": "Share any consensus with a link",
       "items": [
         "New Share button on every Consensus answer — click it to copy a shareable URL to your clipboard",

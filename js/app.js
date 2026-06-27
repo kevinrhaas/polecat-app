@@ -33,6 +33,7 @@ const STAR_SVG    = `<svg width="15" height="15" viewBox="0 0 24 24" fill="curre
 const ARB_ICON    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>`;
 const ZAP_SVG     = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
 const SHARE_SVG   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
+const COPY_MD_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
 
 let cfg = loadCfg();
 const convos = {};                  // selectionId -> [{role, content}]
@@ -117,6 +118,24 @@ function closeShareModal() {
   const modal = $('shareModal');
   if (modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
   if (location.hash.startsWith('#share=')) history.replaceState(null, '', location.pathname);
+}
+// Copy the full exchange — question + each model's answer + consensus — as markdown.
+// Useful for pasting into docs, Slack, Notion, etc.
+function copyThreadAsMarkdown(payload, btn) {
+  const { q, r, c } = payload;
+  const lines = [];
+  if (q) { lines.push('**Question:** ' + q); lines.push(''); }
+  if (r && r.length) {
+    lines.push('---'); lines.push('');
+    r.forEach((m, i) => {
+      if (i > 0) lines.push('');
+      lines.push('**' + m.l + ':**'); lines.push('');
+      lines.push(m.t || '');
+    });
+    lines.push('');
+  }
+  if (c) { lines.push('---'); lines.push(''); lines.push('**Consensus:**'); lines.push(''); lines.push(c); }
+  copyText(lines.join('\n'), btn);
 }
 
 // Build timestamp from the served file's last-modified — auto-updates each deploy.
@@ -1029,6 +1048,10 @@ async function streamToConsensus(sel, messages) {
       sb.innerHTML = SHARE_SVG; sb.title = 'Share this consensus'; sb.setAttribute('aria-label', 'Share this consensus');
       sb.onclick = () => shareConsensus(sharePayload, sb);
       msgHead.appendChild(sb);
+      const mb = el('button', 'copy-btn');
+      mb.innerHTML = COPY_MD_SVG; mb.title = 'Copy thread as markdown'; mb.setAttribute('aria-label', 'Copy thread as markdown');
+      mb.onclick = () => copyThreadAsMarkdown(sharePayload, mb);
+      msgHead.appendChild(mb);
     }
     const sources = consensusSourcesEl(sel);
     if (sources) { pair.querySelector('.msg.assistant').appendChild(sources); scrollBottom(conv); }
@@ -1049,7 +1072,7 @@ function showConsensusStatic(text, isError = false) {
   pair.innerHTML =
     `<div class="msg user"><span class="msg-label">You</span><div class="msg-bubble">${nl2br(lastPrompt)}</div></div>` +
     `<div class="msg assistant"><div class="msg-head"><span class="msg-label">Consensus</span>` +
-    (isError ? '' : `<button class="copy-btn" title="Copy">${COPY_SVG}</button><button class="copy-btn share-btn" title="Share this consensus" aria-label="Share this consensus">${SHARE_SVG}</button>`) + `</div>` +
+    (isError ? '' : `<button class="copy-btn" title="Copy">${COPY_SVG}</button><button class="copy-btn share-btn" title="Share this consensus" aria-label="Share this consensus">${SHARE_SVG}</button><button class="copy-btn copy-md-btn" title="Copy thread as markdown" aria-label="Copy thread as markdown">${COPY_MD_SVG}</button>`) + `</div>` +
     `<div class="msg-bubble">${isError ? `<span class="msg-error">${escapeHtml(text)}</span>` : renderMarkdown(text)}</div></div>`;
   conv.appendChild(pair); scrollBottom(conv);
   if (!isError) {
@@ -1057,6 +1080,8 @@ function showConsensusStatic(text, isError = false) {
     const b = pair.querySelector('.copy-btn'); if (b) b.onclick = () => copyText(text, b);
     const sb = pair.querySelector('.share-btn');
     if (sb && sharePayload) sb.onclick = () => shareConsensus(sharePayload, sb);
+    const mb = pair.querySelector('.copy-md-btn');
+    if (mb && sharePayload) mb.onclick = () => copyThreadAsMarkdown(sharePayload, mb);
   }
 }
 async function runConsensus() {
