@@ -75,11 +75,17 @@ Hold the bar described in the ROADMAP's "North star": world-class, clean,
 beginner-friendly, delightful, mobile + desktop, light + dark, no emoji in
 the UI (use the existing monochrome SVG icon style).
 
-Every several runs (your judgement), instead of an app feature do a website
-sync & enhancement pass: audit the app's current, complete feature set and
-make the public site (kevinrhaas/polecat, polecat.live) present all of it
-accurately and compellingly — refresh screenshots/images of the real app
-(use the keyless free demo / a headless render), improve copy, structure,
+Cadence — default to shipping features. Most runs advance a real feature.
+Roughly every 5 feature runs, spend one run on a best-practice cleanup pass
+and one run on a website sync pass (≈5 : 1 : 1). Each run is stateless, so
+gauge where you are from history: scan recent git log / changelog and count
+feature increments since the last of each pass; if ~5+ have landed since one,
+make this run that pass.
+
+Website sync & enhancement pass: audit the app's current, complete feature
+set and make the public site (kevinrhaas/polecat, polecat.live) present all
+of it accurately and compellingly — refresh screenshots/images of the real
+app (use the keyless free demo / a headless render), improve copy, structure,
 visuals, SEO and mobile, and keep brand + "last updated" + CHANGELOG.md in
 sync. Make the public site the best it can be. One focused commit per run.
 ```

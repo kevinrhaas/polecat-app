@@ -35,14 +35,23 @@ genuinely innovative. Hold this bar on every change. Concretely:
 - **Innovate forward, don't thrash.** Press toward groundbreaking, genuinely new
   capability — but evolve, don't wildly rewrite. Never regress existing features.
 
-**Periodic best-practice pass (do this every few runs, by your own judgement):**
+**Run cadence (default = ship features).** Most runs should advance a real
+feature/increment. Roughly **every 5 feature runs, spend one run on the
+best-practice pass and one run on the website sync pass** (≈5 : 1 : 1). Each run
+is stateless, so gauge where you are from history: scan recent `git log` /
+`changelog.json` and count the feature increments shipped since the last
+best-practice pass and since the last website pass — if ~5 or more have landed
+since one of them, make this run that pass; otherwise ship the next feature.
+Always finish whatever in-flight epic step is mid-stream before switching modes.
+
+**Periodic best-practice pass (roughly 1 in every ~6 runs, per the cadence above):**
 instead of a feature, step back and do a holistic cleanup/reorganisation —
 audit the menus/settings/onboarding, simplify and de-clutter, fix inconsistencies,
 improve accessibility & mobile, tighten copy, and raise the overall craft. Treat
 it as ongoing curation so the app keeps getting *simpler* as it gets more capable.
 
-**Periodic website sync & enhancement pass (every several runs, by your own
-judgement):** treat the public marketing site (`kevinrhaas/polecat`,
+**Periodic website sync & enhancement pass (roughly 1 in every ~6 runs, per the
+cadence above):** treat the public marketing site (`kevinrhaas/polecat`,
 polecat.live) as a first-class product surface that must keep pace with the app.
 On this pass: audit the *current, complete* app feature set (multi-model +
 consensus/arbitration, the agreement map / provenance, attachments — images, PDF,
