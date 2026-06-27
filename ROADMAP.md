@@ -154,7 +154,7 @@ confusing, with a consistent icon language and zero emoji.
       Agreement map toggle above arbiter picker; removed jargon 'structure/default
       arbiter' metadata; clearer helper text throughout; ⚡ emoji → SVG icon.
       A beginner should now grok the tab instantly.
-- [ ] **Apply blur-layer fix to remaining overlays** (welcome, export, lightbox).
+- [x] **Apply blur-layer fix to remaining overlays** (welcome, export, lightbox).
 
 ---
 

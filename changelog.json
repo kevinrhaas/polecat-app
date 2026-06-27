@@ -3,6 +3,14 @@
   "entries": [
     {
       "date": "2026-06-27",
+      "title": "Overlay polish — crisp dialogs on all browsers",
+      "items": [
+        "Fixed a rendering bug where the welcome tour, export dialog, and image lightbox could appear blurred on open in Safari and some Chromium builds",
+        "All overlays now use an isolated backdrop layer so the dialog content is always pixel-sharp"
+      ]
+    },
+    {
+      "date": "2026-06-27",
       "title": "Settings IA cleanup — Arbitration tab renamed to Consensus",
       "items": [
         "The 'Arbitration' settings tab is now labelled 'Consensus' — clearer and jargon-free for new users",
