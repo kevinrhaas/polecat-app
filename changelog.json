@@ -3,6 +3,16 @@
   "entries": [
     {
       "date": "2026-06-27",
+      "title": "Warmer empty-state greeting with Polecat mascot",
+      "items": [
+        "The welcome screen now features the Polecat mascot logo (gently animated) instead of the plain ✦ glyph — warmer and more app-like",
+        "Updated greeting subtitle to better explain the cross-model consensus differentiator",
+        "Sidebar 'New chat' button now uses a proper SVG plus icon instead of a Unicode character",
+        "Added README.md — the repo's GitHub front door with full feature and architecture overview"
+      ]
+    },
+    {
+      "date": "2026-06-27",
       "title": "Overlay polish — crisp dialogs on all browsers",
       "items": [
         "Fixed a rendering bug where the welcome tour, export dialog, and image lightbox could appear blurred on open in Safari and some Chromium builds",

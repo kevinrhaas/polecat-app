@@ -87,11 +87,15 @@ header {
 #tabPanels:empty { flex: 0; }
 
 /* Greeting shown before the first message */
-.chat-greeting { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 32px 24px; }
+.chat-greeting { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 32px 24px; }
 .chat-greeting.hidden { display: none; }
-.cg-glyph { font-size: 40px; line-height: 1; background: linear-gradient(135deg, var(--brand-a), var(--brand-b), var(--consensus)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cp-pulse 2.6s ease-in-out infinite; }
-.cg-title { font-size: 26px; font-weight: 800; letter-spacing: -.5px; }
-.cg-sub { font-size: 14px; color: var(--text-2); line-height: 1.6; max-width: 440px; }
+.cg-mark { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 2px; }
+.cg-mark svg { animation: cg-float 3.8s ease-in-out infinite; }
+@keyframes cg-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@media (prefers-reduced-motion: reduce) { .cg-mark svg { animation: none; } }
+.cg-brand { font-size: 30px; font-weight: 900; letter-spacing: -.5px; }
+.cg-title { font-size: 22px; font-weight: 700; letter-spacing: -.3px; color: var(--text-2); }
+.cg-sub { font-size: 14px; color: var(--text-2); line-height: 1.6; max-width: 420px; }
 .cg-try { font-family: inherit; font-size: 14px; font-weight: 700; color: #fff; background: linear-gradient(120deg, #10b981, #0ea5e9); border: none; border-radius: 100px; padding: 11px 22px; cursor: pointer; box-shadow: 0 6px 22px color-mix(in srgb, #10b981 35%, transparent); transition: transform .12s, box-shadow .12s, opacity .12s; }
 .cg-try:hover { transform: translateY(-1px); box-shadow: 0 8px 28px color-mix(in srgb, #10b981 45%, transparent); }
 .cg-try[hidden] { display: none; }
@@ -465,7 +469,8 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 @media (max-width: 600px) {
   .app { padding: 10px; gap: 10px; }
   header { padding: 10px 12px; }
-  .cg-title { font-size: 21px; }
+  .cg-title { font-size: 18px; }
+  .cg-brand { font-size: 26px; }
   .msg-bubble { max-width: 98%; font-size: 13px; }
   .send-btn kbd { display: none; }
   .backdrop { padding: 8px; }

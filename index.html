@@ -53,7 +53,7 @@
 
 <!-- Left sidebar: New chat · history · settings/theme/private -->
 <aside class="sidebar" id="sidebar" aria-label="Menu and conversation history">
-  <div class="sb-top"><button class="sb-newchat" id="sbNewChat">＋ New chat</button></div>
+  <div class="sb-top"><button class="sb-newchat" id="sbNewChat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New chat</button></div>
   <div class="sb-search-wrap"><input class="sb-search" id="sbSearch" type="search" placeholder="Search conversations…" autocomplete="off" spellcheck="false"></div>
   <div class="sb-section-label">History</div>
   <div class="sb-history" id="sbHistory"></div>
@@ -76,9 +76,25 @@
   <!-- Chat transcript scrolls here, above the composer (Gemini-style) -->
   <div class="responses" id="responses">
     <div class="chat-greeting" id="chatGreeting">
-      <div class="cg-glyph">✦</div>
-      <div class="cg-title">Ask once. <span class="logo-grad">Hear from everyone.</span></div>
-      <div class="cg-sub">Type below — your prompt goes to every selected model at once, then Polecat blends one answer. Attach an image and vision-capable models will read it.</div>
+      <div class="cg-mark">
+        <svg viewBox="0 0 220 220" width="72" height="72" aria-hidden="true">
+          <ellipse cx="60" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(-16 60 58)"/>
+          <ellipse cx="160" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(16 160 58)"/>
+          <ellipse cx="62" cy="62" rx="12" ry="15" fill="#F4A6A6" transform="rotate(-16 62 62)"/>
+          <ellipse cx="158" cy="62" rx="12" ry="15" fill="#F4A6A6" transform="rotate(16 158 62)"/>
+          <ellipse cx="110" cy="122" rx="84" ry="78" fill="#F5E9D6"/>
+          <path d="M28 102 Q110 80 192 102 Q196 128 160 137 Q110 146 60 137 Q24 128 28 102 Z" fill="#2E2A33"/>
+          <circle cx="78" cy="113" r="19" fill="#fff"/><circle cx="142" cy="113" r="19" fill="#fff"/>
+          <circle cx="81" cy="116" r="10.5" fill="#2E2A33"/><circle cx="139" cy="116" r="10.5" fill="#2E2A33"/>
+          <circle cx="85" cy="112" r="3.6" fill="#fff"/><circle cx="143" cy="112" r="3.6" fill="#fff"/>
+          <circle cx="54" cy="156" r="12" fill="#F4A6A6" opacity="0.55"/><circle cx="166" cy="156" r="12" fill="#F4A6A6" opacity="0.55"/>
+          <path d="M110 150 q10 0 8 8.5 q-2 6.5 -8 7.5 q-6 -1 -8 -7.5 q-2 -8.5 8 -8.5 Z" fill="#3A2F3A"/>
+          <path d="M110 166 q-9 9 -17 2.5 M110 166 q9 9 17 2.5" stroke="#3A2F3A" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="cg-brand">Pole<span class="logo-grad">cat</span></div>
+      </div>
+      <div class="cg-title">Ask once. Hear from everyone.</div>
+      <div class="cg-sub">Your question goes to every AI model at once — then Polecat blends one answer and shows you exactly where they agreed and where they didn't.</div>
       <button class="cg-try" id="cgTry" hidden>Try it free — no key needed</button>
       <div class="cg-suggest" id="cgSuggest"></div>
       <div class="cg-hint" id="cgHint" hidden>Pick a question to try it — or type your own.</div>

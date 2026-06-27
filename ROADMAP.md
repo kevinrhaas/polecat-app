@@ -190,7 +190,9 @@ confusing, with a consistent icon language and zero emoji.
   cross-model + consensus/arbitration differentiator, BYOK + zero-config free
   demo, the Cloudflare proxy, privacy (100% in-browser), the hourly self-improve
   loop, and links to app.polecat.live. Make it polished — it's the GitHub front door.
-- Gemini-style empty state: warm centered greeting + logo; consider a centered
-  composer when empty that docks to the bottom after the first message.
+- [x] Gemini-style empty state: warm centered greeting with Polecat mascot logo
+  (animated), cleaner subtitle copy; SVG plus icon in sidebar New chat button.
+  Next: consider a centered composer when empty that docks to the bottom after
+  the first message.
 - Keyboard shortcuts cheatsheet; per-model "regenerate"; copy-as-markdown.
 - Shareable read-only consensus links (client-side encoded, no server).
