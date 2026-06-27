@@ -207,7 +207,7 @@ confusing, with a consistent icon language and zero emoji.
   App changelog entries now carry a `time: "HH:MM CT"` field; What's-new panel
   shows it next to the date. Top-level `updated` also carries the full timestamp.
   Website footer updated in the same run.
-- [ ] **Polecat Model Server — website mention + public key page.** The provider is
+- [x] **Polecat Model Server — website mention + public key page.** The provider is
   live (`polecatms`, modelserver.polecat.live, CORS enabled). In a website (Part 2)
   pass, add the free first-party model server to polecat.live's feature set. NOTE: a
   captcha-gated self-serve "get a key" page is server-side work in
