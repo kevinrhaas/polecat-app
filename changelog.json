@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-27 17:15 CT",
+  "updated": "2026-06-27 18:00 CT",
   "entries": [
+    {
+      "date": "2026-06-27",
+      "time": "18:00 CT",
+      "title": "Polish: send button shows model count + accessibility improvements",
+      "items": [
+        "The Send button now shows exactly how many models will receive your prompt — \"Send to 3\" instead of the vague \"Send to all\", making the multi-model nature concrete at a glance",
+        "Toast notifications (copy confirmations, error messages, etc.) are now announced to screen readers via an ARIA live region",
+        "Three new example questions added to the rotating suggestion chips — AI & the future of work, remote vs. office productivity, and overrated tech — great for seeing where models disagree"
+      ]
+    },
     {
       "date": "2026-06-27",
       "time": "17:15 CT",

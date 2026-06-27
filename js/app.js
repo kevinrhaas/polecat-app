@@ -545,8 +545,9 @@ function updateSendEnabled() {
   const send = $('sendBtn'); if (!send) return;
   const hasPending = attachments.some(a => a.pending);
   const hasContent = $('promptInput').value.trim().length > 0 || attachments.some(a => !a.pending);
-  send.disabled = !sels().length || !hasContent || hasPending;
-  send.title = hasPending ? 'Reading files…' : 'Send to all (⌘↵)';
+  const _n = sels().length;
+  send.disabled = !_n || !hasContent || hasPending;
+  send.title = hasPending ? 'Reading files…' : (_n > 1 ? `Send to ${_n} models (⌘↵)` : 'Send (⌘↵)');
 }
 
 // ── Model chips (prompt footer) ─────────────────────────────────────────────
@@ -560,6 +561,8 @@ function buildChips() {
     row.innerHTML = `<span class="no-config-hint">${why} — <button id="hintAdd">add one ${GEAR_SM_SVG}</button></span>`;
     $('hintAdd').onclick = () => openConfig('models');
     send.disabled = true;
+    const _st = send.querySelector('.send-text');
+    if (_st) _st.innerHTML = 'Send to all <kbd>⌘↵</kbd>';
     return;
   }
   updateSendEnabled();
@@ -593,6 +596,11 @@ function buildChips() {
     add.onclick = () => openConfig('models');
     row.appendChild(add);
   }
+
+  // Show model count in the send button — makes the multi-model count concrete.
+  const sendText = send.querySelector('.send-text');
+  if (sendText) sendText.innerHTML = `Send to ${list.length} <kbd>⌘↵</kbd>`;
+
   updateVisionNote();
 }
 function setChipsDisabled(disabled) {
@@ -865,6 +873,9 @@ const SUGGESTIONS = [
   "What's the most important habit for a longer, healthier life?",
   "Greatest video game of all time?",
   "Explain quantum entanglement like I'm 12.",
+  "Will AI replace most knowledge workers in the next 10 years?",
+  "Remote work or office work — which actually makes people more productive?",
+  "What's the single most overrated technology of the past decade?",
 ];
 let _sugTimer = null;
 function pickRandom(arr, n) {
