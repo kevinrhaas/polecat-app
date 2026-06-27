@@ -3,6 +3,16 @@
   "entries": [
     {
       "date": "2026-06-27",
+      "title": "Share any consensus with a link",
+      "items": [
+        "New Share button on every Consensus answer — click it to copy a shareable URL to your clipboard",
+        "Anyone who opens the link sees the original question, each model's response (collapsible), and the final consensus — no account or API key needed",
+        "The entire conversation is encoded in the URL itself: 100% private, no server, no storage",
+        "Opening a share link shows a clean read-only modal with a 'Try it free' call-to-action"
+      ]
+    },
+    {
+      "date": "2026-06-27",
       "title": "Warmer empty-state greeting with Polecat mascot",
       "items": [
         "The welcome screen now features the Polecat mascot logo (gently animated) instead of the plain ✦ glyph — warmer and more app-like",

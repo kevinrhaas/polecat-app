@@ -195,4 +195,4 @@ confusing, with a consistent icon language and zero emoji.
   Next: consider a centered composer when empty that docks to the bottom after
   the first message.
 - Keyboard shortcuts cheatsheet; per-model "regenerate"; copy-as-markdown.
-- Shareable read-only consensus links (client-side encoded, no server).
+- [x] Shareable read-only consensus links (client-side encoded, no server). Share button on every consensus answer; URL-encoded payload (base64, UTF-8 safe); read-only modal with model responses + consensus + CTA.

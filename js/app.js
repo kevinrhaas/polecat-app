@@ -32,6 +32,7 @@ const DOLLAR_SVG  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
 const STAR_SVG    = `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 const ARB_ICON    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>`;
 const ZAP_SVG     = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
+const SHARE_SVG   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
 
 let cfg = loadCfg();
 const convos = {};                  // selectionId -> [{role, content}]
@@ -63,6 +64,61 @@ function copyText(text, btn) {
     if (btn) { btn.classList.add('copied'); setTimeout(() => btn.classList.remove('copied'), 1000); }
   }).catch(() => toast('Copy failed'));
 }
+// ── Shareable consensus links ─────────────────────────────────────────────────
+// Encode a consensus payload to a URL-safe base64 string.
+function encodeSharePayload(p) {
+  const d = {
+    v: 1,
+    q: (p.q || '').slice(0, 500),
+    r: (p.r || []).slice(0, 6).map(m => ({ l: (m.l || '').slice(0, 60), t: (m.t || '').slice(0, 1500) })),
+    c: (p.c || '').slice(0, 3000),
+  };
+  const bytes = new TextEncoder().encode(JSON.stringify(d));
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+function decodeSharePayload(str) {
+  try {
+    const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+    const bin = atob(b64 + '='.repeat((4 - b64.length % 4) % 4));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const d = JSON.parse(new TextDecoder().decode(bytes));
+    return (d && d.v === 1) ? d : null;
+  } catch { return null; }
+}
+function shareConsensus(payload, btn) {
+  const url = location.origin + location.pathname + '#share=' + encodeSharePayload(payload);
+  navigator.clipboard.writeText(url)
+    .then(() => { toast('Share link copied — paste it anywhere!'); if (btn) { btn.classList.add('copied'); setTimeout(() => btn.classList.remove('copied'), 1500); } })
+    .catch(() => window.prompt('Copy this share link:', url));
+}
+function showShareModal(data) {
+  const modal = $('shareModal'), content = $('shareContent');
+  if (!modal || !content) return;
+  let html = `<div><div class="share-section-label">Question</div><div class="share-question-wrap">${escapeHtml(data.q || '')}</div></div>`;
+  if (data.r && data.r.length) {
+    html += `<div><div class="share-section-label">${data.r.length} model${data.r.length === 1 ? '' : 's'} responded</div><div class="share-models-wrap">`;
+    data.r.forEach(m => {
+      html += `<details class="share-model-card"><summary>${escapeHtml(m.l || 'Model')}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></summary><div class="share-model-body">${renderMarkdown(m.t || '')}</div></details>`;
+    });
+    html += `</div></div>`;
+  }
+  if (data.c) {
+    html += `<div><div class="share-section-label">Consensus</div><div class="share-consensus-wrap">${renderMarkdown(data.c)}</div></div>`;
+  }
+  content.innerHTML = html;
+  if (typeof hljs !== 'undefined') content.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+  modal.classList.add('open');
+  modal.removeAttribute('aria-hidden');
+}
+function closeShareModal() {
+  const modal = $('shareModal');
+  if (modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
+  if (location.hash.startsWith('#share=')) history.replaceState(null, '', location.pathname);
+}
+
 // Build timestamp from the served file's last-modified — auto-updates each deploy.
 function buildStamp() {
   const d = new Date(document.lastModified);
@@ -965,6 +1021,15 @@ async function streamToConsensus(sel, messages) {
   finishBubble(pair, full);
   if (full) {
     setMsgTime(pair, performance.now() - t0);
+    // Add share button — capture payload now before state can change.
+    const msgHead = pair.querySelector('.msg.assistant .msg-head');
+    if (msgHead) {
+      const sharePayload = { q: lastPrompt, r: order.filter(id => results[id]).map(id => ({ l: selectionLabel(selById(id) || {}), t: results[id] })), c: full };
+      const sb = el('button', 'copy-btn share-btn');
+      sb.innerHTML = SHARE_SVG; sb.title = 'Share this consensus'; sb.setAttribute('aria-label', 'Share this consensus');
+      sb.onclick = () => shareConsensus(sharePayload, sb);
+      msgHead.appendChild(sb);
+    }
     const sources = consensusSourcesEl(sel);
     if (sources) { pair.querySelector('.msg.assistant').appendChild(sources); scrollBottom(conv); }
   }
@@ -974,14 +1039,25 @@ async function streamToConsensus(sel, messages) {
 function showConsensusStatic(text, isError = false) {
   const conv = $('conv_consensus');
   consensusPhase = 'done'; $('consensus-progress')?.remove(); $('empty_consensus')?.remove();
+  // Capture share payload at render time before state can change on the next turn.
+  const sharePayload = isError ? null : {
+    q: lastPrompt,
+    r: order.filter(id => results[id]).map(id => ({ l: selectionLabel(selById(id) || {}), t: results[id] })),
+    c: text,
+  };
   const pair = el('div', 'qa-pair');
   pair.innerHTML =
     `<div class="msg user"><span class="msg-label">You</span><div class="msg-bubble">${nl2br(lastPrompt)}</div></div>` +
     `<div class="msg assistant"><div class="msg-head"><span class="msg-label">Consensus</span>` +
-    (isError ? '' : `<button class="copy-btn" title="Copy">${COPY_SVG}</button>`) + `</div>` +
+    (isError ? '' : `<button class="copy-btn" title="Copy">${COPY_SVG}</button><button class="copy-btn share-btn" title="Share this consensus" aria-label="Share this consensus">${SHARE_SVG}</button>`) + `</div>` +
     `<div class="msg-bubble">${isError ? `<span class="msg-error">${escapeHtml(text)}</span>` : renderMarkdown(text)}</div></div>`;
   conv.appendChild(pair); scrollBottom(conv);
-  if (!isError) { highlightBubble(pair); lastConsensusText = text; const b = pair.querySelector('.copy-btn'); if (b) b.onclick = () => copyText(text, b); }
+  if (!isError) {
+    highlightBubble(pair); lastConsensusText = text;
+    const b = pair.querySelector('.copy-btn'); if (b) b.onclick = () => copyText(text, b);
+    const sb = pair.querySelector('.share-btn');
+    if (sb && sharePayload) sb.onclick = () => shareConsensus(sharePayload, sb);
+  }
 }
 async function runConsensus() {
   const ordered = order.filter(id => results[id]).map(id => ({ selection: selById(id) || { id, provider: 'openai', model: '' }, text: results[id] }));
@@ -1884,11 +1960,22 @@ function init() {
   $('wDonate') && ($('wDonate').onclick = (e) => { e.preventDefault(); window.open(DONATE_URL, '_blank', 'noopener'); });
   { const wt = $('wTryDemo'); if (wt) { wt.hidden = !PROVIDERS.demo; wt.onclick = startFreeDemo; } }
 
+  $('closeShare').onclick = closeShareModal;
+  $('shareModal').onclick = (e) => { if (e.target === $('shareModal')) closeShareModal(); };
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('shareModal').classList.contains('open')) closeShareModal(); });
+
   const hasKeys = configuredProviders(cfg).length > 0 || (cfg.selections || []).some(s => s.provider === 'demo');
   const seen = !!localStorage.getItem(WELCOME_KEY);
-  if (location.hash === '#settings') setTimeout(() => openConfig(), 200);   // deep-link to settings
-  else if (!hasKeys && !seen) setTimeout(showWelcome, 350);
-  else if (!hasKeys) setTimeout(() => openConfig('keys'), 400);
+  if (location.hash.startsWith('#share=')) {
+    const data = decodeSharePayload(location.hash.slice(7));
+    if (data) setTimeout(() => showShareModal(data), 100);
+  } else if (location.hash === '#settings') {
+    setTimeout(() => openConfig(), 200);   // deep-link to settings
+  } else if (!hasKeys && !seen) {
+    setTimeout(showWelcome, 350);
+  } else if (!hasKeys) {
+    setTimeout(() => openConfig('keys'), 400);
+  }
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
