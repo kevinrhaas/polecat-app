@@ -3,6 +3,18 @@
   "entries": [
     {
       "date": "2026-06-27",
+      "title": "Settings IA cleanup — Arbitration tab renamed to Consensus",
+      "items": [
+        "The 'Arbitration' settings tab is now labelled 'Consensus' — clearer and jargon-free for new users",
+        "Agreement map toggle moved above the Arbiter model picker so Polecat's signature feature is immediately visible",
+        "Removed technical 'structure / default arbiter' metadata line — it was jargon that added no value",
+        "'Final arbiter' renamed to 'Arbiter model' with a plain-language description",
+        "Strategy label and consensus toggle now have clearer helper text",
+        "Test-models button uses an SVG icon instead of the ⚡ emoji; donate copy cleaned up"
+      ]
+    },
+    {
+      "date": "2026-06-27",
       "title": "Consistent SVG icon set — no more emoji in the UI",
       "items": [
         "All sidebar buttons (Settings, Theme, Export, Import, Clear history, What's new) now use clean monochrome SVG icons instead of emoji",

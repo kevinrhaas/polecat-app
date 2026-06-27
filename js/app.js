@@ -31,6 +31,7 @@ const KEY_SVG     = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
 const DOLLAR_SVG  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`;
 const STAR_SVG    = `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 const ARB_ICON    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>`;
+const ZAP_SVG     = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
 
 let cfg = loadCfg();
 const convos = {};                  // selectionId -> [{role, content}]
@@ -1216,8 +1217,9 @@ function statusGlyph(provider, model) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-//  SETTINGS MODAL  (tabs: Models · Keys · Arbitration · Support)
+//  SETTINGS MODAL  (tabs: Models · Keys · Consensus · Support)
 // ════════════════════════════════════════════════════════════════════════════
+const VALID_TABS = new Set(['models', 'keys', 'consensus', 'support']);
 function setConfigTab(name) {
   cfg.ui.lastTab = name; persist();
   document.querySelectorAll('.cfg-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
@@ -1226,7 +1228,8 @@ function setConfigTab(name) {
 }
 function openConfig(tab) {
   renderModels(); renderKeys(); renderArbitration(); renderDonate();
-  setConfigTab(tab || cfg.ui.lastTab || 'models');
+  const stored = cfg.ui.lastTab;
+  setConfigTab(tab || (VALID_TABS.has(stored) ? stored : 'models'));
   $('configModal').classList.add('open');
 }
 function closeConfig() { $('configModal').classList.remove('open'); }
@@ -1333,7 +1336,7 @@ function renderAddRow() {
       `<input class="field-input add-custom" id="addCustom" placeholder="custom model id" style="display:none">` +
       `<div class="browse-bar"><button class="btn btn-ghost browse-btn" id="browseBtn" hidden>${SEARCH_SVG} Browse all models</button></div>` +
       `<div class="browse-panel" id="browsePanel" hidden><input class="field-input" id="browseSearch" placeholder="Search models…" autocomplete="off"><div class="browse-list" id="browseList"></div></div>`) +
-    `<button class="btn btn-ghost test-all" id="testAllBtn">⚡ Test models</button>`;
+    `<button class="btn btn-ghost test-all" id="testAllBtn">${ZAP_SVG} Test models</button>`;
 
   $('testAllBtn').onclick = testAllModels;
   if (atMax) return;
@@ -1462,15 +1465,14 @@ function renderArbitration() {
     `<label class="arb-plabel">${escapeHtml(k)}</label><textarea class="field-input arb-ptext" data-key="${escapeHtml(k)}" rows="4"${editable ? '' : ' readonly'}>${escapeHtml(v)}</textarea>`).join('');
 
   wrap.innerHTML =
-    `<label class="switch-row"><span><b>Consensus answer</b><br><span class="switch-sub">Off = just the individual model tabs</span></span>` +
+    `<label class="switch-row"><span><b>Consensus answer</b><br><span class="switch-sub">Off = individual model tabs only, no combined answer</span></span>` +
       `<span class="switch ${on ? 'on' : ''}" id="consensusSwitch" role="switch" aria-checked="${on}" tabindex="0"><span class="knob"></span></span></label>` +
     `<div class="arb-body"${on ? '' : ' aria-disabled="true"'}>` +
-      `<label class="mini-label">Strategy</label><select class="field-input" id="arbSelect">${stratOpts}</select>` +
+      `<label class="mini-label">Strategy <span class="mini-note">how the combined answer is produced</span></label><select class="field-input" id="arbSelect">${stratOpts}</select>` +
       `<div class="arb-desc">${escapeHtml(strat.description || '')}</div>` +
-      `<label class="mini-label">Final arbiter <span class="mini-note">model that produces the consensus</span></label><select class="field-input" id="arbiterSelect">${arbiterOpts}</select>` +
-      `<div class="arb-meta">structure: <b>${escapeHtml(strat.structure)}</b> · default arbiter: <b>${escapeHtml(strat.arbiter)}</b></div>` +
-      `<label class="switch-row"><span><b>Agreement map</b><br><span class="switch-sub">After each consensus, analyze how the models agreed &amp; how much each shaped the answer</span></span>` +
+      `<label class="switch-row"><span><b>Agreement map</b><br><span class="switch-sub">After each answer, show how much the models agreed and what each contributed</span></span>` +
         `<span class="switch ${provOn ? 'on' : ''}" id="provSwitch" role="switch" aria-checked="${provOn}" tabindex="0"><span class="knob"></span></span></label>` +
+      `<label class="mini-label">Arbiter model <span class="mini-note">synthesizes the final answer — defaults to the strategy's recommendation</span></label><select class="field-input" id="arbiterSelect">${arbiterOpts}</select>` +
       `<details class="arb-prompts"${editable ? ' open' : ''}><summary>Prompt template${Object.keys(strat.prompts || {}).length > 1 ? 's' : ''}</summary>${promptFields}` +
         (editable ? `<label class="arb-plabel">name</label><input class="field-input" id="arbName" value="${escapeHtml(strat.name)}">` : '') +
       `</details>` +
@@ -1750,7 +1752,7 @@ function renderDonate() {
   const wrap = $('donateArea'); if (!wrap) return;
   const tiers = ['$1', '$2', '$5', 'More'];
   wrap.innerHTML =
-    `<div class="donate-copy">Polecat is free and runs on your own API keys — tips just help offset hosting &amp; dev costs. Thank you! 🦡</div>` +
+    `<div class="donate-copy">Polecat is free and runs on your own API keys — tips help offset hosting &amp; dev costs. Thank you!</div>` +
     `<div class="donate-row">` + tiers.map(t => `<a class="donate-btn" href="${DONATE_URL}" target="_blank" rel="noopener">${escapeHtml(t)}</a>`).join('') + `</div>`;
 }
 

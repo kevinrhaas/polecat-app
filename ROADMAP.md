@@ -150,9 +150,10 @@ confusing, with a consistent icon language and zero emoji.
 - [x] **Consistent SVG icon set.** Replace UI emoji with simple modern stroke
       icons (sidebar ⚙/◐/⤓/⤒/🗑, the ✨ CTA, 👁/⊘ vision marks, key-help 🔑/💸,
       welcome-slide glyphs, etc.). One coherent style; accessible labels/titles.
-- [ ] **Settings IA cleanup.** Audit the Models/Keys/Arbitration/Support tabs:
-      simplify, group sensibly, clearer labels & helper text, less clutter,
-      better mobile. A beginner should grok it instantly. Reorder/rename freely.
+- [x] **Settings IA cleanup.** Renamed 'Arbitration' tab to 'Consensus'; moved
+      Agreement map toggle above arbiter picker; removed jargon 'structure/default
+      arbiter' metadata; clearer helper text throughout; ⚡ emoji → SVG icon.
+      A beginner should now grok the tab instantly.
 - [ ] **Apply blur-layer fix to remaining overlays** (welcome, export, lightbox).
 
 ---

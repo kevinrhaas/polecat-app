@@ -317,7 +317,7 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .switch .knob { position: absolute; top: 2px; left: 2px; width: 17px; height: 17px; border-radius: 50%; background: var(--text-2); transition: transform .18s, background .18s; }
 .switch.on { background: var(--brand-b); border-color: var(--brand-b); }
 .switch.on .knob { transform: translateX(17px); background: #fff; }
-.arb-body { display: flex; flex-direction: column; gap: 8px; }
+.arb-body { display: flex; flex-direction: column; gap: 10px; }
 .arb-body[aria-disabled="true"] { opacity: .5; }
 .mini-label { font-size: 10px; text-transform: uppercase; letter-spacing: .4px; color: var(--text-3); font-weight: 700; }
 .mini-note { text-transform: none; letter-spacing: 0; color: var(--text-3); font-weight: 400; }
@@ -392,7 +392,7 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .key-help code { font-family: 'SF Mono','Fira Code',monospace; font-size: .9em; background: var(--surface-3); padding: 1px 4px; border-radius: 4px; }
 .key-actions { display: flex; align-items: center; gap: 8px; margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--border); }
 
-/* arbitration */
+/* consensus tab */
 #arbControls { display: flex; flex-direction: column; gap: 10px; }
 .arb-desc { font-size: 12px; color: var(--text-2); line-height: 1.5; }
 .arb-meta { font-size: 11px; color: var(--text-3); }
