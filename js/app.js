@@ -12,7 +12,7 @@ import {
 } from './providers.js';
 import {
   allStrategies, activeStrategy, runArbitration, exportSettings, importSettings,
-  computeParaAttribution,
+  computeParaAttribution, computeLocalAgreement,
 } from './arbitration.js';
 import { $, el, escapeHtml, nl2br, renderMarkdown, highlightBubble, toast, applyTheme, currentTheme } from './ui.js';
 
@@ -1004,6 +1004,30 @@ async function sendAll() {
   }
 }
 
+// Generate a concise, readable title from the first prompt — strips common
+// question preambles, trims punctuation, and title-cases for the sidebar.
+function generateTitle(prompt, firstAtt) {
+  if (firstAtt) return firstAtt.name;
+  if (!prompt) return 'Untitled';
+  const t = prompt.trim();
+  if (t.length <= 52) return t;
+  const stripped = t
+    .replace(/^(tell me |explain |describe |give me |write me |what(?:'s| is| are| was| were) |how (do|does|can|should|would) (i|you|we) |who (is|was|are|were) |when (is|was|are|were) |where (is|was|are|were) |why (is|was|are|were) |can you |please |is (it|there|a) |are (there|you) |do you |should i |what |how |who |when |where |why )/i, '')
+    .replace(/[?!.]+$/, '')
+    .trim();
+  if (stripped.length > 0 && stripped.length < t.length) {
+    const titled = stripped.charAt(0).toUpperCase() + stripped.slice(1);
+    return titled.length <= 56 ? titled : titled.slice(0, 53) + '…';
+  }
+  const words = t.split(/\s+/);
+  let result = '';
+  for (const w of words) {
+    if (result.length + w.length + 1 > 52) break;
+    result = result ? result + ' ' + w : w;
+  }
+  return result || t.slice(0, 52);
+}
+
 // Save this round into the current conversation thread (unless private mode).
 // Image data isn't persisted (it would blow past localStorage quota); we keep
 // lightweight metadata so restored chats can still show what was attached.
@@ -1014,10 +1038,9 @@ function recordTurn(prompt, atts) {
   order.forEach(id => { answers[id] = results[id] ?? null; });
   if (!currentThread) {
     const firstAtt = atts && atts[0];
-    const titleFallback = firstAtt ? firstAtt.name : 'Untitled';
     currentThread = {
       id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-      title: (prompt || titleFallback).slice(0, 80),
+      title: generateTitle(prompt, firstAtt),
       createdAt: Date.now(), updatedAt: Date.now(),
       selections: sels().map(s => ({ id: s.id, provider: s.provider, model: s.model })),
       turns: [],
@@ -1073,6 +1096,33 @@ const _CP_WAIT   = `<span class="cp-wait-ind"   aria-hidden="true"></span>`;
 const STAT_SVG = { done: _CP_CHECK, error: _CP_CROSS, streaming: _CP_STREAM, pending: _CP_WAIT };
 const CHEV_R = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>`;
 const CHEV_D = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>`;
+// Quick pairwise agreement signal from already-completed responses — shown as a
+// live "pulse" in the consensus waiting state while remaining models are still
+// streaming. No model call. Degrades silently (returns '') if fewer than 2 models
+// have finished or we're past the waiting phase.
+function liveAgreementHtml() {
+  if (consensusPhase !== 'waiting') return '';
+  const doneIds = order.filter(id => results[id] && results[id].length > 80);
+  if (doneIds.length < 2) return '';
+  const doneResults = doneIds.map(id => ({
+    selection: selById(id) || { id, provider: 'openai', model: '' },
+    text: results[id],
+  }));
+  const local = computeLocalAgreement(doneResults, '', sel => selectionLabel(sel));
+  if (!local) return '';
+  const sig = local.avgSimilarity;
+  const { label, cls } = sig >= 0.26
+    ? { label: 'strong agreement', cls: 'cp-agree-high' }
+    : sig >= 0.11
+    ? { label: 'mixed views',      cls: 'cp-agree-mid'  }
+    :           { label: 'divergent views', cls: 'cp-agree-low'  };
+  return `<div class="cp-agree-teaser ${cls}">` +
+    `<span class="cp-agree-dot" aria-hidden="true"></span>` +
+    `<span>${escapeHtml(String(doneIds.length))} of ${escapeHtml(String(order.length))} responded ` +
+    `— <strong>${label}</strong> so far</span>` +
+    `</div>`;
+}
+
 function refreshConsensusProgress() {
   const conv = $('conv_consensus');
   if (!conv || (consensusPhase !== 'waiting' && consensusPhase !== 'arbitrating')) return;
@@ -1096,12 +1146,14 @@ function refreshConsensusProgress() {
       `<span class="cp-name">${escapeHtml(selectionLabel(s))}</span><span class="cp-stat">${STAT_SVG[st] || ''}</span></li>`;
   }).join('');
 
+  const teaserHtml = done >= 2 ? liveAgreementHtml() : '';
   box.innerHTML =
     `<div class="cp-glyph">✦</div>` +
     `<div class="cp-title">Building consensus</div>` +
     `<div class="cp-strategy">${escapeHtml(strat.name)} · arbiter: ${escapeHtml(arbiterLabel)}</div>` +
     `<div class="cp-phase">${escapeHtml(phaseLine)}</div>` +
     `<ul class="cp-models">${modelsHtml}</ul>` +
+    teaserHtml +
     (consensusStepText ? `<div class="cp-step">${escapeHtml(consensusStepText)}…</div>` : '');
 }
 async function getSilentText(sel, messages) {

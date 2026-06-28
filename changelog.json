@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-28 16:00 CT",
+  "updated": "2026-06-28 18:00 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "18:00 CT",
+      "title": "Live agreement signal while models respond",
+      "items": [
+        "As each model finishes responding, a live indicator now appears in the Consensus tab showing whether the models are agreeing or diverging — before the full synthesis even starts",
+        "Updates in real time: 'strong agreement', 'mixed views', or 'divergent views' with a pulsing color dot — green, amber, or grey",
+        "Built from the same text-overlap analysis used for the provenance panel; zero extra model calls, zero added latency",
+        "Conversation titles in the history sidebar are now smarter — common question preambles ('What is', 'How do', 'Tell me about') are stripped so the title gets right to the point"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "16:00 CT",

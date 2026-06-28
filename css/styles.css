@@ -303,6 +303,14 @@ header {
 .cp-name { flex: 1; text-align: left; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cp-stat { display: flex; align-items: center; flex-shrink: 0; width: 16px; height: 16px; justify-content: center; }
 .cp-step { font-size: 12px; color: var(--text-3); font-style: italic; margin-top: 2px; }
+.cp-agree-teaser { display: flex; align-items: center; gap: 7px; font-size: 12px; padding: 5px 12px; border-radius: 100px; margin-top: 2px; animation: tab-badge-in .35s ease both; }
+@media (prefers-reduced-motion: reduce) { .cp-agree-teaser { animation: none; } }
+.cp-agree-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: currentColor; animation: cp-pulse 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .cp-agree-dot { animation: none; } }
+.cp-agree-high { color: #34d399; background: rgba(52,211,153,.1); }
+.cp-agree-mid  { color: var(--brand-b); background: color-mix(in srgb, var(--brand-b) 10%, transparent); }
+.cp-agree-low  { color: var(--text-2); background: var(--surface-3); }
+[data-theme="light"] .cp-agree-high { color: #059669; background: rgba(5,150,105,.09); }
 .cp-stream-ind, .cp-wait-ind { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid transparent; }
 .cp-stream-ind { border-top-color: var(--brand-b); animation: cp-spin .7s linear infinite; }
 .cp-wait-ind   { border-top-color: var(--text-3); animation: cp-spin 1.2s linear infinite; opacity: .55; }
