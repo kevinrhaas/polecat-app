@@ -1633,31 +1633,31 @@ function deriveFollowUps(prov) {
   const chips = [];
   // If one model took a clearly different position, call it out by name
   if (prov?.perModel) {
-    const outlier = prov.perModel.find(m => m.stance === ‘outlier’);
+    const outlier = prov.perModel.find(m => m.stance === 'outlier');
     if (outlier?.label) {
-      const name = outlier.label.length > 28 ? outlier.label.slice(0, 25) + ‘…’ : outlier.label;
-      chips.push(`What’s strongest about ${name}’s different take?`);
+      const name = outlier.label.length > 28 ? outlier.label.slice(0, 25) + '…' : outlier.label;
+      chips.push(`What's strongest about ${name}'s different take?`);
     }
   }
   if (prov?.disagreements?.length) {
-    const point = (prov.disagreements[0].point || ‘’).trim();
+    const point = (prov.disagreements[0].point || '').trim();
     if (point) {
-      const s = point.length > 66 ? point.slice(0, 63) + ‘…’ : point;
-      chips.push(‘Settle the debate: ‘ + s);
+      const s = point.length > 66 ? point.slice(0, 63) + '…' : point;
+      chips.push('Settle the debate: ' + s);
     }
   }
   if (prov?.notable?.length) {
-    const claim = (prov.notable[0].claim || ‘’).trim();
+    const claim = (prov.notable[0].claim || '').trim();
     if (claim) {
-      const s = claim.length > 60 ? claim.slice(0, 57) + ‘…’ : claim;
-      chips.push(‘Tell me more: “’ + s + ‘”’);
+      const s = claim.length > 60 ? claim.slice(0, 57) + '…' : claim;
+      chips.push('Tell me more: "' + s + '"');
     }
   }
   const fallbacks = [
-    ‘What are the strongest counterarguments to this?’,
-    ‘Give me a concrete real-world example.’,
-    ‘What\’s the most important nuance here?’,
-    ‘Explain this more simply.’,
+    'What are the strongest counterarguments to this?',
+    'Give me a concrete real-world example.',
+    'What\'s the most important nuance here?',
+    'Explain this more simply.',
   ];
   let fi = 0;
   while (chips.length < 3 && fi < fallbacks.length) chips.push(fallbacks[fi++]);
@@ -2385,25 +2385,25 @@ function renderHistoryList() {
   const search = $('sbSearch');
   if (search) search.style.display = history.length ? '' : 'none';
   if (!history.length) {
-    wrap.innerHTML = `<div class=”sb-empty”>No conversations yet.<br>Your chats are saved here, on this device.</div>`;
+    wrap.innerHTML = `<div class="sb-empty">No conversations yet.<br>Your chats are saved here, on this device.</div>`;
     return;
   }
   const q = (search?.value || '').toLowerCase().trim();
   const items = history.filter(t => historyMatches(t, q))
     .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (b.updatedAt || 0) - (a.updatedAt || 0));
-  if (!items.length) { wrap.innerHTML = `<div class=”sb-empty”>No matches for “${escapeHtml(q)}”.</div>`; return; }
+  if (!items.length) { wrap.innerHTML = `<div class="sb-empty">No matches for "${escapeHtml(q)}".</div>`; return; }
   const itemHtml = (t) => {
     const tSels = (t.selections || []).slice(0, 5);
     const dotsHtml = tSels.length > 1
-      ? `<span class=”sb-model-dots”>${tSels.map(s => `<span class=”sb-model-dot” style=”background:${escapeHtml(PROVIDERS[s.provider]?.color || '#888')}” title=”${escapeHtml(selectionLabel(s))}”></span>`).join('')}${t.selections.length > 5 ? `<span class=”sb-model-dot-more”>+${t.selections.length - 5}</span>` : ''}</span>`
+      ? `<span class="sb-model-dots">${tSels.map(s => `<span class="sb-model-dot" style="background:${escapeHtml(PROVIDERS[s.provider]?.color || '#888')}" title="${escapeHtml(selectionLabel(s))}"></span>`).join('')}${t.selections.length > 5 ? `<span class="sb-model-dot-more">+${t.selections.length - 5}</span>` : ''}</span>`
       : '';
-    return `<div class=”sb-item${currentThread && currentThread.id === t.id ? ' active' : ''}${t.pinned ? ' pinned' : ''}” data-id=”${escapeHtml(t.id)}”>` +
-    `<div class=”sb-item-main”><div class=”sb-item-title”>${t.pinned ? '<span class=”sb-pin-dot”>' + PIN_SVG + '</span> ' : ''}${escapeHtml(t.title || 'Untitled')}</div>` +
-    `<div class=”sb-item-meta”>${dotsHtml}${escapeHtml(timeAgo(t.updatedAt || t.createdAt))} · ${t.turns.length} turn${t.turns.length === 1 ? '' : 's'}</div></div>` +
-    `<div class=”sb-item-actions”>` +
-    `<button class=”sb-act sb-pin${t.pinned ? ' on' : ''}” title=”${t.pinned ? 'Unpin' : 'Pin to top'}” data-id=”${escapeHtml(t.id)}”>${PIN_SVG}</button>` +
-    `<button class=”sb-act sb-rename” title=”Rename” data-id=”${escapeHtml(t.id)}”>${EDIT_SVG}</button>` +
-    `<button class=”sb-act sb-del” title=”Delete” data-id=”${escapeHtml(t.id)}”>×</button>` +
+    return `<div class="sb-item${currentThread && currentThread.id === t.id ? ' active' : ''}${t.pinned ? ' pinned' : ''}" data-id="${escapeHtml(t.id)}">` +
+    `<div class="sb-item-main"><div class="sb-item-title">${t.pinned ? '<span class="sb-pin-dot">' + PIN_SVG + '</span> ' : ''}${escapeHtml(t.title || 'Untitled')}</div>` +
+    `<div class="sb-item-meta">${dotsHtml}${escapeHtml(timeAgo(t.updatedAt || t.createdAt))} · ${t.turns.length} turn${t.turns.length === 1 ? '' : 's'}</div></div>` +
+    `<div class="sb-item-actions">` +
+    `<button class="sb-act sb-pin${t.pinned ? ' on' : ''}" title="${t.pinned ? 'Unpin' : 'Pin to top'}" data-id="${escapeHtml(t.id)}">${PIN_SVG}</button>` +
+    `<button class="sb-act sb-rename" title="Rename" data-id="${escapeHtml(t.id)}">${EDIT_SVG}</button>` +
+    `<button class="sb-act sb-del" title="Delete" data-id="${escapeHtml(t.id)}">×</button>` +
     `</div></div>`;
   };
   let html = '';
@@ -2413,7 +2413,7 @@ function renderHistoryList() {
     let lastGroup = null;
     for (const t of items) {
       const group = t.pinned ? 'Pinned' : threadDateGroup(t.updatedAt || t.createdAt);
-      if (group !== lastGroup) { html += `<div class=”sb-date-group”>${escapeHtml(group)}</div>`; lastGroup = group; }
+      if (group !== lastGroup) { html += `<div class="sb-date-group">${escapeHtml(group)}</div>`; lastGroup = group; }
       html += itemHtml(t);
     }
   }
