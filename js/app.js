@@ -1066,7 +1066,9 @@ function resetApp() {
     const isCons = id === 'consensus';
     const label = isCons ? 'Consensus appears here after all models respond'
                          : `Send a prompt to see ${escapeHtml(selectionLabel(selById(id) || {}))}`;
-    const icon = isCons ? `<div class="empty-icon consensus-glyph">✦</div>` : `<div class="empty-icon">◎</div>`;
+    const icon = isCons
+      ? `<div class="empty-icon consensus-glyph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="5.6" y1="5.6" x2="7.8" y2="7.8"/><line x1="16.2" y1="16.2" x2="18.4" y2="18.4"/><line x1="5.6" y1="18.4" x2="7.8" y2="16.2"/><line x1="16.2" y1="7.8" x2="18.4" y2="5.6"/></svg></div>`
+      : `<div class="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>`;
     conv.innerHTML = `<div class="empty-state" id="empty_${id}">${icon}<div id="${isCons ? 'consensus-status' : ''}">${label}</div></div>`;
   });
   document.querySelectorAll('.tab-dot').forEach(d => d.classList.remove('loading', 'done'));
@@ -1173,7 +1175,7 @@ function refreshConsensusProgress() {
 
   const teaserHtml = done >= 2 ? liveAgreementHtml() : '';
   box.innerHTML =
-    `<div class="cp-glyph">✦</div>` +
+    `<div class="cp-glyph"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="5.6" y1="5.6" x2="7.8" y2="7.8"/><line x1="16.2" y1="16.2" x2="18.4" y2="18.4"/><line x1="5.6" y1="18.4" x2="7.8" y2="16.2"/><line x1="16.2" y1="7.8" x2="18.4" y2="5.6"/></svg></div>` +
     `<div class="cp-title">Building consensus</div>` +
     `<div class="cp-strategy">${escapeHtml(strat.name)} · arbiter: ${escapeHtml(arbiterLabel)}</div>` +
     `<div class="cp-phase">${escapeHtml(phaseLine)}</div>` +
@@ -1771,6 +1773,44 @@ function openCompareModal(entries) {
   setTimeout(() => document.getElementById('cmpClose' + uid)?.focus(), 60);
 }
 
+// ── Consensus insight sentence ──────────────────────────────────────────────
+// Generates a concise, human-readable one-liner summarising the multi-model
+// agreement picture — e.g. "All 3 models were in strong agreement" or
+// "2 of 3 models agreed; GPT-4o had a contrasting perspective." Requires
+// provenance data (arbiter or local) and at least 2 models. No API call.
+function buildConsensusInsight(prov, numModels) {
+  if (!prov || !prov.perModel || !prov.perModel.length || numModels < 2) return null;
+  const pm = prov.perModel;
+  const outliers = pm.filter(m => m.stance === 'outlier');
+  const aligned  = pm.filter(m => m.stance === 'aligned');
+  const numDis   = (prov.disagreements || []).length;
+  const shorten  = (s, n) => s.length > n ? s.slice(0, n - 1) + '…' : s;
+  if (numModels === 2) {
+    if (outliers.length === 0 && aligned.length === 2)
+      return 'Both models reached the same conclusion — a confident, corroborated answer.';
+    if (outliers.length === 1)
+      return `Both models responded; ${shorten(outliers[0].label, 26)} offered a notably different take.`;
+    return 'Both models responded; the consensus blends their perspectives.';
+  }
+  if (outliers.length === 0 && aligned.length >= numModels - 1)
+    return `All ${numModels} models were in strong agreement — a well-corroborated answer.`;
+  if (outliers.length === 1)
+    return `${numModels - 1} of ${numModels} models agreed; ${shorten(outliers[0].label, 26)} had a contrasting perspective.`;
+  if (outliers.length >= 2)
+    return `The ${numModels} models took quite different approaches${numDis > 1 ? ', with ' + numDis + ' key differences' : ''} — the consensus reconciles them.`;
+  return `${numModels} models responded with some variation — the consensus captures their shared ground.`;
+}
+function renderConsensusInsight(pair, prov) {
+  const assistantMsg = pair?.querySelector('.msg.assistant');
+  if (!assistantMsg || assistantMsg.querySelector('.consensus-insight')) return;
+  const numModels = order.filter(id => results[id]).length;
+  const text = buildConsensusInsight(prov, numModels);
+  if (!text) return;
+  const div = el('div', 'consensus-insight');
+  div.textContent = text;
+  assistantMsg.appendChild(div);
+}
+
 // EPIC 1 · P1 — receive the arbiter's machine-readable agreement map. Stamped
 // on the consensus pair and rendered as the provenance panel immediately after.
 // Also triggers P4: computes paragraph attribution and wires the toggle button.
@@ -1793,6 +1833,9 @@ function onProvenance(data) {
       _agreeBadge.hidden = false;
     }
   }
+
+  // Brief insight sentence — summarises agreement in plain language before the detail panels.
+  renderConsensusInsight(pair, lastConsensusProvenance);
 
   // "Responses at a glance" — compact per-model preview strip, always shown first.
   renderModelSnapshotsEl(pair);

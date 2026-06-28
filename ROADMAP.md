@@ -215,3 +215,8 @@ confusing, with a consistent icon language and zero emoji.
   captcha-gated self-serve "get a key" page is server-side work in
   `kevinrhaas/solution-engineering/model-server` (out of this repo) — until it exists,
   keys are admin-minted, so don't advertise self-serve keys on the site yet.
+- [x] **Consensus insight sentence (2026-06-28).** After each consensus, a brief
+  plain-language summary appears before the detail panels — e.g. "All 3 models were
+  in strong agreement" or "2 of 3 models agreed; GPT-4o had a contrasting perspective."
+  Zero extra API calls; derived from the already-computed provenance data. Also
+  replaced `✦` and `◎` unicode glyphs in empty states + progress box with proper SVGs.
