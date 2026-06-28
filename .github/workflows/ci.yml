@@ -8,6 +8,7 @@ name: CI — validate
 
 on:
   push:
+    branches-ignore: [main]   # main is guarded (and auto-healed) by auto-revert.yml
   pull_request:
   workflow_dispatch:
 
