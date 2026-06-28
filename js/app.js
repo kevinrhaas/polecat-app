@@ -2167,6 +2167,18 @@ function timeAgo(ts) {
   if (s < 86400) return Math.floor(s / 3600) + 'h ago';
   const d = Math.floor(s / 86400); return d === 1 ? 'yesterday' : d + 'd ago';
 }
+function threadDateGroup(ts) {
+  const now = new Date();
+  const d = new Date(ts || 0);
+  const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const dMs = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const diffDays = Math.round((todayMs - dMs) / 86400000);
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return 'This week';
+  if (diffDays < 30) return 'This month';
+  return 'Older';
+}
 function historyMatches(t, q) {
   if (!q) return true;
   if ((t.title || '').toLowerCase().includes(q)) return true;
@@ -2177,22 +2189,39 @@ function renderHistoryList() {
   const search = $('sbSearch');
   if (search) search.style.display = history.length ? '' : 'none';
   if (!history.length) {
-    wrap.innerHTML = `<div class="sb-empty">No conversations yet.<br>Your chats are saved here, on this device.</div>`;
+    wrap.innerHTML = `<div class=”sb-empty”>No conversations yet.<br>Your chats are saved here, on this device.</div>`;
     return;
   }
   const q = (search?.value || '').toLowerCase().trim();
   const items = history.filter(t => historyMatches(t, q))
     .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (b.updatedAt || 0) - (a.updatedAt || 0));
-  if (!items.length) { wrap.innerHTML = `<div class="sb-empty">No matches for “${escapeHtml(q)}”.</div>`; return; }
-  wrap.innerHTML = items.map(t =>
-    `<div class="sb-item${currentThread && currentThread.id === t.id ? ' active' : ''}${t.pinned ? ' pinned' : ''}" data-id="${escapeHtml(t.id)}">` +
-    `<div class="sb-item-main"><div class="sb-item-title">${t.pinned ? '<span class="sb-pin-dot">' + PIN_SVG + '</span> ' : ''}${escapeHtml(t.title || 'Untitled')}</div>` +
-    `<div class="sb-item-meta">${escapeHtml(timeAgo(t.updatedAt || t.createdAt))} · ${t.turns.length} turn${t.turns.length === 1 ? '' : 's'}</div></div>` +
-    `<div class="sb-item-actions">` +
-    `<button class="sb-act sb-pin${t.pinned ? ' on' : ''}" title="${t.pinned ? 'Unpin' : 'Pin to top'}" data-id="${escapeHtml(t.id)}">${PIN_SVG}</button>` +
-    `<button class="sb-act sb-rename" title="Rename" data-id="${escapeHtml(t.id)}">${EDIT_SVG}</button>` +
-    `<button class="sb-act sb-del" title="Delete" data-id="${escapeHtml(t.id)}">×</button>` +
-    `</div></div>`).join('');
+  if (!items.length) { wrap.innerHTML = `<div class=”sb-empty”>No matches for “${escapeHtml(q)}”.</div>`; return; }
+  const itemHtml = (t) => {
+    const tSels = (t.selections || []).slice(0, 5);
+    const dotsHtml = tSels.length > 1
+      ? `<span class=”sb-model-dots”>${tSels.map(s => `<span class=”sb-model-dot” style=”background:${escapeHtml(PROVIDERS[s.provider]?.color || '#888')}” title=”${escapeHtml(selectionLabel(s))}”></span>`).join('')}${t.selections.length > 5 ? `<span class=”sb-model-dot-more”>+${t.selections.length - 5}</span>` : ''}</span>`
+      : '';
+    return `<div class=”sb-item${currentThread && currentThread.id === t.id ? ' active' : ''}${t.pinned ? ' pinned' : ''}” data-id=”${escapeHtml(t.id)}”>` +
+    `<div class=”sb-item-main”><div class=”sb-item-title”>${t.pinned ? '<span class=”sb-pin-dot”>' + PIN_SVG + '</span> ' : ''}${escapeHtml(t.title || 'Untitled')}</div>` +
+    `<div class=”sb-item-meta”>${dotsHtml}${escapeHtml(timeAgo(t.updatedAt || t.createdAt))} · ${t.turns.length} turn${t.turns.length === 1 ? '' : 's'}</div></div>` +
+    `<div class=”sb-item-actions”>` +
+    `<button class=”sb-act sb-pin${t.pinned ? ' on' : ''}” title=”${t.pinned ? 'Unpin' : 'Pin to top'}” data-id=”${escapeHtml(t.id)}”>${PIN_SVG}</button>` +
+    `<button class=”sb-act sb-rename” title=”Rename” data-id=”${escapeHtml(t.id)}”>${EDIT_SVG}</button>` +
+    `<button class=”sb-act sb-del” title=”Delete” data-id=”${escapeHtml(t.id)}”>×</button>` +
+    `</div></div>`;
+  };
+  let html = '';
+  if (q) {
+    html = items.map(itemHtml).join('');
+  } else {
+    let lastGroup = null;
+    for (const t of items) {
+      const group = t.pinned ? 'Pinned' : threadDateGroup(t.updatedAt || t.createdAt);
+      if (group !== lastGroup) { html += `<div class=”sb-date-group”>${escapeHtml(group)}</div>`; lastGroup = group; }
+      html += itemHtml(t);
+    }
+  }
+  wrap.innerHTML = html;
   wrap.querySelectorAll('.sb-item').forEach(it => it.onclick = (e) => { if (e.target.closest('.sb-item-actions')) return; restoreThread(it.dataset.id); });
   wrap.querySelectorAll('.sb-pin').forEach(b => b.onclick = (e) => { e.stopPropagation(); pinThread(b.dataset.id); });
   wrap.querySelectorAll('.sb-rename').forEach(b => b.onclick = (e) => { e.stopPropagation(); renameThread(b.dataset.id); });

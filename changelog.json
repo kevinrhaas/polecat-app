@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-28 20:00 CT",
+  "updated": "2026-06-28 22:00 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "22:00 CT",
+      "title": "Smarter history sidebar: date groups + model indicators",
+      "items": [
+        "Conversation history is now grouped by Today, Yesterday, This week, This month, and Older — so a long list is instantly scannable instead of one big undifferentiated stream",
+        "Each conversation shows tiny colored dots indicating which AI providers were used — glance at the sidebar and immediately see which chats were Claude+GPT, which were Gemini+Claude, etc.",
+        "The dots are hidden when searching (flat results are clearer) and omitted for single-model chats (only shown when you actually compared models)"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "20:00 CT",
