@@ -49,6 +49,8 @@ let history = loadHistory();         // [thread] newest-first
 let currentThread = null;           // the conversation being built/continued
 let lastConsensusText = '';         // captured per turn for history
 let lastConsensusProvenance = null; // EPIC 1 — arbiter's agreement map for the current consensus
+let lastSynthesisOrdered = [];      // snapshot of model results used for the most recent synthesis
+let lastSynthesisPrompt = '';       // the user prompt for the most recent synthesis
 // live consensus progress
 let runStatus = {};                 // selectionId -> 'pending'|'streaming'|'done'|'error'
 let consensusPhase = '';            // '' | 'waiting' | 'arbitrating' | 'done'
@@ -1307,6 +1309,8 @@ function maybeShowConsHint() {
 
 async function runConsensus() {
   const ordered = order.filter(id => results[id]).map(id => ({ selection: selById(id) || { id, provider: 'openai', model: '' }, text: results[id] }));
+  lastSynthesisOrdered = ordered;
+  lastSynthesisPrompt = lastPrompt;
   consensusPhase = 'arbitrating'; consensusStatusText = 'Reviewing responses…'; refreshConsensusProgress();
   await runArbitration(activeStrategy(cfg), {
     prompt: lastPrompt,
@@ -1623,6 +1627,78 @@ function renderFollowUpChips(pair, prov) {
   assistantMsg.appendChild(wrap);
 }
 
+// ── "Try another synthesis" strategy strip ─────────────────────────────────
+// Renders a compact row of alternative synthesis strategy pills below the
+// consensus answer. Clicking one re-synthesizes the SAME model responses with
+// a different approach — zero extra model calls, instant exploration.
+function renderResynthStrip(pair, orderedSnapshot, promptSnapshot, usedStratId) {
+  const assistantMsg = pair?.querySelector('.msg.assistant');
+  if (!assistantMsg || assistantMsg.querySelector('.resynth-strip')) return;
+  const alternatives = allStrategies(cfg).filter(s => s.id !== usedStratId);
+  if (!alternatives.length) return;
+  const wrap = el('div', 'resynth-strip');
+  wrap.innerHTML =
+    '<span class="resynth-label">Try another synthesis</span>' +
+    '<div class="resynth-pills">' +
+    alternatives.map(s =>
+      `<button class="resynth-pill" data-strat="${escapeHtml(s.id)}" title="${escapeHtml(s.description)}">${escapeHtml(s.name)}</button>`
+    ).join('') +
+    '</div>';
+  wrap.querySelectorAll('.resynth-pill').forEach(btn => {
+    btn.onclick = () => rerunConsensusWith(orderedSnapshot, promptSnapshot, btn.dataset.strat);
+  });
+  assistantMsg.appendChild(wrap);
+}
+
+// Re-run consensus arbitration using a captured snapshot of model responses +
+// the original prompt, but a different synthesis strategy. Produces a new
+// consensus qa-pair in the Consensus tab without re-calling the AI models.
+async function rerunConsensusWith(capturedOrdered, capturedPrompt, strategyId) {
+  if (!capturedOrdered || capturedOrdered.length < 2) { toast('Need 2+ model responses to re-synthesize'); return; }
+  const strategy = allStrategies(cfg).find(s => s.id === strategyId);
+  if (!strategy) { toast('Strategy not found'); return; }
+  switchTab('consensus');
+
+  // Temporarily override globals so streamToConsensus / showConsensusStatic
+  // build the correct user message, strategy label, and share payload.
+  const savedPrompt    = lastPrompt;
+  const savedResults   = { ...results };
+  const savedOrder     = [...order];
+  const savedActiveId  = cfg.arbitration.activeId;
+  lastPrompt = capturedPrompt;
+  capturedOrdered.forEach(r => { results[r.selection.id] = r.text; });
+  order = capturedOrdered.map(r => r.selection.id);
+  cfg.arbitration.activeId = strategyId;  // so consensusSourcesEl shows the right strategy name
+  lastSynthesisOrdered = capturedOrdered;
+  lastSynthesisPrompt  = capturedPrompt;
+
+  consensusPhase = 'arbitrating';
+  consensusStatusText = `Trying ${strategy.name}…`;
+  refreshConsensusProgress();
+
+  try {
+    await runArbitration(strategy, {
+      prompt: capturedPrompt,
+      results: capturedOrdered,
+      arbiterId: cfg.arbitration.arbiter,
+      labelOf: sel => selectionLabel(sel),
+      silent: (sel, msgs) => getSilentText(sel, msgs),
+      stream:  (sel, msgs) => streamToConsensus(sel, msgs),
+      status: setConsensusStatus,
+      step: setConsensusStep,
+      showStatic: t => showConsensusStatic(t, false),
+      fail: t => showConsensusStatic(t, true),
+      provenanceEnabled: cfg.arbitration.provenance !== false,
+      provenance: data => onProvenance(data),
+    });
+  } finally {
+    lastPrompt = savedPrompt;
+    results    = savedResults;
+    order      = savedOrder;
+    cfg.arbitration.activeId = savedActiveId;
+  }
+}
+
 // ── Side-by-side compare modal ─────────────────────────────────────────────
 // Build the entry list for the compare modal from the current live results.
 function buildCompareEntries() {
@@ -1707,6 +1783,11 @@ function onProvenance(data) {
 
   // Follow-up chips — appear after the provenance panel, derived from its insights.
   renderFollowUpChips(pair, lastConsensusProvenance);
+
+  // Re-synthesis strip — try a different synthesis strategy on the same model responses.
+  if (lastSynthesisOrdered.length >= 2) {
+    renderResynthStrip(pair, lastSynthesisOrdered, lastSynthesisPrompt, activeStrategy(cfg).id);
+  }
 
   // P4 — Inline attribution (no extra model call, runs synchronously)
   if (!lastConsensusText) return;

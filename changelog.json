@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-28 22:00 CT",
+  "updated": "2026-06-29 00:00 CT",
   "entries": [
+    {
+      "date": "2026-06-29",
+      "time": "00:00 CT",
+      "title": "Try another synthesis — re-synthesize without re-asking",
+      "items": [
+        "After any consensus answer, a new 'Try another synthesis' strip lets you instantly re-synthesize the same model responses with a different approach — Comprehensive, Best Answer, Validated, or Debate — with no extra model calls",
+        "Each re-synthesis produces a new consensus entry in the tab, so you can compare 'Best Answer' vs 'Debate' side by side on the exact same underlying responses",
+        "This is uniquely Polecat: because we collect all model responses upfront, you can explore different synthesis strategies without re-asking anyone anything — a capability no single-model chat can offer"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "22:00 CT",
