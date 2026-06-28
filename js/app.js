@@ -36,6 +36,8 @@ const ZAP_SVG     = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"
 const SHARE_SVG   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
 const COPY_MD_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
 const REGEN_SVG   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.85"/></svg>`;
+const PIN_SVG     = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
+const EDIT_SVG    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 
 let cfg = loadCfg();
 const convos = {};                  // selectionId -> [{role, content}]
@@ -660,7 +662,7 @@ function ensureTabs() {
     btn.onclick = () => switchTab('consensus');
     btn.innerHTML =
       `<span class="tab-dot" id="tdot_consensus" style="background:var(--consensus);--dot-c:var(--consensus)"></span>` +
-      `<div class="tab-inner">Consensus<span class="tab-step" id="consensus-tab-step"></span></div>`;
+      `<div class="tab-inner">Consensus<span class="tab-step" id="consensus-tab-step"></span><span class="tab-agree-badge" id="consensus-agree-badge" hidden></span></div>`;
     tabBar.appendChild(btn);
 
     const panel = el('div', 'tab-panel');
@@ -1042,6 +1044,8 @@ function resetApp() {
   });
   document.querySelectorAll('.tab-dot').forEach(d => d.classList.remove('loading', 'done'));
   setConsensusStep('');
+  const _ab = $('consensus-agree-badge');
+  if (_ab) { _ab.hidden = true; _ab.textContent = ''; _ab.className = 'tab-agree-badge'; }
   setChipsDisabled(false);
   hideAttrTip();
   $('promptInput').focus();
@@ -1351,6 +1355,12 @@ function renderProvenancePanel(pair, prov) {
     toggleBtn.querySelector('.prov-toggle-icon').innerHTML = open ? CHEV_R : CHEV_D;
     body.hidden = open;
   };
+  // Auto-expand when models had diverse views — the disagreements are the interesting part.
+  if (agreeLevel?.cls === 'agree-low') {
+    toggleBtn.setAttribute('aria-expanded', 'true');
+    toggleBtn.querySelector('.prov-toggle-icon').innerHTML = CHEV_D;
+    body.hidden = false;
+  }
 
   const assistantMsg = pair.querySelector('.msg.assistant');
   if (assistantMsg) assistantMsg.appendChild(panel);
@@ -1495,6 +1505,20 @@ function onProvenance(data) {
   const pair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
   if (!pair) return;
   pair._provenance = lastConsensusProvenance;
+
+  // Update Consensus tab with an agreement signal badge — visible at a glance.
+  const _agreeBadge = $('consensus-agree-badge');
+  if (_agreeBadge) {
+    const _sig = lastConsensusProvenance?.agreementSignal;
+    if (_sig != null) {
+      const _agInfo = _sig >= 0.26 ? { label: 'strong', cls: 'tab-agree-high' }
+                    : _sig >= 0.11 ? { label: 'mixed',  cls: 'tab-agree-mid'  }
+                    :                { label: 'diverse', cls: 'tab-agree-low'  };
+      _agreeBadge.textContent = _agInfo.label;
+      _agreeBadge.className = 'tab-agree-badge ' + _agInfo.cls;
+      _agreeBadge.hidden = false;
+    }
+  }
 
   // "Responses at a glance" — compact per-model preview strip, always shown first.
   renderModelSnapshotsEl(pair);
@@ -1982,11 +2006,11 @@ function renderHistoryList() {
   if (!items.length) { wrap.innerHTML = `<div class="sb-empty">No matches for “${escapeHtml(q)}”.</div>`; return; }
   wrap.innerHTML = items.map(t =>
     `<div class="sb-item${currentThread && currentThread.id === t.id ? ' active' : ''}${t.pinned ? ' pinned' : ''}" data-id="${escapeHtml(t.id)}">` +
-    `<div class="sb-item-main"><div class="sb-item-title">${t.pinned ? '<span class="sb-pin-dot">📌</span> ' : ''}${escapeHtml(t.title || 'Untitled')}</div>` +
+    `<div class="sb-item-main"><div class="sb-item-title">${t.pinned ? '<span class="sb-pin-dot">' + PIN_SVG + '</span> ' : ''}${escapeHtml(t.title || 'Untitled')}</div>` +
     `<div class="sb-item-meta">${escapeHtml(timeAgo(t.updatedAt || t.createdAt))} · ${t.turns.length} turn${t.turns.length === 1 ? '' : 's'}</div></div>` +
     `<div class="sb-item-actions">` +
-    `<button class="sb-act sb-pin${t.pinned ? ' on' : ''}" title="${t.pinned ? 'Unpin' : 'Pin to top'}" data-id="${escapeHtml(t.id)}">📌</button>` +
-    `<button class="sb-act sb-rename" title="Rename" data-id="${escapeHtml(t.id)}">✎</button>` +
+    `<button class="sb-act sb-pin${t.pinned ? ' on' : ''}" title="${t.pinned ? 'Unpin' : 'Pin to top'}" data-id="${escapeHtml(t.id)}">${PIN_SVG}</button>` +
+    `<button class="sb-act sb-rename" title="Rename" data-id="${escapeHtml(t.id)}">${EDIT_SVG}</button>` +
     `<button class="sb-act sb-del" title="Delete" data-id="${escapeHtml(t.id)}">×</button>` +
     `</div></div>`).join('');
   wrap.querySelectorAll('.sb-item').forEach(it => it.onclick = (e) => { if (e.target.closest('.sb-item-actions')) return; restoreThread(it.dataset.id); });

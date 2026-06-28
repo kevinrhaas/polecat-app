@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-27 18:00 CT",
+  "updated": "2026-06-28 12:00 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "12:00 CT",
+      "title": "Agreement badge + smarter provenance + icon polish",
+      "items": [
+        "The Consensus tab now shows a tiny colored badge after each synthesis — \"strong\", \"mixed\", or \"diverse\" — so you can see model agreement at a glance without opening the provenance panel",
+        "When models had truly diverse views, the \"How this was formed\" panel now opens automatically so the disagreements are immediately visible, not buried under a click",
+        "Replaced the last emoji in the sidebar history (📌 pin, ✎ rename) with clean SVG icons — the UI is now fully emoji-free, using a consistent monochrome stroke icon set throughout"
+      ]
+    },
     {
       "date": "2026-06-27",
       "time": "18:00 CT",

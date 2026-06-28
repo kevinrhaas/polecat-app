@@ -205,6 +205,15 @@ header {
 .tab-step { font-size: 9px; color: var(--text-3); display: block; line-height: 1; margin-top: 2px; }
 .tab-step:empty { display: none; }
 .tab-inner { display: flex; flex-direction: column; justify-content: center; }
+/* Agreement-level badge in the Consensus tab — visible after synthesis, no click needed */
+.tab-agree-badge { display: block; font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 100px; margin-top: 2px; line-height: 1.5; letter-spacing: .02em; animation: tab-badge-in .25s ease both; }
+@keyframes tab-badge-in { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .tab-agree-badge { animation: none; } }
+.tab-agree-badge[hidden] { display: none; }
+.tab-agree-high { color: #34d399; background: rgba(52,211,153,.13); }
+.tab-agree-mid  { color: var(--brand-b); background: color-mix(in srgb, var(--brand-b) 14%, transparent); }
+.tab-agree-low  { color: var(--text-3); background: var(--surface-3); }
+[data-theme="light"] .tab-agree-high { color: #059669; background: rgba(5,150,105,.10); }
 
 /* First-run Consensus tab callout — shown once, auto-dismisses */
 .cons-onboard-tip {
@@ -551,16 +560,16 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .sb-item-main { flex: 1; min-width: 0; }
 .sb-item-title { font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sb-item-meta { font-size: 10.5px; color: var(--text-3); margin-top: 1px; }
-.sb-pin-dot { font-size: 10px; }
+.sb-pin-dot { display: inline-flex; align-items: center; vertical-align: middle; color: var(--brand-b); opacity: .7; }
 .sb-item-actions { display: flex; align-items: center; gap: 1px; flex-shrink: 0; opacity: 0; transition: opacity .12s; }
 .sb-item:hover .sb-item-actions, .sb-item.active .sb-item-actions { opacity: 1; }
-.sb-act { background: none; border: none; color: var(--text-3); cursor: pointer; font-size: 13px; line-height: 1; padding: 3px 5px; border-radius: 5px; flex-shrink: 0; }
+.sb-act { background: none; border: none; color: var(--text-3); cursor: pointer; font-size: 13px; line-height: 1; padding: 3px 5px; border-radius: 5px; flex-shrink: 0; display: inline-flex; align-items: center; }
 .sb-act:hover { color: var(--text); background: var(--surface-3); }
 .sb-del { font-size: 16px; }
 .sb-del:hover { color: #f87171; background: rgba(248,113,113,.12); }
-.sb-pin { filter: grayscale(1) opacity(.7); }
-.sb-pin:hover { filter: none; }
-.sb-pin.on { opacity: 1; filter: none; }
+.sb-pin { opacity: .45; }
+.sb-pin:hover { opacity: 1; }
+.sb-pin.on { opacity: 1; color: var(--brand-b); }
 .sb-item.pinned .sb-item-actions { opacity: 1; }
 .sb-item.pinned .sb-rename, .sb-item.pinned .sb-del { opacity: 0; transition: opacity .12s; }
 .sb-item.pinned:hover .sb-rename, .sb-item.pinned:hover .sb-del { opacity: 1; }
