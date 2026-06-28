@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-29 00:00 CT",
+  "updated": "2026-06-29 02:00 CT",
   "entries": [
+    {
+      "date": "2026-06-29",
+      "time": "02:00 CT",
+      "title": "Restored conversations now feel as rich as live ones",
+      "items": [
+        "When you resume a conversation from history, the model snapshot cards and 'Try another synthesis' strip now appear on the most recent consensus — so you can instantly see what each model said and explore alternative synthesis strategies without re-asking",
+        "Follow-up chips also appear on restored conversations, making it natural to continue from exactly where you left off",
+        "This closes a gap where live conversations had more features than restored ones — the experience is now consistent regardless of how you arrive at a chat"
+      ]
+    },
     {
       "date": "2026-06-29",
       "time": "00:00 CT",

@@ -2376,6 +2376,29 @@ function restoreThread(id) {
     if (turn.consensus != null) renderStaticConsensus(turn.prompt, turn.consensus);
   });
   lastPrompt = t.turns && t.turns.length ? t.turns[t.turns.length - 1].prompt : '';
+
+  // Re-populate live state from the last turn so model snapshot cards, follow-up
+  // chips, and the re-synthesis strip work on restored conversations just like live ones.
+  const lastTurn = (t.turns || []).length > 0 ? t.turns[t.turns.length - 1] : null;
+  if (lastTurn && lastTurn.consensus && cfg.consensus) {
+    const rSels = (t.selections || []);
+    order = rSels.map(s => s.id);
+    rSels.forEach(s => { results[s.id] = lastTurn.answers?.[s.id] ?? null; });
+    lastConsensusText = lastTurn.consensus;
+    lastSynthesisOrdered = order.filter(id => results[id]).map(id => ({
+      selection: selById(id) || { id, provider: 'openai', model: '' },
+      text: results[id],
+    }));
+    lastSynthesisPrompt = lastTurn.prompt;
+    const lastConsPair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
+    if (lastConsPair) {
+      renderModelSnapshotsEl(lastConsPair);
+      renderFollowUpChips(lastConsPair, null);
+      if (lastSynthesisOrdered.length >= 2)
+        renderResynthStrip(lastConsPair, lastSynthesisOrdered, lastSynthesisPrompt, activeStrategy(cfg).id);
+    }
+  }
+
   if (cfg.consensus && $('tab_consensus')) switchTab('consensus');
   closeSidebar(); renderHistoryList();
 }
