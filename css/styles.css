@@ -641,6 +641,8 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 }
 .followup-chip { font-family: inherit; font-size: 12px; color: var(--text-2); background: var(--surface-2); border: 1px solid var(--border); border-radius: 100px; padding: 5px 12px; cursor: pointer; transition: all .15s; text-align: left; line-height: 1.4; }
 .followup-chip:hover { background: var(--surface-3); color: var(--text); border-color: var(--text-3); }
+.followup-chip-debate { border-color: color-mix(in srgb, var(--brand-b) 45%, var(--border)); color: var(--brand-b); }
+.followup-chip-debate:hover { background: color-mix(in srgb, var(--brand-b) 10%, var(--surface-2)); border-color: var(--brand-b); color: var(--brand-b); }
 
 /* ── "Try another synthesis" re-synthesis strip ─────────────────────── */
 /* Shows after follow-up chips; lets the user re-synthesize the same model
@@ -803,6 +805,8 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .prov-dis-pos { padding-left: 12px; margin: 0; display: flex; flex-direction: column; gap: 3px; list-style: none; }
 .prov-dis-pos li { color: var(--text-2); padding-left: 8px; position: relative; }
 .prov-dis-pos li::before { content: '·'; position: absolute; left: 0; color: var(--text-3); }
+.prov-model-link { background: none; border: none; padding: 0; cursor: pointer; font-weight: 700; color: var(--text); font-size: inherit; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 2px; font-family: inherit; }
+.prov-model-link:hover { color: var(--brand-b); }
 .prov-notable-item { font-size: 12px; }
 .prov-notable-claim { font-weight: 600; color: var(--text); display: block; }
 .prov-notable-note { color: var(--text-3); font-size: 11px; }

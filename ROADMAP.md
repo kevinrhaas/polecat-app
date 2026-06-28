@@ -236,3 +236,8 @@ confusing, with a consistent icon language and zero emoji.
   pill in the metadata row (alongside stance and word count). Computed from already-available
   provenance data; no extra API calls. Makes the "who shaped the answer" story visible without
   needing to open the full provenance panel.
+- [x] **Clickable model names + targeted debate chips (2026-06-28).** Model names in the
+  "Where they differed" section now jump to that model's full response tab when clicked.
+  Follow-up chips now include a targeted "Debate:" chip when models disagreed with named
+  positions — pre-filling a rich prompt with each model's actual stance so they can engage
+  directly with each other's reasoning. The debate chip has a brand-colored visual style.

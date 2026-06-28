@@ -1424,12 +1424,39 @@ function renderProvenancePanel(pair, prov) {
     agreesHtml = `<div class="prov-agrees">${prov.agreements.slice(0, 4).map(a => `<div class="prov-agree-item"><span class="prov-agree-check">${CHECK_SM_SVG}</span>${escapeHtml(a)}</div>`).join('')}</div>`;
   }
 
+  // Build model-name → selection-id lookup so positions become clickable links.
+  const _nameLookup = {};
+  if (prov.perModel) {
+    prov.perModel.forEach(m => {
+      if (m.id && m.label) {
+        const lo = m.label.toLowerCase();
+        _nameLookup[lo] = m.id;
+        const short = lo.split(/[\s(]/)[0];
+        if (short && short.length > 2 && !_nameLookup[short]) _nameLookup[short] = m.id;
+      }
+    });
+  }
+  function _findTabId(name) {
+    const lo = (name || '').toLowerCase().trim();
+    if (_nameLookup[lo]) return _nameLookup[lo];
+    for (const k of Object.keys(_nameLookup)) {
+      if (lo.includes(k) || k.includes(lo)) return _nameLookup[k];
+    }
+    return null;
+  }
+
   let disagreeHtml = '';
   if (prov.disagreements && prov.disagreements.length) {
     const items = prov.disagreements.map(d =>
       `<div class="prov-dis-item"><div class="prov-dis-point">${escapeHtml(d.point)}</div>` +
       (d.positions && d.positions.length
-        ? `<ul class="prov-dis-pos">${d.positions.map(p => `<li><b>${escapeHtml(p.model)}:</b> ${escapeHtml(p.claim)}</li>`).join('')}</ul>`
+        ? `<ul class="prov-dis-pos">${d.positions.map(p => {
+            const tid = _findTabId(p.model);
+            const nameHtml = tid
+              ? `<button class="prov-model-link" data-tab="${escapeHtml(tid)}">${escapeHtml(p.model)}</button>`
+              : `<b>${escapeHtml(p.model)}</b>`;
+            return `<li>${nameHtml}: ${escapeHtml(p.claim)}</li>`;
+          }).join('')}</ul>`
         : '') +
       `</div>`).join('');
     disagreeHtml = `<details class="prov-details"><summary>Where they differed (${prov.disagreements.length})</summary><div class="prov-details-body">${items}</div></details>`;
@@ -1477,6 +1504,10 @@ function renderProvenancePanel(pair, prov) {
     toggleBtn.querySelector('.prov-toggle-icon').innerHTML = CHEV_D;
     body.hidden = false;
   }
+  // Wire click handlers for model name links in disagreement positions — jump to model tab.
+  panel.querySelectorAll('.prov-model-link[data-tab]').forEach(btn => {
+    btn.onclick = () => switchTab(btn.dataset.tab);
+  });
 
   const assistantMsg = pair.querySelector('.msg.assistant');
   if (assistantMsg) assistantMsg.appendChild(panel);
@@ -1629,37 +1660,68 @@ function renderModelSnapshotsEl(pair) {
 
 // ── Follow-up question chips ────────────────────────────────────────────────
 // Derive 2–3 follow-up chips from provenance (disagreements, notable claims).
-// When an outlier model exists, names it explicitly so the user can probe that
-// specific disagreement. Falls back to generic questions when provenance is absent.
+// Returns [{label, q}] — label is the short chip text; q is the full prompt
+// that gets pre-filled in the input. When an outlier exists or models disagreed
+// with named positions, adds targeted chips unique to the multi-model session.
+function _buildDebateQ(prov) {
+  if (!prov?.disagreements?.length) return null;
+  const dis = prov.disagreements[0];
+  const pos = (dis.positions || []).filter(p => p.model && p.claim).slice(0, 3);
+  if (pos.length < 2) return null;
+  const point = (dis.point || '').trim();
+  const posLines = pos.map(p => {
+    const claim = p.claim.length > 90 ? p.claim.slice(0, 87) + '…' : p.claim;
+    return p.model + ' said: "' + claim + '"';
+  }).join(' ');
+  const intro = point
+    ? 'The models took different views on "' + (point.length > 70 ? point.slice(0, 67) + '…' : point) + '". '
+    : 'The models took different positions here. ';
+  return intro + posLines + ' Each of you: engage directly with the others\' reasoning. Do you maintain your position, or does any part change your thinking?';
+}
 function deriveFollowUps(prov) {
   const chips = [];
+  // Targeted debate chip: when we have named model positions in a disagreement,
+  // build a rich prompt that explicitly names each model's stance so they can
+  // engage with each other. This is unique to the multi-model context.
+  const debateQ = _buildDebateQ(prov);
+  if (debateQ) {
+    const dis = prov.disagreements[0];
+    const point = (dis.point || '').trim();
+    const label = point
+      ? 'Debate: ' + (point.length > 48 ? point.slice(0, 45) + '…' : point)
+      : 'Have the models debate their differences';
+    chips.push({ label, q: debateQ, isDebate: true });
+  }
   // If one model took a clearly different position, call it out by name
   if (prov?.perModel) {
     const outlier = prov.perModel.find(m => m.stance === 'outlier');
     if (outlier?.label) {
       const name = outlier.label.length > 28 ? outlier.label.slice(0, 25) + '…' : outlier.label;
-      chips.push(`What's strongest about ${name}'s different take?`);
+      const q = 'What\'s strongest about ' + name + '\'s different take?';
+      chips.push({ label: q, q });
     }
   }
-  if (prov?.disagreements?.length) {
+  if (!debateQ && prov?.disagreements?.length) {
     const point = (prov.disagreements[0].point || '').trim();
     if (point) {
       const s = point.length > 66 ? point.slice(0, 63) + '…' : point;
-      chips.push('Settle the debate: ' + s);
+      const q = 'Settle the debate: ' + s;
+      chips.push({ label: q, q });
     }
   }
   if (prov?.notable?.length) {
     const claim = (prov.notable[0].claim || '').trim();
     if (claim) {
       const s = claim.length > 60 ? claim.slice(0, 57) + '…' : claim;
-      chips.push('Tell me more: "' + s + '"');
+      const q = 'Tell me more: "' + s + '"';
+      chips.push({ label: q, q });
     }
   }
   const fallbacks = [
-    'What are the strongest counterarguments to this?',
-    'Give me a concrete real-world example.',
-    'What\'s the most important nuance here?',
-    'Explain this more simply.',
+    { label: 'What are the strongest counterarguments to this?', q: 'What are the strongest counterarguments to this?' },
+    { label: 'Give me a concrete real-world example.', q: 'Give me a concrete real-world example.' },
+    { label: 'What\'s the most important nuance here?', q: 'What\'s the most important nuance here?' },
+    { label: 'Explain this more simply.', q: 'Explain this more simply.' },
   ];
   let fi = 0;
   while (chips.length < 3 && fi < fallbacks.length) chips.push(fallbacks[fi++]);
@@ -1675,7 +1737,7 @@ function renderFollowUpChips(pair, prov) {
   wrap.innerHTML =
     '<span class="followup-label">Ask a follow-up</span>' +
     '<div class="followup-list">' +
-    chips.map(q => `<button class="followup-chip" data-q="${escapeHtml(q)}">${escapeHtml(q)}</button>`).join('') +
+    chips.map(e => `<button class="followup-chip${e.isDebate ? ' followup-chip-debate' : ''}" data-q="${escapeHtml(e.q)}">${escapeHtml(e.label)}</button>`).join('') +
     '</div>';
   wrap.querySelectorAll('.followup-chip').forEach(b => b.onclick = () => fillPrompt(b.dataset.q));
   assistantMsg.appendChild(wrap);

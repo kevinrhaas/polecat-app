@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-28 23:00 CT",
+  "updated": "2026-06-28 23:30 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "23:30 CT",
+      "title": "Clickable model names + targeted debate chips",
+      "items": [
+        "Model names in the 'Where they differed' section of the provenance panel are now clickable — tap a model's name to jump straight to its full response tab without hunting through the model list",
+        "When models disagreed with named positions, a new 'Debate:' follow-up chip appears that pre-fills a rich prompt including each model's actual stated position — asking them to engage with each other's reasoning directly",
+        "The debate chip has a distinct visual style (brand-colored border) so it stands out from generic follow-up suggestions"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "23:00 CT",
