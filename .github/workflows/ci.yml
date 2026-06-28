@@ -1,0 +1,24 @@
+name: CI — validate
+
+# Guards the live app (GitHub Pages deploys main → app.polecat.live). Runs the
+# smart-quote / ES-module-parse validator on every push and PR so a broken
+# commit surfaces a red ✗ + notification immediately, instead of silently
+# shipping a blank/dead app. Twice now, curly quotes from the hourly
+# self-improve bot have crashed app.js on parse — this catches that class.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate (ES-module parse + no smart quotes)
+        run: node scripts/validate.mjs
