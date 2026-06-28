@@ -231,6 +231,10 @@ confusing, with a consistent icon language and zero emoji.
   on mobile instead of wrapping; consensus insight moved before the sources bar so the
   plain-language verdict is the first thing read after the answer; send button shows "Send"
   (not "Send to 1") for a single model.
+- [x] **Response speed bars (2026-06-28).** Each model card in "Responses at a glance" now
+  shows a thin colored speed bar (wider = slower, narrower = faster), making the multi-model
+  response-time race immediately visual. The consensus sources footer also shows the response
+  time range (e.g. 2.1s–8.9s), making the parallel execution advantage tangible at a glance.
 - [x] **Contribution % in snapshot cards (2026-06-28).** Each "Responses at a glance" card
   now shows `~N%` — the estimated share of the consensus shaped by that model — as a colored
   pill in the metadata row (alongside stance and word count). Computed from already-available

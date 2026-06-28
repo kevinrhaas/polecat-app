@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-28 17:46 CT",
+  "updated": "2026-06-28 18:49 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "18:49 CT",
+      "title": "Response speed bars in Responses at a glance",
+      "items": [
+        "Each model card in 'Responses at a glance' now shows a thin colored speed bar — the wider the bar, the slower the model responded, making the response-time comparison immediately visual",
+        "The consensus sources footer now shows the model response time range (e.g. 2.1s–8.9s) right next to the strategy name, making the parallel execution advantage tangible at a glance",
+        "Speed bars use each model's brand color and animate in smoothly; they only appear when 2+ models responded, and respect reduced-motion preference"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "17:46 CT",

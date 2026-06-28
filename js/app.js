@@ -61,6 +61,8 @@ let consensusStatusText = '', consensusStepText = '';
 let _browseList = [], _browseProvider = '';   // live model-list browse state
 let attachments = [];               // [{ id, name, mime, data(base64), dataUrl }] pending on the composer
 let _attc = 0;
+let responseTimes = {};             // selectionId -> ms elapsed for that model's response
+let queryStartTime = 0;             // performance.now() when the user clicks Send
 
 // Format modifiers for consensus re-synthesis — appended to the active strategy
 // prompt so users can reformat the same answer without re-querying models.
@@ -813,7 +815,9 @@ async function streamTo(sel, userContent, images, displayAtts, nativePdfs = null
     }
     finishBubble(pair, full);
     if (full) {
-      setMsgTime(pair, performance.now() - t0);
+      const elapsed = performance.now() - t0;
+      responseTimes[sel.id] = elapsed;
+      setMsgTime(pair, elapsed);
       addRegenBtn(sel, pair);
     }
     co.push({ role: 'assistant', content: full });
@@ -1013,7 +1017,8 @@ async function sendAll() {
   if (!list.length) { openConfig('models'); return; }
 
   lastPrompt = text; results = {}; order = []; lastConsensusText = ''; lastConsensusProvenance = null;
-  runStatus = {}; streamPreviews = {}; list.forEach(s => runStatus[s.id] = 'pending');
+  runStatus = {}; streamPreviews = {}; responseTimes = {}; queryStartTime = performance.now();
+  list.forEach(s => runStatus[s.id] = 'pending');
   consensusPhase = 'waiting'; consensusStatusText = ''; consensusStepText = '';
   $('promptInput').value = ''; $('promptInput').style.height = 'auto';
   clearAttachments();
@@ -1104,7 +1109,8 @@ function recordTurn(prompt, atts) {
 function resetApp() {
   Object.keys(convos).forEach(k => delete convos[k]);
   lastPrompt = ''; results = {}; order = [];
-  runStatus = {}; streamPreviews = {}; consensusPhase = ''; consensusStatusText = ''; consensusStepText = '';
+  runStatus = {}; streamPreviews = {}; responseTimes = {}; queryStartTime = 0;
+  consensusPhase = ''; consensusStatusText = ''; consensusStepText = '';
   document.querySelectorAll('.conversation').forEach(conv => {
     const id = conv.id.replace('conv_', '');
     const isCons = id === 'consensus';
@@ -1253,9 +1259,16 @@ function consensusSourcesEl(arbiterSel) {
       `title="${isArb ? 'Final arbiter — wrote this consensus. ' : ''}Open ${escapeHtml(label)}'s full answer">` +
       `<span class="cs-dot"></span>${escapeHtml(label)}${isArb ? ' ' + ARB_ICON : ''}</button>`;
   }).join('');
+  const allMs = order.filter(id => responseTimes[id]).map(id => responseTimes[id]);
+  let timeLabel = '';
+  if (allMs.length >= 2) {
+    const minMs = Math.min(...allMs), maxMs = Math.max(...allMs);
+    const fmt = ms => ms < 10000 ? (ms / 1000).toFixed(1) + 's' : Math.round(ms / 1000) + 's';
+    timeLabel = minMs === maxMs ? fmt(maxMs) : fmt(minMs) + '–' + fmt(maxMs);
+  }
   const wrap = el('div', 'consensus-sources');
   wrap.innerHTML =
-    `<span class="cs-label">${BLEND_SVG} Blended from ${contributors.length} models · ${escapeHtml(strat.name)}</span>` +
+    `<span class="cs-label">${BLEND_SVG} Blended from ${contributors.length} models \xb7 ${escapeHtml(strat.name)}${timeLabel ? ' \xb7 <span class="cs-timerange" title="Model response time range">' + escapeHtml(timeLabel) + '</span>' : ''}</span>` +
     `<div class="cs-chips">${chips}</div>`;
   wrap.querySelectorAll('.cs-chip').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
   return wrap;
@@ -1613,9 +1626,10 @@ function renderModelSnapshotsEl(pair) {
       const raw = claimByLabel[label] || null;
       const distinctiveClaim = raw && raw.length > 20 ? raw : null;
       const pct = (pm != null && pm.contributionPct > 0) ? pm.contributionPct : null;
+      const ms = responseTimes[id] || 0;
       return {
         id, label, color: PROVIDERS[sel.provider]?.color || '#888',
-        time, preview, wordCount,
+        time, ms, preview, wordCount,
         rawText: results[id],   // captured at render time for the copy button
         stance: pm?.stance || null,
         distinctiveClaim, pct,
@@ -1644,6 +1658,9 @@ function renderModelSnapshotsEl(pair) {
   const body = el('div', 'ms-body');
   body.setAttribute('role', 'list');
   body.hidden = !startOpen;
+  // Compute max response time for relative speed bars
+  const maxMs = Math.max(...entries.map(e => e.ms || 0));
+  const showSpeedBars = maxMs > 0 && entries.length >= 2;
   body.innerHTML = entries.map(e => {
     const stanceCls = { aligned: 'ms-aligned', partial: 'ms-partial', outlier: 'ms-outlier' }[e.stance] || '';
     const wc = e.wordCount > 20 ? `~${Math.round(e.wordCount / 10) * 10}w` : '';
@@ -1654,6 +1671,10 @@ function renderModelSnapshotsEl(pair) {
     const claimSnippet = e.distinctiveClaim
       ? `<div class="ms-distinct"><span class="ms-distinct-label">Distinct take</span>${escapeHtml(e.distinctiveClaim.length > 110 ? e.distinctiveClaim.slice(0, 107) + '…' : e.distinctiveClaim)}</div>`
       : '';
+    const speedPct = (showSpeedBars && e.ms > 0) ? Math.round((e.ms / maxMs) * 100) : 0;
+    const speedBar = speedPct > 0
+      ? `<div class="ms-speed-bar" title="Response time: ${escapeHtml(e.time || '?')}${speedPct === 100 ? ' (slowest)' : speedPct <= 30 ? ' (fastest)' : ''}"><div class="ms-speed-fill" style="width:${speedPct}%;background:${escapeHtml(e.color)}" aria-hidden="true"></div></div>`
+      : '';
     return `<div class="ms-card" data-tab="${escapeHtml(e.id)}" style="--ms-c:${escapeHtml(e.color)}" role="listitem" tabindex="0" aria-label="Open ${escapeHtml(e.label)}'s full reply">` +
       `<div class="ms-card-head">` +
       `<span class="ms-dot" aria-hidden="true"></span>` +
@@ -1661,6 +1682,7 @@ function renderModelSnapshotsEl(pair) {
       (e.time ? `<span class="ms-time">${escapeHtml(e.time)}</span>` : '') +
       `<button class="ms-copy-btn" title="Copy ${escapeHtml(e.label)}'s full response" aria-label="Copy ${escapeHtml(e.label)}'s response">${COPY_SVG}</button>` +
       `</div>` +
+      speedBar +
       (metaParts.length ? `<div class="ms-meta-row">${metaParts.join('')}</div>` : '') +
       `<div class="ms-card-text">${escapeHtml(e.preview)}</div>` +
       claimSnippet +

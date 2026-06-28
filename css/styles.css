@@ -333,6 +333,7 @@ header {
 @keyframes cs-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { .consensus-sources { animation: none; } }
 .cs-label { font-size: 11px; font-weight: 600; color: var(--text-3); }
+.cs-timerange { font-variant-numeric: tabular-nums; }
 .cs-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .cs-chip { display: inline-flex; align-items: center; gap: 5px; font-family: inherit; font-size: 11.5px; color: var(--text-2); background: var(--surface-2); border: 1px solid var(--border); border-radius: 100px; padding: 4px 11px; cursor: pointer; transition: color .12s, border-color .12s, background .12s, transform .12s; }
 .cs-chip:hover { color: var(--text); border-color: var(--c, var(--text-3)); background: color-mix(in srgb, var(--c) 10%, var(--surface-2)); transform: translateY(-1px); }
@@ -725,6 +726,9 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .ms-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ms-c); flex-shrink: 0; }
 .ms-label { font-size: 11.5px; font-weight: 700; color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ms-time { font-size: 10.5px; color: var(--text-3); flex-shrink: 0; }
+.ms-speed-bar { height: 2px; background: var(--surface-3); border-radius: 1px; margin: 3px 0 2px; overflow: hidden; }
+.ms-speed-fill { height: 100%; border-radius: 1px; opacity: .55; transition: width .55s cubic-bezier(.4,0,.2,1); }
+@media (prefers-reduced-motion: reduce) { .ms-speed-fill { transition: none; } }
 .ms-card-text {
   font-size: 12px; color: var(--text-2); line-height: 1.5; flex: 1;
   display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
