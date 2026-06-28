@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-28 22:00 CT",
+  "updated": "2026-06-28 10:00 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "10:00 CT",
+      "title": "Accessibility & icon polish pass",
+      "items": [
+        "Model response tabs now support keyboard navigation — press ← / → arrow keys while a tab is focused to switch between models instantly, without reaching for the mouse",
+        "The tab bar now has proper ARIA roles (tablist, tab, tabpanel, aria-selected) so screen readers announce which model is active and how many tabs exist",
+        "Replaced remaining unicode glyphs with SVG icons: the consensus sources label (\"Blended from N models\") now uses a layers icon, the provenance agreements checkmarks are now proper SVGs, and the initial tab empty states use chat-bubble and asterisk SVGs instead of ◎ and ✦",
+        "Welcome modal step icons (✓, ✦, →, ⇄) replaced with matching SVGs throughout all slides — the icon system is now fully consistent with no unicode shortcuts in the UI"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "22:00 CT",

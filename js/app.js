@@ -39,6 +39,8 @@ const GRID_SVG    = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none"
 const REGEN_SVG   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.85"/></svg>`;
 const PIN_SVG     = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
 const EDIT_SVG    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+const BLEND_SVG   = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`;
+const CHECK_SM_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`;
 
 const DEFAULT_TITLE = document.title;
 let cfg = loadCfg();
@@ -648,21 +650,25 @@ function ensureTabs() {
     const p = PROVIDERS[sel.provider];
     const btn = el('button', 'tab');
     btn.id = 'tab_' + sel.id; btn.dataset.svc = sel.id;
+    btn.setAttribute('role', 'tab'); btn.setAttribute('aria-selected', 'false');
     btn.onclick = () => switchTab(sel.id);
     btn.innerHTML = `<span class="tab-dot" id="tdot_${sel.id}" style="background:${p.color};--dot-c:${p.color}"></span><span class="tab-label">${escapeHtml(selectionLabel(sel))}</span>`;
     tabBar.insertBefore(btn, $('tab_consensus') || null);
 
     const panel = el('div', 'tab-panel');
     panel.id = 'panel_' + sel.id;
+    panel.setAttribute('role', 'tabpanel');
     panel.innerHTML =
       `<div class="conversation" id="conv_${sel.id}"><div class="empty-state" id="empty_${sel.id}">` +
-      `<div class="empty-icon">◎</div><div>Send a prompt to see ${escapeHtml(selectionLabel(sel))}</div></div></div>`;
+      `<div class="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>` +
+      `<div>Send a prompt to see ${escapeHtml(selectionLabel(sel))}</div></div></div>`;
     panels.appendChild(panel);
   });
 
   if (cfg.consensus && !$('tab_consensus')) {
     const btn = el('button', 'tab');
     btn.id = 'tab_consensus'; btn.dataset.svc = 'consensus';
+    btn.setAttribute('role', 'tab'); btn.setAttribute('aria-selected', 'false');
     btn.onclick = () => switchTab('consensus');
     btn.innerHTML =
       `<span class="tab-dot" id="tdot_consensus" style="background:var(--consensus);--dot-c:var(--consensus)"></span>` +
@@ -671,9 +677,11 @@ function ensureTabs() {
 
     const panel = el('div', 'tab-panel');
     panel.id = 'panel_consensus';
+    panel.setAttribute('role', 'tabpanel');
     panel.innerHTML =
       `<div class="conversation" id="conv_consensus"><div class="empty-state" id="empty_consensus">` +
-      `<div class="empty-icon consensus-glyph">✦</div><div id="consensus-status">Consensus appears here after all models respond</div></div></div>`;
+      `<div class="empty-icon consensus-glyph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="5.6" y1="5.6" x2="7.8" y2="7.8"/><line x1="16.2" y1="16.2" x2="18.4" y2="18.4"/><line x1="5.6" y1="18.4" x2="7.8" y2="16.2"/><line x1="16.2" y1="7.8" x2="18.4" y2="5.6"/></svg></div>` +
+      `<div id="consensus-status">Consensus appears here after all models respond</div></div></div>`;
     panels.appendChild(panel);
   }
   if ((!activeTab || !$('tab_' + activeTab)) && sels().length) switchTab(sels()[0].id);
@@ -686,6 +694,7 @@ function switchTab(id) {
     t.classList.toggle('active', on);
     t.style.borderBottomColor = on ? color : 'transparent';
     t.style.color = on ? 'var(--text)' : '';
+    t.setAttribute('aria-selected', String(on));
   });
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel_' + id));
 }
@@ -1206,7 +1215,7 @@ function consensusSourcesEl(arbiterSel) {
   }).join('');
   const wrap = el('div', 'consensus-sources');
   wrap.innerHTML =
-    `<span class="cs-label">✦ Blended from ${contributors.length} models · ${escapeHtml(strat.name)}</span>` +
+    `<span class="cs-label">${BLEND_SVG} Blended from ${contributors.length} models · ${escapeHtml(strat.name)}</span>` +
     `<div class="cs-chips">${chips}</div>`;
   wrap.querySelectorAll('.cs-chip').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
   return wrap;
@@ -1407,7 +1416,7 @@ function renderProvenancePanel(pair, prov) {
 
   let agreesHtml = '';
   if (!isLocal && prov.agreements && prov.agreements.length) {
-    agreesHtml = `<div class="prov-agrees">${prov.agreements.slice(0, 4).map(a => `<div class="prov-agree-item"><span class="prov-agree-check">✓</span>${escapeHtml(a)}</div>`).join('')}</div>`;
+    agreesHtml = `<div class="prov-agrees">${prov.agreements.slice(0, 4).map(a => `<div class="prov-agree-item"><span class="prov-agree-check">${CHECK_SM_SVG}</span>${escapeHtml(a)}</div>`).join('')}</div>`;
   }
 
   let disagreeHtml = '';
@@ -2594,6 +2603,20 @@ function init() {
     : 'Type your prompt — sent to all selected models at once\nEnter to send · Shift+Enter for new line · paste or drop images / text files';
   $('promptInput').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; updateSendEnabled(); });
   $('sbTheme').onclick = () => applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+
+  // ── Tab bar keyboard navigation (← / → to switch model tabs) ──────────────
+  // Implements the ARIA tablist pattern: arrow keys move between tabs while
+  // keeping Polecat's multi-model comparison fast to navigate with a keyboard.
+  $('tabBar').addEventListener('keydown', e => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    const tabs = [...$('tabBar').querySelectorAll('[role="tab"]')];
+    const idx = tabs.indexOf(document.activeElement);
+    if (idx === -1) return;
+    e.preventDefault();
+    const next = e.key === 'ArrowRight' ? idx + 1 : idx - 1;
+    const target = tabs[Math.max(0, Math.min(next, tabs.length - 1))];
+    if (target) { target.focus(); switchTab(target.dataset.svc); }
+  });
 
   // ── Attachments: pick · paste · drag-drop ──
   $('attachBtn').onclick = () => $('fileInput').click();
