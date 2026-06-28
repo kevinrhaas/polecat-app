@@ -654,7 +654,9 @@ function ensureTabs() {
     btn.id = 'tab_' + sel.id; btn.dataset.svc = sel.id;
     btn.setAttribute('role', 'tab'); btn.setAttribute('aria-selected', 'false');
     btn.onclick = () => switchTab(sel.id);
-    btn.innerHTML = `<span class="tab-dot" id="tdot_${sel.id}" style="background:${p.color};--dot-c:${p.color}"></span><span class="tab-label">${escapeHtml(selectionLabel(sel))}</span>`;
+    btn.innerHTML =
+      `<span class="tab-dot" id="tdot_${sel.id}" style="background:${p.color};--dot-c:${p.color}"></span>` +
+      `<div class="tab-inner"><span class="tab-label">${escapeHtml(selectionLabel(sel))}</span><span class="tab-stance" id="tstance_${sel.id}" hidden></span></div>`;
     tabBar.insertBefore(btn, $('tab_consensus') || null);
 
     const panel = el('div', 'tab-panel');
@@ -1086,6 +1088,7 @@ function resetApp() {
   setConsensusStep('');
   const _ab = $('consensus-agree-badge');
   if (_ab) { _ab.hidden = true; _ab.textContent = ''; _ab.className = 'tab-agree-badge'; }
+  document.querySelectorAll('.tab-stance').forEach(b => { b.hidden = true; b.textContent = ''; b.className = 'tab-stance'; });
   setChipsDisabled(false);
   hideAttrTip();
   $('promptInput').focus();
@@ -1865,6 +1868,23 @@ function onProvenance(data) {
       _agreeBadge.className = 'tab-agree-badge ' + _agInfo.cls;
       _agreeBadge.hidden = false;
     }
+  }
+
+  // Update per-model stance badges — show aligned/partial/outlier under each model's tab label.
+  if (lastConsensusProvenance?.perModel) {
+    const stanceById = {}, stanceByLabel = {};
+    lastConsensusProvenance.perModel.forEach(m => {
+      if (m.id) stanceById[m.id] = m.stance;
+      if (m.label) stanceByLabel[m.label] = m.stance;
+    });
+    sels().forEach(sel => {
+      const stance = stanceById[sel.id] || stanceByLabel[selectionLabel(sel)];
+      const badge = $('tstance_' + sel.id);
+      if (!badge || !stance) return;
+      badge.textContent = stance;
+      badge.className = 'tab-stance tab-stance-' + stance;
+      badge.hidden = false;
+    });
   }
 
   // Brief insight sentence — summarises agreement in plain language before the detail panels.

@@ -214,6 +214,14 @@ header {
 .tab-agree-mid  { color: var(--brand-b); background: color-mix(in srgb, var(--brand-b) 14%, transparent); }
 .tab-agree-low  { color: var(--text-3); background: var(--surface-3); }
 [data-theme="light"] .tab-agree-high { color: #059669; background: rgba(5,150,105,.10); }
+.tab-stance { display: block; font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 100px; margin-top: 2px; line-height: 1.5; letter-spacing: .02em; animation: tab-badge-in .25s ease both; }
+.tab-stance[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .tab-stance { animation: none; } }
+.tab-stance-aligned { color: #34d399; background: rgba(52,211,153,.13); }
+.tab-stance-partial { color: var(--brand-b); background: color-mix(in srgb, var(--brand-b) 14%, transparent); }
+.tab-stance-outlier { color: #fb923c; background: rgba(251,146,60,.12); }
+[data-theme="light"] .tab-stance-aligned { color: #059669; background: rgba(5,150,105,.10); }
+[data-theme="light"] .tab-stance-outlier { color: #ea580c; background: rgba(234,88,12,.10); }
 
 /* First-run Consensus tab callout — shown once, auto-dismisses */
 .cons-onboard-tip {
