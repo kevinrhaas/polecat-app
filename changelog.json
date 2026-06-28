@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-28 23:30 CT",
+  "updated": "2026-06-28 16:48 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "16:48 CT",
+      "title": "Format quick-actions on consensus answers",
+      "items": [
+        "New 'Format' row in the re-synthesis strip lets you instantly reformat any consensus answer — Shorter, Bullet points, More detail, or Simplify — without re-querying the AI models",
+        "Works with any synthesis strategy: the format instruction is appended to the active strategy's prompts so the arbiter re-synthesizes from the same model responses in your preferred style",
+        "Strategy pills now show under a clear 'Strategy' label, and the new format chips appear in a separate 'Format' sub-row, making the two controls visually distinct"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "23:30 CT",

@@ -61,6 +61,15 @@ let _browseList = [], _browseProvider = '';   // live model-list browse state
 let attachments = [];               // [{ id, name, mime, data(base64), dataUrl }] pending on the composer
 let _attc = 0;
 
+// Format modifiers for consensus re-synthesis — appended to the active strategy
+// prompt so users can reformat the same answer without re-querying models.
+const FORMAT_MODIFIERS = [
+  { id: 'shorter',  label: 'Shorter',       instruction: 'Be concise: 2-3 short paragraphs at most.' },
+  { id: 'bullets',  label: 'Bullet points', instruction: 'Format your response as concise bullet points with no prose preamble.' },
+  { id: 'detailed', label: 'More detail',   instruction: 'Be thorough: include more examples, context, and nuance.' },
+  { id: 'simple',   label: 'Simplify',      instruction: 'Explain as simply as possible, assuming the reader has no prior knowledge on this topic.' },
+];
+
 const persist  = () => saveCfg(cfg);
 const sels     = () => activeSelections(cfg);
 const selById  = (id) => (cfg.selections || []).find(s => s.id === id);
@@ -1756,27 +1765,53 @@ function renderResynthStrip(pair, orderedSnapshot, promptSnapshot, usedStratId) 
   const assistantMsg = pair?.querySelector('.msg.assistant');
   if (!assistantMsg || assistantMsg.querySelector('.resynth-strip')) return;
   const alternatives = allStrategies(cfg).filter(s => s.id !== usedStratId);
-  if (!alternatives.length) return;
   const wrap = el('div', 'resynth-strip');
-  wrap.innerHTML =
-    '<span class="resynth-label">Try another synthesis</span>' +
-    '<div class="resynth-pills">' +
-    alternatives.map(s =>
-      `<button class="resynth-pill" data-strat="${escapeHtml(s.id)}" title="${escapeHtml(s.description)}">${escapeHtml(s.name)}</button>`
+  let html = '';
+  if (alternatives.length) {
+    html +=
+      '<span class="resynth-label">Strategy</span>' +
+      '<div class="resynth-pills">' +
+      alternatives.map(s =>
+        `<button class="resynth-pill" data-strat="${escapeHtml(s.id)}" title="${escapeHtml(s.description)}">${escapeHtml(s.name)}</button>`
+      ).join('') +
+      '</div>';
+  }
+  html +=
+    '<div class="resynth-format-row">' +
+    '<span class="resynth-format-label">Format</span>' +
+    FORMAT_MODIFIERS.map(m =>
+      `<button class="resynth-format-chip" data-fmt="${escapeHtml(m.id)}">${escapeHtml(m.label)}</button>`
     ).join('') +
     '</div>';
+  wrap.innerHTML = html;
   wrap.querySelectorAll('.resynth-pill').forEach(btn => {
     btn.onclick = () => rerunConsensusWith(orderedSnapshot, promptSnapshot, btn.dataset.strat);
+  });
+  wrap.querySelectorAll('.resynth-format-chip').forEach(btn => {
+    btn.onclick = () => rerunConsensusWithFormat(orderedSnapshot, promptSnapshot, usedStratId, btn.dataset.fmt);
   });
   assistantMsg.appendChild(wrap);
 }
 
+// Re-synthesize using the same strategy but with a format modifier appended
+// to every prompt template (shorter, bullets, more detail, simplified).
+async function rerunConsensusWithFormat(capturedOrdered, capturedPrompt, baseStratId, fmtId) {
+  const mod = FORMAT_MODIFIERS.find(m => m.id === fmtId);
+  if (!mod) return;
+  const base = allStrategies(cfg).find(s => s.id === baseStratId) || activeStrategy(cfg);
+  const override = JSON.parse(JSON.stringify(base));
+  for (const key of Object.keys(override.prompts || {})) {
+    override.prompts[key] = override.prompts[key] + '\n\nFormat requirement: ' + mod.instruction;
+  }
+  await rerunConsensusWith(capturedOrdered, capturedPrompt, baseStratId, override);
+}
+
 // Re-run consensus arbitration using a captured snapshot of model responses +
-// the original prompt, but a different synthesis strategy. Produces a new
-// consensus qa-pair in the Consensus tab without re-calling the AI models.
-async function rerunConsensusWith(capturedOrdered, capturedPrompt, strategyId) {
+// the original prompt, but a different synthesis strategy or format modifier.
+// Produces a new consensus qa-pair in the Consensus tab without re-calling models.
+async function rerunConsensusWith(capturedOrdered, capturedPrompt, strategyId, strategyOverride) {
   if (!capturedOrdered || capturedOrdered.length < 2) { toast('Need 2+ model responses to re-synthesize'); return; }
-  const strategy = allStrategies(cfg).find(s => s.id === strategyId);
+  const strategy = strategyOverride || allStrategies(cfg).find(s => s.id === strategyId);
   if (!strategy) { toast('Strategy not found'); return; }
   switchTab('consensus');
 

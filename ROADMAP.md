@@ -241,3 +241,8 @@ confusing, with a consistent icon language and zero emoji.
   Follow-up chips now include a targeted "Debate:" chip when models disagreed with named
   positions — pre-filling a rich prompt with each model's actual stance so they can engage
   directly with each other's reasoning. The debate chip has a brand-colored visual style.
+- [x] **Format quick-actions on consensus (2026-06-28).** A "Format" sub-row in the
+  re-synthesis strip lets users instantly reformat any consensus answer (Shorter, Bullet
+  points, More detail, Simplify) without re-querying the models. The arbiter re-synthesizes
+  from the same model responses using the current strategy plus the chosen format instruction.
+  Strategy pills remain under a "Strategy" sub-label alongside the new "Format" row.
