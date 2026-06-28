@@ -226,3 +226,8 @@ confusing, with a consistent icon language and zero emoji.
   strip moved before the provenance panel so the most actionable options appear first.
   Collapsed "Responses at a glance" toggle now shows colored model dots so users can see
   which models responded without expanding the section.
+- [x] **Periodic mobile polish pass (2026-06-28).** "Responses at a glance" now defaults to
+  collapsed on mobile (saves ~400px of vertical space); follow-up chips scroll horizontally
+  on mobile instead of wrapping; consensus insight moved before the sources bar so the
+  plain-language verdict is the first thing read after the answer; send button shows "Send"
+  (not "Send to 1") for a single model.

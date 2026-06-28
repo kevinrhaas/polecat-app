@@ -607,7 +607,9 @@ function buildChips() {
 
   // Show model count in the send button — makes the multi-model count concrete.
   const sendText = send.querySelector('.send-text');
-  if (sendText) sendText.innerHTML = `Send to ${list.length} <kbd>⌘↵</kbd>`;
+  if (sendText) sendText.innerHTML = list.length === 1
+    ? `Send <kbd>⌘↵</kbd>`
+    : `Send to ${list.length} <kbd>⌘↵</kbd>`;
 
   updateVisionNote();
 }
@@ -1555,19 +1557,23 @@ function renderModelSnapshotsEl(pair) {
 
   const wrap = el('div', 'model-snapshots');
 
+  // On mobile, default to collapsed — saves ~400px of vertical space.
+  const startOpen = !window.matchMedia('(max-width: 600px)').matches;
+
   const toggle = el('button', 'ms-toggle');
-  toggle.setAttribute('aria-expanded', 'true');
+  toggle.setAttribute('aria-expanded', String(startOpen));
   const miniDots = entries.slice(0, 6).map(e =>
     `<span class="ms-mini-dot" style="background:${escapeHtml(e.color)}" aria-hidden="true" title="${escapeHtml(e.label)}"></span>`
   ).join('');
   toggle.innerHTML =
-    `<span class="ms-toggle-icon" aria-hidden="true">${CHEV_D}</span>` +
+    `<span class="ms-toggle-icon" aria-hidden="true">${startOpen ? CHEV_D : CHEV_R}</span>` +
     `<span class="ms-toggle-label">Responses at a glance</span>` +
     `<span class="ms-mini-dots" aria-hidden="true">${miniDots}</span>` +
     `<span class="ms-count">${entries.length} model${entries.length === 1 ? '' : 's'}</span>`;
 
   const body = el('div', 'ms-body');
   body.setAttribute('role', 'list');
+  body.hidden = !startOpen;
   body.innerHTML = entries.map(e => {
     const stanceCls = { aligned: 'ms-aligned', partial: 'ms-partial', outlier: 'ms-outlier' }[e.stance] || '';
     const wc = e.wordCount > 20 ? `~${Math.round(e.wordCount / 10) * 10}w` : '';
@@ -1831,7 +1837,11 @@ function renderConsensusInsight(pair, prov) {
   if (!text) return;
   const div = el('div', 'consensus-insight');
   div.textContent = text;
-  assistantMsg.appendChild(div);
+  // Insert before the sources footer so the plain-language verdict appears
+  // right after the answer text — the most prominent, readable position.
+  const sources = assistantMsg.querySelector('.consensus-sources');
+  if (sources) assistantMsg.insertBefore(div, sources);
+  else assistantMsg.appendChild(div);
 }
 
 // EPIC 1 · P1 — receive the arbiter's machine-readable agreement map. Stamped

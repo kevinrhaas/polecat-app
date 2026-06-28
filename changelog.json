@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-28 14:00 CT",
+  "updated": "2026-06-28 18:00 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "18:00 CT",
+      "title": "Mobile UX polish + reading-flow improvements",
+      "items": [
+        "On mobile, 'Responses at a glance' now starts collapsed by default — saves scrolling past cards to reach follow-up questions; tap once to expand",
+        "Follow-up question chips now scroll horizontally on mobile instead of wrapping to multiple lines, keeping them compact and scannable",
+        "The agreement summary (e.g. 'All 3 models were in strong agreement') now appears immediately after the answer text — before the technical attribution bar — so you see the most important signal first",
+        "Send button now shows 'Send' (not 'Send to 1') when only one model is selected"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "14:00 CT",
