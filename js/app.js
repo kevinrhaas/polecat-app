@@ -40,6 +40,7 @@ const REGEN_SVG   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none"
 const PIN_SVG     = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
 const EDIT_SVG    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 
+const DEFAULT_TITLE = document.title;
 let cfg = loadCfg();
 const convos = {};                  // selectionId -> [{role, content}]
 let lastPrompt = '', results = {}, order = [];
@@ -1073,6 +1074,7 @@ function resetApp() {
   setChipsDisabled(false);
   hideAttrTip();
   $('promptInput').focus();
+  document.title = DEFAULT_TITLE;
 }
 
 // ── Consensus tab ───────────────────────────────────────────────────────────
@@ -1083,11 +1085,32 @@ function setConsensusDot(loading) {
   if (loading) dot.classList.add('loading');
   else { dot.classList.remove('loading'); dot.classList.add('done'); setTimeout(() => dot.classList.remove('done'), 350); }
 }
+// ── Background tab title notifications ─────────────────────────────────────────
+// When the user switches away while models are running, the browser tab title
+// shows live progress — "(2/3 answered) Polecat" — so they know when to come
+// back. Resets automatically when they focus the tab (visibilitychange in init).
+function notifyTabTitle() {
+  if (!document.hidden) return;
+  const total = order.length;
+  if (!total) return;
+  const done = order.filter(id => runStatus[id] === 'done').length;
+  const errs = order.filter(id => runStatus[id] === 'error').length;
+  const allDone = done + errs >= total;
+  if (!allDone) {
+    document.title = `(${done}/${total} answered) Polecat`;
+  } else if (!cfg.consensus || consensusPhase === 'done') {
+    document.title = `(${total > 1 ? total + ' models' : 'done'}) Polecat`;
+  } else {
+    document.title = `(synthesizing…) Polecat`;
+  }
+}
+
 // Live progress shown in the Consensus tab while models stream + arbitration runs.
 function markRun(id, state) {
   if (runStatus[id] === undefined) return;
   runStatus[id] = state;
   if (cfg.consensus) refreshConsensusProgress();
+  if (state === 'done' || state === 'error') notifyTabTitle();
 }
 const _CP_CHECK  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`;
 const _CP_CROSS  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
@@ -1222,6 +1245,7 @@ async function streamToConsensus(sel, messages) {
     if (sources) { pair.querySelector('.msg.assistant').appendChild(sources); scrollBottom(conv); }
   }
   lastConsensusText = full;
+  notifyTabTitle();
   return full;
 }
 function showConsensusStatic(text, isError = false) {
@@ -1259,6 +1283,7 @@ function showConsensusStatic(text, isError = false) {
       }
     }
   }
+  notifyTabTitle();
 }
 // Show a positioned callout below the Consensus tab the first time a consensus appears.
 // Teaches new users that model tabs above hold individual responses.
@@ -2455,6 +2480,9 @@ function init() {
     }
     if (e.key === ',' && (e.metaKey || e.ctrlKey) && !e.altKey) { e.preventDefault(); openConfig(); }
   });
+
+  // Reset the tab title notification whenever the user focuses back to this tab.
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) document.title = DEFAULT_TITLE; });
 
   const hasKeys = configuredProviders(cfg).length > 0 || (cfg.selections || []).some(s => s.provider === 'demo');
   const seen = !!localStorage.getItem(WELCOME_KEY);

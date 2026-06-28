@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-28 18:00 CT",
+  "updated": "2026-06-28 20:00 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "20:00 CT",
+      "title": "Tab notifications: see live model progress while you work elsewhere",
+      "items": [
+        "The browser tab title now shows live progress when you switch away while models are responding — '(2/3 answered) Polecat' counts up as each model finishes",
+        "Uniquely suited to Polecat: because you're waiting for several models at once, you can go do something else and glance at the tab to see when they're all done",
+        "After all models respond, the title shows '(synthesizing…) Polecat' while the consensus is being formed, then resets to normal the moment you come back",
+        "Zero UI clutter — the notification only appears when the tab is in the background and resets automatically on focus"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "18:00 CT",
