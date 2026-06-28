@@ -113,9 +113,18 @@ jobs:
                syntax errors) and rejects smart quotes. You MUST NOT commit unless it
                exits 0. If it fails, fix the reported file:line and re-run until clean.
                Also review your diff.
-            5. Prepend a new entry to `changelog.json` (newest first) describing what you
-               shipped, with today's date (YYYY-MM-DD) as `date` and an updated top-level
-               `updated` field. Keep items short and user-facing.
+            5. Prepend a new entry to `changelog.json` (strictly newest-first) describing
+               what you shipped. STAMP IT WITH THE REAL CURRENT TIME — never invent or
+               round times, and NEVER use a future date/time. Get the real values from the
+               shell and use them verbatim:
+                 DATE=$(TZ='America/Chicago' date '+%Y-%m-%d')
+                 TIME=$(TZ='America/Chicago' date '+%H:%M CT')
+               Set the entry's `date` = $DATE and `time` = $TIME, and set the top-level
+               `updated` = "$DATE $TIME". The new entry's time MUST be >= the previous top
+               entry's time (real time only moves forward) — if the existing top entries
+               have future/incorrect timestamps from earlier runs, still use the real
+               current time; do not fabricate a later one to "stay on top". Keep items
+               short and user-facing.
             6. Commit and push to main (one commit) — ONLY after validate.mjs passes:
                  node scripts/validate.mjs   # must exit 0
                  git add -A
@@ -150,8 +159,10 @@ jobs:
                (app.polecat.live) and the free demo. Do not break it. Tick the
                ROADMAP item if you complete it.
             3. Add or update a changelog on the site (a CHANGELOG / "what's new" section or
-               file) with today's date and a one-line summary of the change, and a visible
-               "last updated <YYYY-MM-DD>" stamp in the footer if one isn't already present.
+               file) with a one-line summary, stamped with the REAL current Central time
+               (never future/invented): use `TZ='America/Chicago' date '+%Y-%m-%d %H:%M CT'`.
+               Put the same "last updated <YYYY-MM-DD HH:MM CT>" stamp in the footer so it
+               matches the app's header convention.
             4. Commit and push (one commit) to its default branch — ONLY after the
                site's own validator passes (it rejects smart quotes in HTML attributes):
                  cd site
