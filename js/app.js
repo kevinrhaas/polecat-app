@@ -1544,6 +1544,7 @@ function renderModelSnapshotsEl(pair) {
       return {
         id, label, color: PROVIDERS[sel.provider]?.color || '#888',
         time, preview, wordCount,
+        rawText: results[id],   // captured at render time for the copy button
         stance: pm?.stance || null,
         distinctiveClaim,
       };
@@ -1556,10 +1557,14 @@ function renderModelSnapshotsEl(pair) {
 
   const toggle = el('button', 'ms-toggle');
   toggle.setAttribute('aria-expanded', 'true');
+  const miniDots = entries.slice(0, 6).map(e =>
+    `<span class="ms-mini-dot" style="background:${escapeHtml(e.color)}" aria-hidden="true" title="${escapeHtml(e.label)}"></span>`
+  ).join('');
   toggle.innerHTML =
     `<span class="ms-toggle-icon" aria-hidden="true">${CHEV_D}</span>` +
     `<span class="ms-toggle-label">Responses at a glance</span>` +
-    `<span class="ms-count">${entries.length} models</span>`;
+    `<span class="ms-mini-dots" aria-hidden="true">${miniDots}</span>` +
+    `<span class="ms-count">${entries.length} model${entries.length === 1 ? '' : 's'}</span>`;
 
   const body = el('div', 'ms-body');
   body.setAttribute('role', 'list');
@@ -1577,6 +1582,7 @@ function renderModelSnapshotsEl(pair) {
       `<span class="ms-dot" aria-hidden="true"></span>` +
       `<span class="ms-label">${escapeHtml(e.label)}</span>` +
       (e.time ? `<span class="ms-time">${escapeHtml(e.time)}</span>` : '') +
+      `<button class="ms-copy-btn" title="Copy ${escapeHtml(e.label)}'s full response" aria-label="Copy ${escapeHtml(e.label)}'s response">${COPY_SVG}</button>` +
       `</div>` +
       (metaParts.length ? `<div class="ms-meta-row">${metaParts.join('')}</div>` : '') +
       `<div class="ms-card-text">${escapeHtml(e.preview)}</div>` +
@@ -1585,7 +1591,15 @@ function renderModelSnapshotsEl(pair) {
       `</div>`;
   }).join('');
 
-  body.querySelectorAll('.ms-card').forEach(card => {
+  body.querySelectorAll('.ms-card').forEach((card, i) => {
+    const capturedText = entries[i]?.rawText || '';
+    const copyBtn = card.querySelector('.ms-copy-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        copyText(capturedText, copyBtn);
+      });
+    }
     card.onclick = () => switchTab(card.dataset.tab);
     card.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); switchTab(card.dataset.tab); } };
   });
@@ -1849,15 +1863,16 @@ function onProvenance(data) {
   // "Responses at a glance" — compact per-model preview strip, always shown first.
   renderModelSnapshotsEl(pair);
 
-  if (lastConsensusProvenance) renderProvenancePanel(pair, lastConsensusProvenance);
-
-  // Follow-up chips — appear after the provenance panel, derived from its insights.
+  // Actionable elements come before the analytical provenance panel so the user can
+  // continue the conversation without scrolling past the detail section.
   renderFollowUpChips(pair, lastConsensusProvenance);
 
   // Re-synthesis strip — try a different synthesis strategy on the same model responses.
   if (lastSynthesisOrdered.length >= 2) {
     renderResynthStrip(pair, lastSynthesisOrdered, lastSynthesisPrompt, activeStrategy(cfg).id);
   }
+
+  if (lastConsensusProvenance) renderProvenancePanel(pair, lastConsensusProvenance);
 
   // P4 — Inline attribution (no extra model call, runs synchronously)
   if (!lastConsensusText) return;

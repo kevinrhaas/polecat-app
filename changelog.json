@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-28 10:00 CT",
+  "updated": "2026-06-28 14:00 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "14:00 CT",
+      "title": "Snapshot cards polish: copy button + smarter layout",
+      "items": [
+        "Each model's 'Responses at a glance' card now has a quick copy button — hover a card (or touch on mobile) to copy that model's full response without switching to its tab",
+        "Follow-up question chips and the 'Try another synthesis' strip now appear before the 'How this was formed' panel, so the most actionable options are immediately visible after reading the consensus",
+        "When the 'Responses at a glance' strip is collapsed, small colored model dots appear in the toggle so you can see at a glance which models responded without expanding the section"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "10:00 CT",

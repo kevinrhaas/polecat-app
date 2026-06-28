@@ -220,3 +220,9 @@ confusing, with a consistent icon language and zero emoji.
   in strong agreement" or "2 of 3 models agreed; GPT-4o had a contrasting perspective."
   Zero extra API calls; derived from the already-computed provenance data. Also
   replaced `✦` and `◎` unicode glyphs in empty states + progress box with proper SVGs.
+- [x] **Periodic polish pass (2026-06-28).** Snapshot cards now have a quick copy button
+  (hover/touch to copy that model's full response without switching tabs; text captured at
+  render time to be correct on multi-turn conversations). Follow-up chips and re-synthesis
+  strip moved before the provenance panel so the most actionable options appear first.
+  Collapsed "Responses at a glance" toggle now shows colored model dots so users can see
+  which models responded without expanding the section.

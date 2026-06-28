@@ -719,6 +719,19 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 [data-theme="dark"] .ms-aligned { color: #34d399; background: rgba(52,211,153,.12); }
 [data-theme="dark"] .ms-outlier  { color: #f0a830; background: rgba(240,168,48,.12); }
 .ms-wc { font-size: 10px; color: var(--text-3); margin-left: auto; }
+.ms-mini-dots { display: none; align-items: center; gap: 3px; flex-shrink: 0; }
+.ms-toggle[aria-expanded="false"] .ms-mini-dots { display: flex; }
+.ms-mini-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.ms-copy-btn {
+  background: none; border: none; cursor: pointer; padding: 2px; border-radius: 4px;
+  color: var(--text-3); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; opacity: 0; transition: opacity .12s, color .12s, background .12s;
+}
+.ms-copy-btn:hover { color: var(--text); background: var(--surface-3); opacity: 1 !important; }
+.ms-card:hover .ms-copy-btn,
+.ms-copy-btn:focus-visible { opacity: .7; }
+.ms-copy-btn.copied { color: var(--ms-c, #059669); opacity: 1 !important; }
+@media (hover: none) { .ms-copy-btn { opacity: .55; } }
 
 .prov-toggle {
   display: flex; align-items: center; gap: 7px; width: 100%;
