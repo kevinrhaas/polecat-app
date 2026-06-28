@@ -154,8 +154,13 @@ function copyThreadAsMarkdown(payload, btn) {
 function buildStamp() {
   const d = new Date(document.lastModified);
   if (isNaN(d.getTime())) return '';
-  const p = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  // Render the real deploy time in Central Time (CT) so the header matches the
+  // CT-stamped changelog. Used for BOTH the header and the What's-new "updated".
+  const f = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Chicago', hourCycle: 'h23',
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+  }).formatToParts(d).reduce((o, p) => (o[p.type] = p.value, o), {});
+  return `${f.year}-${f.month}-${f.day} ${f.hour}:${f.minute} CT`;
 }
 
 // ── Attachments (images + text/doc files) ────────────────────────────────────
@@ -2625,7 +2630,7 @@ function openWhatsNew() {
   ov.innerHTML =
     `<div class="exp-card wn-card">` +
     `<div class="exp-title">${STAR_SVG} What's new</div>` +
-    `<div class="exp-sub">Polecat keeps getting better${_changelog.updated ? ` · updated ${escapeHtml(_changelog.updated)}` : ''}.</div>` +
+    `<div class="exp-sub">Polecat keeps getting better${(buildStamp() || _changelog.updated) ? ` · updated ${escapeHtml(buildStamp() || _changelog.updated)}` : ''}.</div>` +
     `<div class="wn-list">` + (_changelog.entries || []).map(e =>
       `<div class="wn-entry"><div class="wn-date">${escapeHtml(e.date || '')}${e.time ? ' <span class="wn-time">' + escapeHtml(e.time) + '</span>' : ''}</div>` +
       `<div class="wn-etitle">${escapeHtml(e.title || '')}</div>` +
