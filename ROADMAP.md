@@ -231,3 +231,8 @@ confusing, with a consistent icon language and zero emoji.
   on mobile instead of wrapping; consensus insight moved before the sources bar so the
   plain-language verdict is the first thing read after the answer; send button shows "Send"
   (not "Send to 1") for a single model.
+- [x] **Contribution % in snapshot cards (2026-06-28).** Each "Responses at a glance" card
+  now shows `~N%` — the estimated share of the consensus shaped by that model — as a colored
+  pill in the metadata row (alongside stance and word count). Computed from already-available
+  provenance data; no extra API calls. Makes the "who shaped the answer" story visible without
+  needing to open the full provenance panel.

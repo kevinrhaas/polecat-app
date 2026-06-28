@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-28 22:00 CT",
+  "updated": "2026-06-28 23:00 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "23:00 CT",
+      "title": "Contribution % in Responses at a glance",
+      "items": [
+        "Each model card in 'Responses at a glance' now shows ~N% — the estimated share of the consensus that model shaped — as a colored pill in the metadata row",
+        "The percentage uses the model's brand color so it's visually tied to the model identity, and sits alongside the existing stance badge and word count",
+        "No extra API calls — derived from the same provenance data already computed after every consensus; gracefully hidden when provenance is unavailable"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "22:00 CT",

@@ -1546,12 +1546,13 @@ function renderModelSnapshotsEl(pair) {
       const pm = provByLabel[label] || null;
       const raw = claimByLabel[label] || null;
       const distinctiveClaim = raw && raw.length > 20 ? raw : null;
+      const pct = (pm != null && pm.contributionPct > 0) ? pm.contributionPct : null;
       return {
         id, label, color: PROVIDERS[sel.provider]?.color || '#888',
         time, preview, wordCount,
         rawText: results[id],   // captured at render time for the copy button
         stance: pm?.stance || null,
-        distinctiveClaim,
+        distinctiveClaim, pct,
       };
     })
     .filter(Boolean);
@@ -1582,6 +1583,7 @@ function renderModelSnapshotsEl(pair) {
     const wc = e.wordCount > 20 ? `~${Math.round(e.wordCount / 10) * 10}w` : '';
     const metaParts = [];
     if (e.stance) metaParts.push(`<span class="ms-stance ${stanceCls}">${escapeHtml(e.stance)}</span>`);
+    if (e.pct != null) metaParts.push(`<span class="ms-pct" title="Estimated share of consensus shaped by this model (approx.)">~${e.pct}%</span>`);
     if (wc) metaParts.push(`<span class="ms-wc">${escapeHtml(wc)}</span>`);
     const claimSnippet = e.distinctiveClaim
       ? `<div class="ms-distinct"><span class="ms-distinct-label">Distinct take</span>${escapeHtml(e.distinctiveClaim.length > 110 ? e.distinctiveClaim.slice(0, 107) + '…' : e.distinctiveClaim)}</div>`
