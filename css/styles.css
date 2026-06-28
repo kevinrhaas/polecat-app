@@ -649,6 +649,14 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
   cursor: pointer; text-align: left; opacity: .75; transition: opacity .12s; flex-shrink: 0;
 }
 .ms-read-btn:hover { opacity: 1; text-decoration: underline; }
+.ms-meta-row { display: flex; align-items: center; gap: 5px; margin-top: 1px; }
+.ms-stance { font-size: 9.5px; font-weight: 700; padding: 1px 6px; border-radius: 100px; line-height: 1.4; flex-shrink: 0; }
+.ms-aligned { color: #059669; background: rgba(5,150,105,.10); }
+.ms-partial  { color: var(--text-3); background: var(--surface-3); }
+.ms-outlier  { color: #b45309; background: rgba(180,83,9,.10); }
+[data-theme="dark"] .ms-aligned { color: #34d399; background: rgba(52,211,153,.12); }
+[data-theme="dark"] .ms-outlier  { color: #f0a830; background: rgba(240,168,48,.12); }
+.ms-wc { font-size: 10px; color: var(--text-3); margin-left: auto; }
 
 .prov-toggle {
   display: flex; align-items: center; gap: 7px; width: 100%;

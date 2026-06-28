@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-28 12:00 CT",
+  "updated": "2026-06-28 14:00 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "14:00 CT",
+      "title": "Responses at a glance: stance badges + word counts",
+      "items": [
+        "Each model's preview card in the 'Responses at a glance' strip now shows its stance vs. the consensus — 'aligned', 'partial', or 'outlier' — so you can see at a glance which model disagreed without opening the full provenance panel",
+        "Every model card also shows an approximate word count (~150w) so you can instantly tell which model gave a brief take vs. a detailed one before clicking through",
+        "When one model took a clearly different position, the suggested follow-up chips now name that specific model — 'What's strongest about Claude's different take?' instead of a generic prompt"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "12:00 CT",

@@ -1390,10 +1390,18 @@ function plainPreview(md, maxChars) {
 }
 
 // Render compact per-model preview cards below the consensus answer. Shows each
-// model's opening sentence + response time + a link to switch to its full tab.
+// model's opening sentence + response time + stance + word count + a link to
+// switch to its full tab. Stance/contribution come from lastConsensusProvenance,
+// which is set before this is called in onProvenance().
 function renderModelSnapshotsEl(pair) {
   const assistantMsg = pair?.querySelector('.msg.assistant');
   if (!assistantMsg || assistantMsg.querySelector('.model-snapshots')) return;
+
+  // Build label → provenance data lookup (set before this call in onProvenance)
+  const provByLabel = {};
+  if (lastConsensusProvenance?.perModel) {
+    lastConsensusProvenance.perModel.forEach(m => { if (m.label) provByLabel[m.label] = m; });
+  }
 
   const entries = order
     .filter(id => results[id])
@@ -1406,7 +1414,14 @@ function renderModelSnapshotsEl(pair) {
       const time = (timeEl && !timeEl.hidden) ? timeEl.textContent : '';
       const preview = plainPreview(results[id]);
       if (!preview) return null;
-      return { id, label: selectionLabel(sel), color: PROVIDERS[sel.provider]?.color || '#888', time, preview };
+      const wordCount = (results[id] || '').trim().split(/\s+/).filter(Boolean).length;
+      const label = selectionLabel(sel);
+      const pm = provByLabel[label] || null;
+      return {
+        id, label, color: PROVIDERS[sel.provider]?.color || '#888',
+        time, preview, wordCount,
+        stance: pm?.stance || null,
+      };
     })
     .filter(Boolean);
 
@@ -1423,18 +1438,24 @@ function renderModelSnapshotsEl(pair) {
 
   const body = el('div', 'ms-body');
   body.setAttribute('role', 'list');
-  body.innerHTML = entries.map(e =>
-    `<div class="ms-card" style="--ms-c:${escapeHtml(e.color)}" role="listitem">` +
-    `<div class="ms-card-head">` +
-    `<span class="ms-dot" aria-hidden="true"></span>` +
-    `<span class="ms-label">${escapeHtml(e.label)}</span>` +
-    (e.time ? `<span class="ms-time">${escapeHtml(e.time)}</span>` : '') +
-    `</div>` +
-    `<div class="ms-card-text">${escapeHtml(e.preview)}</div>` +
-    `<button class="ms-read-btn" data-tab="${escapeHtml(e.id)}" ` +
-    `aria-label="Read ${escapeHtml(e.label)}'s full reply">Full reply →</button>` +
-    `</div>`
-  ).join('');
+  body.innerHTML = entries.map(e => {
+    const stanceCls = { aligned: 'ms-aligned', partial: 'ms-partial', outlier: 'ms-outlier' }[e.stance] || '';
+    const wc = e.wordCount > 20 ? `~${Math.round(e.wordCount / 10) * 10}w` : '';
+    const metaParts = [];
+    if (e.stance) metaParts.push(`<span class="ms-stance ${stanceCls}">${escapeHtml(e.stance)}</span>`);
+    if (wc) metaParts.push(`<span class="ms-wc">${escapeHtml(wc)}</span>`);
+    return `<div class="ms-card" style="--ms-c:${escapeHtml(e.color)}" role="listitem">` +
+      `<div class="ms-card-head">` +
+      `<span class="ms-dot" aria-hidden="true"></span>` +
+      `<span class="ms-label">${escapeHtml(e.label)}</span>` +
+      (e.time ? `<span class="ms-time">${escapeHtml(e.time)}</span>` : '') +
+      `</div>` +
+      (metaParts.length ? `<div class="ms-meta-row">${metaParts.join('')}</div>` : '') +
+      `<div class="ms-card-text">${escapeHtml(e.preview)}</div>` +
+      `<button class="ms-read-btn" data-tab="${escapeHtml(e.id)}" ` +
+      `aria-label="Read ${escapeHtml(e.label)}'s full reply">Full reply →</button>` +
+      `</div>`;
+  }).join('');
 
   body.querySelectorAll('.ms-read-btn').forEach(btn => {
     btn.onclick = () => switchTab(btn.dataset.tab);
@@ -1454,28 +1475,37 @@ function renderModelSnapshotsEl(pair) {
 
 // ── Follow-up question chips ────────────────────────────────────────────────
 // Derive 2–3 follow-up chips from provenance (disagreements, notable claims).
-// Falls back to universally useful generic questions when provenance is absent.
+// When an outlier model exists, names it explicitly so the user can probe that
+// specific disagreement. Falls back to generic questions when provenance is absent.
 function deriveFollowUps(prov) {
   const chips = [];
+  // If one model took a clearly different position, call it out by name
+  if (prov?.perModel) {
+    const outlier = prov.perModel.find(m => m.stance === ‘outlier’);
+    if (outlier?.label) {
+      const name = outlier.label.length > 28 ? outlier.label.slice(0, 25) + ‘…’ : outlier.label;
+      chips.push(`What’s strongest about ${name}’s different take?`);
+    }
+  }
   if (prov?.disagreements?.length) {
-    const point = (prov.disagreements[0].point || '').trim();
+    const point = (prov.disagreements[0].point || ‘’).trim();
     if (point) {
-      const s = point.length > 66 ? point.slice(0, 63) + '…' : point;
-      chips.push('Settle the debate: ' + s);
+      const s = point.length > 66 ? point.slice(0, 63) + ‘…’ : point;
+      chips.push(‘Settle the debate: ‘ + s);
     }
   }
   if (prov?.notable?.length) {
-    const claim = (prov.notable[0].claim || '').trim();
+    const claim = (prov.notable[0].claim || ‘’).trim();
     if (claim) {
-      const s = claim.length > 60 ? claim.slice(0, 57) + '…' : claim;
-      chips.push('Tell me more: “' + s + '”');
+      const s = claim.length > 60 ? claim.slice(0, 57) + ‘…’ : claim;
+      chips.push(‘Tell me more: “’ + s + ‘”’);
     }
   }
   const fallbacks = [
-    'What are the strongest counterarguments to this?',
-    'Give me a concrete real-world example.',
-    'What’s the most important nuance here?',
-    'Explain this more simply.',
+    ‘What are the strongest counterarguments to this?’,
+    ‘Give me a concrete real-world example.’,
+    ‘What\’s the most important nuance here?’,
+    ‘Explain this more simply.’,
   ];
   let fi = 0;
   while (chips.length < 3 && fi < fallbacks.length) chips.push(fallbacks[fi++]);
