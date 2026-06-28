@@ -1502,6 +1502,17 @@ function renderModelSnapshotsEl(pair) {
   if (lastConsensusProvenance?.perModel) {
     lastConsensusProvenance.perModel.forEach(m => { if (m.label) provByLabel[m.label] = m; });
   }
+  // Build label → distinctive disagreement claim (first per model from arbiter's disagreements)
+  const claimByLabel = {};
+  if (lastConsensusProvenance?.disagreements?.length) {
+    lastConsensusProvenance.disagreements.forEach(d => {
+      if (Array.isArray(d.positions)) {
+        d.positions.forEach(p => {
+          if (p.model && p.claim && !claimByLabel[p.model]) claimByLabel[p.model] = p.claim.trim();
+        });
+      }
+    });
+  }
 
   const entries = order
     .filter(id => results[id])
@@ -1517,10 +1528,13 @@ function renderModelSnapshotsEl(pair) {
       const wordCount = (results[id] || '').trim().split(/\s+/).filter(Boolean).length;
       const label = selectionLabel(sel);
       const pm = provByLabel[label] || null;
+      const raw = claimByLabel[label] || null;
+      const distinctiveClaim = raw && raw.length > 20 ? raw : null;
       return {
         id, label, color: PROVIDERS[sel.provider]?.color || '#888',
         time, preview, wordCount,
         stance: pm?.stance || null,
+        distinctiveClaim,
       };
     })
     .filter(Boolean);
@@ -1544,7 +1558,10 @@ function renderModelSnapshotsEl(pair) {
     const metaParts = [];
     if (e.stance) metaParts.push(`<span class="ms-stance ${stanceCls}">${escapeHtml(e.stance)}</span>`);
     if (wc) metaParts.push(`<span class="ms-wc">${escapeHtml(wc)}</span>`);
-    return `<div class="ms-card" style="--ms-c:${escapeHtml(e.color)}" role="listitem">` +
+    const claimSnippet = e.distinctiveClaim
+      ? `<div class="ms-distinct"><span class="ms-distinct-label">Distinct take</span>${escapeHtml(e.distinctiveClaim.length > 110 ? e.distinctiveClaim.slice(0, 107) + '…' : e.distinctiveClaim)}</div>`
+      : '';
+    return `<div class="ms-card" data-tab="${escapeHtml(e.id)}" style="--ms-c:${escapeHtml(e.color)}" role="listitem" tabindex="0" aria-label="Open ${escapeHtml(e.label)}'s full reply">` +
       `<div class="ms-card-head">` +
       `<span class="ms-dot" aria-hidden="true"></span>` +
       `<span class="ms-label">${escapeHtml(e.label)}</span>` +
@@ -1552,13 +1569,14 @@ function renderModelSnapshotsEl(pair) {
       `</div>` +
       (metaParts.length ? `<div class="ms-meta-row">${metaParts.join('')}</div>` : '') +
       `<div class="ms-card-text">${escapeHtml(e.preview)}</div>` +
-      `<button class="ms-read-btn" data-tab="${escapeHtml(e.id)}" ` +
-      `aria-label="Read ${escapeHtml(e.label)}'s full reply">Full reply →</button>` +
+      claimSnippet +
+      `<span class="ms-read-hint" aria-hidden="true">Full reply →</span>` +
       `</div>`;
   }).join('');
 
-  body.querySelectorAll('.ms-read-btn').forEach(btn => {
-    btn.onclick = () => switchTab(btn.dataset.tab);
+  body.querySelectorAll('.ms-card').forEach(card => {
+    card.onclick = () => switchTab(card.dataset.tab);
+    card.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); switchTab(card.dataset.tab); } };
   });
 
   toggle.onclick = () => {

@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-29 02:00 CT",
+  "updated": "2026-06-29 06:00 CT",
   "entries": [
+    {
+      "date": "2026-06-29",
+      "time": "06:00 CT",
+      "title": "Snapshot cards now show each model's distinct take",
+      "items": [
+        "When the arbiter detects a point of disagreement, each model's 'Responses at a glance' card now shows a brief 'Distinct take' snippet — so you can see at a glance exactly what made that model's answer different, without switching tabs",
+        "Cards are now fully clickable (not just the small 'Full reply →' label) and respond to keyboard Enter/Space — easier to open any model's full reply on desktop and mobile",
+        "The 'Distinct take' snippet is pulled directly from the consensus arbiter's disagreement analysis, so it's pinpointed and honest — only shown when a real difference was found"
+      ]
+    },
     {
       "date": "2026-06-29",
       "time": "02:00 CT",
