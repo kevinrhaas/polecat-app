@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-28 14:00 CT",
+  "updated": "2026-06-28 16:00 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "16:00 CT",
+      "title": "Compare all model responses side by side",
+      "items": [
+        "New 'Compare' button (grid icon) appears on every consensus answer — click it to see all model responses laid out side by side in one view",
+        "Each column shows the model's name, brand color, response time, and full formatted answer — independently scrollable on desktop, stacked on mobile",
+        "Makes Polecat's multi-model advantage instantly visible: you can scan all perspectives at once without clicking through tabs one by one",
+        "Keyboard shortcut: Escape to close"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "14:00 CT",

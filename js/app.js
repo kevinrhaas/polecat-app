@@ -35,6 +35,7 @@ const ARB_ICON    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none"
 const ZAP_SVG     = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
 const SHARE_SVG   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
 const COPY_MD_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
+const GRID_SVG    = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`;
 const REGEN_SVG   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.85"/></svg>`;
 const PIN_SVG     = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
 const EDIT_SVG    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
@@ -1157,6 +1158,13 @@ async function streamToConsensus(sel, messages) {
       mb.innerHTML = COPY_MD_SVG; mb.title = 'Copy thread as markdown'; mb.setAttribute('aria-label', 'Copy thread as markdown');
       mb.onclick = () => copyThreadAsMarkdown(sharePayload, mb);
       msgHead.appendChild(mb);
+      // Compare button — shows all model responses side by side in a grid.
+      if (order.filter(id => results[id]).length >= 2) {
+        const cb = el('button', 'copy-btn');
+        cb.innerHTML = GRID_SVG; cb.title = 'Compare all responses side by side'; cb.setAttribute('aria-label', 'Compare all responses side by side');
+        cb.onclick = () => openCompareModal(buildCompareEntries());
+        msgHead.appendChild(cb);
+      }
     }
     const sources = consensusSourcesEl(sel);
     if (sources) { pair.querySelector('.msg.assistant').appendChild(sources); scrollBottom(conv); }
@@ -1187,6 +1195,17 @@ function showConsensusStatic(text, isError = false) {
     if (sb && sharePayload) sb.onclick = () => shareConsensus(sharePayload, sb);
     const mb = pair.querySelector('.copy-md-btn');
     if (mb && sharePayload) mb.onclick = () => copyThreadAsMarkdown(sharePayload, mb);
+    // Compare button — only when live results are available (not on restore).
+    const liveEntries = buildCompareEntries();
+    if (liveEntries.length >= 2) {
+      const msgHead = pair.querySelector('.msg.assistant .msg-head');
+      if (msgHead) {
+        const cb = el('button', 'copy-btn');
+        cb.innerHTML = GRID_SVG; cb.title = 'Compare all responses side by side'; cb.setAttribute('aria-label', 'Compare all responses side by side');
+        cb.onclick = () => openCompareModal(buildCompareEntries());
+        msgHead.appendChild(cb);
+      }
+    }
   }
 }
 // Show a positioned callout below the Consensus tab the first time a consensus appears.
@@ -1525,6 +1544,60 @@ function renderFollowUpChips(pair, prov) {
     '</div>';
   wrap.querySelectorAll('.followup-chip').forEach(b => b.onclick = () => fillPrompt(b.dataset.q));
   assistantMsg.appendChild(wrap);
+}
+
+// ── Side-by-side compare modal ─────────────────────────────────────────────
+// Build the entry list for the compare modal from the current live results.
+function buildCompareEntries() {
+  return order.filter(id => results[id]).map(id => {
+    const sel = selById(id); if (!sel) return null;
+    const conv = $('conv_' + id);
+    const lastP = conv?.querySelector('.qa-pair:last-child');
+    const timeEl = lastP?.querySelector('.msg-time');
+    const time = (timeEl && !timeEl.hidden) ? timeEl.textContent : '';
+    return { id, label: selectionLabel(sel), color: PROVIDERS[sel.provider]?.color || '#888', text: results[id], time };
+  }).filter(Boolean);
+}
+
+// Opens a full-screen modal showing all model responses in a responsive grid.
+// Each column is independently scrollable on desktop; stacks on mobile.
+function openCompareModal(entries) {
+  if (!entries || entries.length < 2) { toast('Compare needs 2+ model responses'); return; }
+  const uid = Date.now().toString(36);
+  const ov = el('div', 'compare-overlay');
+  ov.setAttribute('role', 'dialog');
+  ov.setAttribute('aria-modal', 'true');
+  ov.setAttribute('aria-label', 'Compare all model responses');
+  ov.innerHTML =
+    `<div class="compare-card">` +
+    `<div class="compare-head">` +
+    `<span class="compare-title">All responses</span>` +
+    `<span class="compare-count">${entries.length} models</span>` +
+    `<button class="icon-btn compare-close" id="cmpClose${uid}" title="Close" aria-label="Close">` +
+    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>` +
+    `</button>` +
+    `</div>` +
+    `<div class="compare-grid">` +
+    entries.map(e =>
+      `<div class="compare-col">` +
+      `<div class="compare-col-head">` +
+      `<span class="cmp-dot" style="background:${escapeHtml(e.color)}"></span>` +
+      `<span class="cmp-label">${escapeHtml(e.label)}</span>` +
+      (e.time ? `<span class="cmp-time">${escapeHtml(e.time)}</span>` : '') +
+      `</div>` +
+      `<div class="compare-col-body">${renderMarkdown(e.text)}</div>` +
+      `</div>`
+    ).join('') +
+    `</div>` +
+    `</div>`;
+  document.body.appendChild(ov);
+  ov.querySelectorAll('pre code').forEach(b => { if (typeof hljs !== 'undefined') hljs.highlightElement(b); });
+  const close = () => { ov.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  ov.onclick = (e) => { if (e.target === ov) close(); };
+  document.getElementById('cmpClose' + uid).onclick = close;
+  document.addEventListener('keydown', onKey);
+  setTimeout(() => document.getElementById('cmpClose' + uid)?.focus(), 60);
 }
 
 // EPIC 1 · P1 — receive the arbiter's machine-readable agreement map. Stamped
