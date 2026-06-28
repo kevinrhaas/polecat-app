@@ -152,13 +152,16 @@ jobs:
             3. Add or update a changelog on the site (a CHANGELOG / "what's new" section or
                file) with today's date and a one-line summary of the change, and a visible
                "last updated <YYYY-MM-DD>" stamp in the footer if one isn't already present.
-            4. Commit and push (one commit) to its default branch:
+            4. Commit and push (one commit) to its default branch — ONLY after the
+               site's own validator passes (it rejects smart quotes in HTML attributes):
                  cd site
+                 node scripts/validate.mjs   # must exit 0 — if it fails, fix the file:line and re-run
                  git add -A
                  git -c user.name="polecat-bot" -c user.email="bot@polecat.live" commit -m "<message>"
                  git push origin HEAD
-            If the website push fails (e.g. token lacks access), log the error and continue
-            — do not fail the whole run.
+               NEVER push the site if validate.mjs fails. If the website push fails
+               (e.g. token lacks access), log the error and continue — do not fail
+               the whole run.
 
             Keep each part to a single focused commit. Prefer quality over quantity.
 
