@@ -55,6 +55,7 @@ let lastSynthesisOrdered = [];      // snapshot of model results used for the mo
 let lastSynthesisPrompt = '';       // the user prompt for the most recent synthesis
 // live consensus progress
 let runStatus = {};                 // selectionId -> 'pending'|'streaming'|'done'|'error'
+let streamPreviews = {};            // selectionId -> first ~90 chars of streaming response (for progress box)
 let consensusPhase = '';            // '' | 'waiting' | 'arbitrating' | 'done'
 let consensusStatusText = '', consensusStepText = '';
 let _browseList = [], _browseProvider = '';   // live model-list browse state
@@ -791,9 +792,25 @@ async function streamTo(sel, userContent, images, displayAtts, nativePdfs = null
   try {
     const gen = makeGen(sel, co, cfg);
     bubble.innerHTML = '';
+    let _prevTs = 0;
     // Don't auto-follow while streaming — the question is pinned to the top and
     // the answer grows below it, so the reader keeps their place (Gemini-style).
-    for await (const chunk of gen) { full += chunk; bubble.innerHTML = renderMarkdown(full); }
+    for await (const chunk of gen) {
+      full += chunk;
+      bubble.innerHTML = renderMarkdown(full);
+      // Live preview in the consensus progress box — throttled to ~8fps so it stays smooth.
+      if (cfg.consensus) {
+        const now = performance.now();
+        if (now - _prevTs > 125) {
+          _prevTs = now;
+          const raw = full.replace(/[#*`_>\[\]!]/g, ' ').replace(/\s+/g, ' ').trim();
+          const preview = raw.length > 90 ? raw.slice(0, 87) + '…' : raw;
+          streamPreviews[sel.id] = preview;
+          const prevEl = $('cprev_' + sel.id);
+          if (prevEl) { prevEl.textContent = preview; prevEl.classList.add('has-text'); }
+        }
+      }
+    }
     finishBubble(pair, full);
     if (full) {
       setMsgTime(pair, performance.now() - t0);
@@ -996,7 +1013,7 @@ async function sendAll() {
   if (!list.length) { openConfig('models'); return; }
 
   lastPrompt = text; results = {}; order = []; lastConsensusText = ''; lastConsensusProvenance = null;
-  runStatus = {}; list.forEach(s => runStatus[s.id] = 'pending');
+  runStatus = {}; streamPreviews = {}; list.forEach(s => runStatus[s.id] = 'pending');
   consensusPhase = 'waiting'; consensusStatusText = ''; consensusStepText = '';
   $('promptInput').value = ''; $('promptInput').style.height = 'auto';
   clearAttachments();
@@ -1087,7 +1104,7 @@ function recordTurn(prompt, atts) {
 function resetApp() {
   Object.keys(convos).forEach(k => delete convos[k]);
   lastPrompt = ''; results = {}; order = [];
-  runStatus = {}; consensusPhase = ''; consensusStatusText = ''; consensusStepText = '';
+  runStatus = {}; streamPreviews = {}; consensusPhase = ''; consensusStatusText = ''; consensusStepText = '';
   document.querySelectorAll('.conversation').forEach(conv => {
     const id = conv.id.replace('conv_', '');
     const isCons = id === 'consensus';
@@ -1197,8 +1214,12 @@ function refreshConsensusProgress() {
 
   const modelsHtml = ids.map(s => {
     const st = runStatus[s.id];
-    return `<li class="cp-model cp-${st}"><span class="cp-dot" style="--c:${PROVIDERS[s.provider].color}"></span>` +
-      `<span class="cp-name">${escapeHtml(selectionLabel(s))}</span><span class="cp-stat">${STAT_SVG[st] || ''}</span></li>`;
+    const prevText = streamPreviews[s.id] || '';
+    return `<li class="cp-model cp-${st}">` +
+      `<div class="cp-row"><span class="cp-dot" style="--c:${PROVIDERS[s.provider].color}"></span>` +
+      `<span class="cp-name">${escapeHtml(selectionLabel(s))}</span><span class="cp-stat">${STAT_SVG[st] || ''}</span></div>` +
+      `<span class="cp-preview${prevText ? ' has-text' : ''}" id="cprev_${s.id}">${escapeHtml(prevText)}</span>` +
+      `</li>`;
   }).join('');
 
   const teaserHtml = done >= 2 ? liveAgreementHtml() : '';

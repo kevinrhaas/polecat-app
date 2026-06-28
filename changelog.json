@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-28 16:48 CT",
+  "updated": "2026-06-28 17:46 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "17:46 CT",
+      "title": "Live streaming previews in the consensus progress box",
+      "items": [
+        "While models are streaming, the consensus progress box now shows a live one-line preview of each model's opening response — so you can read what each AI is saying before synthesis even begins",
+        "Previews update in real time as tokens arrive and lock in when a model finishes, letting you compare all models' opening lines while the last few are still streaming",
+        "Works across all model counts; the preview is stripped of markdown for clean, readable text in the compact progress card"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "16:48 CT",
