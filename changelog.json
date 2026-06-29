@@ -1,6 +1,15 @@
 {
-  "updated": "2026-06-28 20:33 CT",
+  "updated": "2026-06-28 20:34 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "20:34 CT",
+      "title": "Ask about this — targeted follow-ups from the agreement map",
+      "items": [
+        "Each disagreement point in the 'How this was formed' panel now has an 'Ask about this →' button that pre-fills a rich follow-up question — including each model's exact stated position — so you can dig into any specific difference in one click",
+        "The pre-filled prompt names what each model said and asks them to explain which view is better supported and where the other perspective has merit, making it easy to resolve any contested point without typing from scratch"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "20:33 CT",

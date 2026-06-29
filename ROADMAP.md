@@ -250,3 +250,7 @@ confusing, with a consistent icon language and zero emoji.
   points, More detail, Simplify) without re-querying the models. The arbiter re-synthesizes
   from the same model responses using the current strategy plus the chosen format instruction.
   Strategy pills remain under a "Strategy" sub-label alongside the new "Format" row.
+- [x] **"Ask about this" on disagreement points (2026-06-28).** Each disagreement item in the
+  "How this was formed" provenance panel now shows an "Ask about this →" button. Clicking
+  it pre-fills a rich, targeted prompt that names each model's exact stated position on that
+  specific point — making it trivial to interrogate any divergence without typing from scratch.

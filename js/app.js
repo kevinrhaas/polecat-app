@@ -1495,8 +1495,9 @@ function renderProvenancePanel(pair, prov) {
 
   let disagreeHtml = '';
   if (prov.disagreements && prov.disagreements.length) {
-    const items = prov.disagreements.map(d =>
+    const items = prov.disagreements.map((d, di) =>
       `<div class="prov-dis-item"><div class="prov-dis-point">${escapeHtml(d.point)}</div>` +
+      `<button class="prov-ask-btn" data-dis-idx="${di}" title="Pre-fill a follow-up asking the models to dig into this difference">Ask about this →</button>` +
       (d.positions && d.positions.length
         ? `<ul class="prov-dis-pos">${d.positions.map(p => {
             const tid = _findTabId(p.model);
@@ -1555,6 +1556,12 @@ function renderProvenancePanel(pair, prov) {
   // Wire click handlers for model name links in disagreement positions — jump to model tab.
   panel.querySelectorAll('.prov-model-link[data-tab]').forEach(btn => {
     btn.onclick = () => switchTab(btn.dataset.tab);
+  });
+  // Wire "Ask about this" buttons — pre-fill a targeted follow-up for each disagreement.
+  panel.querySelectorAll('.prov-ask-btn[data-dis-idx]').forEach(btn => {
+    const i = parseInt(btn.dataset.disIdx, 10);
+    const d = (prov.disagreements || [])[i];
+    if (d) btn.onclick = () => fillPrompt(_buildSingleDisagreeQ(d));
   });
 
   const assistantMsg = pair.querySelector('.msg.assistant');
@@ -1716,7 +1723,25 @@ function renderModelSnapshotsEl(pair) {
 }
 
 // ── Follow-up question chips ────────────────────────────────────────────────
-// Derive 2–3 follow-up chips from provenance (disagreements, notable claims).
+// Build a targeted follow-up prompt for a SPECIFIC disagreement point (used by
+// the "Ask about this" button on each prov-dis-item). Gives each model the
+// exact positions the others took so they can engage with real context.
+function _buildSingleDisagreeQ(d) {
+  if (!d || !d.point) return 'Dig into this question.';
+  const point = (d.point || '').trim();
+  const pos = (d.positions || []).filter(p => p.model && p.claim).slice(0, 4);
+  if (!pos.length) {
+    const p = point.length > 120 ? point.slice(0, 117) + '...' : point;
+    return 'The models disagreed on: "' + p + '". Can you dig into this and clarify the key considerations?';
+  }
+  const posLines = pos.map(p => {
+    const claim = p.claim.length > 110 ? p.claim.slice(0, 107) + '...' : p.claim;
+    return p.model + ' said: "' + claim + '"';
+  }).join('. ');
+  const pShort = point.length > 90 ? point.slice(0, 87) + '...' : point;
+  return 'The models disagreed on: "' + pShort + '". ' + posLines + '. Which view is better supported, and why? Where does the other perspective have merit?';
+}
+
 // Returns [{label, q}] — label is the short chip text; q is the full prompt
 // that gets pre-filled in the input. When an outlier exists or models disagreed
 // with named positions, adds targeted chips unique to the multi-model session.

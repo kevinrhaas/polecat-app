@@ -827,12 +827,21 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .prov-details summary:hover { background: var(--surface-2); color: var(--text); }
 .prov-details-body { padding: 8px 12px 10px; background: var(--surface-2); display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border); }
 .prov-dis-item { font-size: 12px; }
-.prov-dis-point { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.prov-dis-point { font-weight: 600; color: var(--text); margin-bottom: 3px; }
 .prov-dis-pos { padding-left: 12px; margin: 0; display: flex; flex-direction: column; gap: 3px; list-style: none; }
 .prov-dis-pos li { color: var(--text-2); padding-left: 8px; position: relative; }
 .prov-dis-pos li::before { content: '·'; position: absolute; left: 0; color: var(--text-3); }
 .prov-model-link { background: none; border: none; padding: 0; cursor: pointer; font-weight: 700; color: var(--text); font-size: inherit; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 2px; font-family: inherit; }
 .prov-model-link:hover { color: var(--brand-b); }
+.prov-ask-btn {
+  display: inline-block; background: none;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 1px 7px; cursor: pointer;
+  color: var(--text-3); font-size: 10px; font-weight: 600; font-family: inherit;
+  transition: background .12s, color .12s, border-color .12s;
+  margin: 2px 0 6px; line-height: 1.6; letter-spacing: .1px;
+}
+.prov-ask-btn:hover { background: var(--surface-3); color: var(--text-2); border-color: var(--text-3); }
 .prov-notable-item { font-size: 12px; }
 .prov-notable-claim { font-weight: 600; color: var(--text); display: block; }
 .prov-notable-note { color: var(--text-3); font-size: 11px; }
