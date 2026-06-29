@@ -189,6 +189,14 @@ header {
 .send-btn:hover { opacity: .82; }
 .send-btn:disabled { opacity: .35; cursor: not-allowed; }
 .send-btn kbd { font-family: inherit; font-size: 10px; opacity: .55; font-weight: 400; }
+/* Stop button — shown during processing, hides send button */
+.stop-btn { display: none; align-items: center; gap: 5px; background: #ef4444; color: #fff; border: none; border-radius: var(--radius-sm); padding: 7px 12px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s; white-space: nowrap; flex-shrink: 0; }
+.stop-btn:hover:not(:disabled) { background: #dc2626; }
+.stop-btn:disabled { opacity: .6; cursor: not-allowed; }
+body.processing .stop-btn { display: flex; }
+body.processing .send-btn { display: none; }
+/* Subtle "(stopped)" label appended to partially-streamed responses */
+.msg-stopped { font-size: 11px; color: var(--text-3); margin-left: 4px; font-style: italic; }
 @media (max-width: 520px) { .send-text { display: none; } }
 
 /* ── Responses / tabs ────────────────────────────────────── */

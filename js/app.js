@@ -69,6 +69,11 @@ const PROMPT_HIST_KEY = 'polecat_prompt_history';
 const PROMPT_HIST_MAX = 50;
 let _promptHistIdx = -1;            // -1 = not browsing history; 0+ = index into history list
 let _promptHistDraft = '';          // text that was in input when user first pressed ↑
+// Stop generation: an AbortController created per sendAll() run so the user can
+// cancel all in-flight streams mid-response.  _userStopped distinguishes an
+// intentional cancel (keep partial text) from a provider timeout (show error).
+let _runCtrl = null;
+let _userStopped = false;
 
 // Format modifiers for consensus re-synthesis — appended to the active strategy
 // prompt so users can reformat the same answer without re-querying models.
@@ -103,6 +108,26 @@ function applyPromptHistory(inp, hist, idx) {
   inp.style.height = Math.min(inp.scrollHeight, 200) + 'px';
   inp.setSelectionRange(inp.value.length, inp.value.length);
   updateSendEnabled();
+}
+
+// ── Stop generation ─────────────────────────────────────────────────────────
+// Build opts for a makeGen call that belongs to the current run.  Creates a
+// composite AbortSignal that fires on EITHER a user Stop OR the per-provider
+// timeout — whichever comes first.  Returns {} when no run is active.
+function makeRunOpts(provider) {
+  if (!_runCtrl) return {};
+  const timeoutMs = provider?.timeoutMs || 90000;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  _runCtrl.signal.addEventListener('abort', () => { clearTimeout(timer); ctrl.abort(); }, { once: true });
+  return { signal: ctrl.signal };
+}
+function stopGeneration() {
+  if (!_runCtrl || _userStopped) return;
+  _userStopped = true;
+  _runCtrl.abort();
+  const sb = $('stopBtn');
+  if (sb) { sb.disabled = true; const st = sb.querySelector('.stop-text'); if (st) st.textContent = 'Stopping…'; }
 }
 
 // ── Clipboard ───────────────────────────────────────────────────────────────
@@ -817,7 +842,8 @@ async function streamTo(sel, userContent, images, displayAtts, nativePdfs = null
   let full = '';
   const t0 = performance.now();
   try {
-    const gen = makeGen(sel, co, cfg);
+    const runOpts = makeRunOpts(PROVIDERS[sel.provider]);
+    const gen = makeGen(sel, co, cfg, runOpts);
     bubble.innerHTML = '';
     let _prevTs = 0;
     // Don't auto-follow while streaming — the question is pinned to the top and
@@ -849,6 +875,23 @@ async function streamTo(sel, userContent, images, displayAtts, nativePdfs = null
     markRun(sel.id, 'done');
     return full;
   } catch (err) {
+    const isStop = err?.name === 'AbortError' && _userStopped;
+    if (isStop && full) {
+      // User pressed Stop mid-stream — keep the partial response, add a subtle indicator.
+      finishBubble(pair, full);
+      const stEl = el('span', 'msg-stopped'); stEl.textContent = ' (stopped)';
+      pair.querySelector('.msg.assistant .msg-bubble')?.appendChild(stEl);
+      co.push({ role: 'assistant', content: full });
+      markRun(sel.id, 'done');
+      return full;
+    }
+    if (isStop) {
+      // Stopped before any content arrived — leave an empty-looking bubble.
+      bubble.textContent = '';
+      co.pop();
+      markRun(sel.id, 'done');
+      return null;
+    }
     const msg = err?.name === 'AbortError' ? 'Request timed out' : err.message;
     bubble.innerHTML = `<span class="msg-error">Error: ${escapeHtml(msg)}</span>`;
     co.pop();
@@ -1050,6 +1093,9 @@ async function sendAll() {
   $('promptInput').value = ''; $('promptInput').style.height = 'auto';
   clearAttachments();
   $('sendBtn').disabled = true;
+  // Set up a fresh run controller so the Stop button can abort all streams.
+  _runCtrl = new AbortController(); _userStopped = false;
+  const stopBtn = $('stopBtn'); if (stopBtn) { stopBtn.disabled = false; const st = stopBtn.querySelector('.stop-text'); if (st) st.textContent = 'Stop'; }
   hideGreeting();
   setChipsDisabled(true);
   document.body.classList.add('processing');
@@ -1070,16 +1116,17 @@ async function sendAll() {
       order.push(sel.id); results[sel.id] = r;
     }));
 
-    if (cfg.consensus) {
+    if (cfg.consensus && !_userStopped) {
       setConsensusDot(true);
-      await runConsensus();
+      try { await runConsensus(); } catch (err) { if (err?.name !== 'AbortError') throw err; }
       setConsensusDot(false); setConsensusStep('');
-      maybeShowConsHint();
+      if (!_userStopped) maybeShowConsHint();
     }
-    recordTurn(text, readyAtts);
+    if (!_userStopped) recordTurn(text, readyAtts);
   } finally {
     document.body.classList.remove('processing');
     setChipsDisabled(false); updateSendEnabled();
+    _runCtrl = null; _userStopped = false;
   }
 }
 
@@ -1267,7 +1314,13 @@ function refreshConsensusProgress() {
 }
 async function getSilentText(sel, messages) {
   let text = '';
-  for await (const chunk of makeGen(sel, messages, cfg)) text += chunk;
+  try {
+    const runOpts = makeRunOpts(PROVIDERS[sel.provider]);
+    for await (const chunk of makeGen(sel, messages, cfg, runOpts)) text += chunk;
+  } catch (err) {
+    if (err?.name !== 'AbortError') throw err;
+    // AbortError (user stop or timeout) — return whatever arrived so far.
+  }
   return text;
 }
 // Attribution footer under a finished consensus answer: which models fed it,
@@ -1310,7 +1363,22 @@ async function streamToConsensus(sel, messages) {
   let full = '';
   bubble.innerHTML = '';
   const t0 = performance.now();
-  for await (const chunk of makeGen(sel, messages, cfg)) { full += chunk; bubble.innerHTML = renderMarkdown(full); }
+  try {
+    const runOpts = makeRunOpts(PROVIDERS[sel.provider]);
+    for await (const chunk of makeGen(sel, messages, cfg, runOpts)) { full += chunk; bubble.innerHTML = renderMarkdown(full); }
+  } catch (err) {
+    if (err?.name === 'AbortError' && _userStopped) {
+      if (full) {
+        finishBubble(pair, full);
+        const stEl = el('span', 'msg-stopped'); stEl.textContent = ' (stopped)';
+        bubble.appendChild(stEl);
+      } else {
+        pair.remove();
+      }
+      return full;
+    }
+    throw err;
+  }
   finishBubble(pair, full);
   if (full) {
     setMsgTime(pair, performance.now() - t0);
@@ -2946,6 +3014,7 @@ function init() {
   $('resetBtn').onclick = newChat;
 
   $('sendBtn').onclick = sendAll;
+  $('stopBtn').onclick = stopGeneration;
   // Enter sends on desktop (Shift+Enter = newline); on touch devices Enter makes
   // a newline and the Send button submits. Cmd/Ctrl+Enter always sends.
   const isTouch = window.matchMedia('(pointer: coarse)').matches;
@@ -3074,6 +3143,15 @@ function init() {
       e.preventDefault(); openKbd();
     }
     if (e.key === ',' && (e.metaKey || e.ctrlKey) && !e.altKey) { e.preventDefault(); openConfig(); }
+    // Escape stops an active generation when no modal/overlay is open.
+    if (e.key === 'Escape' && _runCtrl && !_userStopped) {
+      const anyOverlay = $('configModal').classList.contains('open') ||
+        $('kbdModal').classList.contains('open') ||
+        $('shareModal').classList.contains('open') ||
+        $('lightbox').classList.contains('open') ||
+        !!document.querySelector('.compare-overlay, .exp-overlay');
+      if (!anyOverlay) { e.preventDefault(); stopGeneration(); }
+    }
   });
 
   // Reset the tab title notification whenever the user focuses back to this tab.

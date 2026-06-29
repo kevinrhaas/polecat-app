@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-29 08:54 CT",
+  "updated": "2026-06-29 12:22 CT",
   "entries": [
+    {
+      "date": "2026-06-29",
+      "time": "12:22 CT",
+      "title": "Stop generation mid-response",
+      "items": [
+        "A red Stop button now appears while models are streaming — click it (or press Esc) to cancel all in-flight requests immediately",
+        "Any text that already arrived is kept: partial responses stay visible with a subtle '(stopped)' label rather than disappearing",
+        "Consensus synthesis is skipped when you stop, so you jump straight back to a ready composer — handy when you spot a typo in your prompt or the answer is already clear"
+      ]
+    },
     {
       "date": "2026-06-29",
       "time": "08:54 CT",

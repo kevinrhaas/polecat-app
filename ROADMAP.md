@@ -263,3 +263,7 @@ confusing, with a consistent icon language and zero emoji.
   previous prompt; press again to go further back (up to 50 prompts stored). ↓ moves forward;
   typing anything exits history mode. Mentioned in the keyboard shortcuts cheatsheet (?).
   Zero API calls, purely localStorage.
+- [x] **Stop generation (2026-06-29).** Red Stop button replaces Send while models are streaming.
+  Click it (or press Esc) to abort all in-flight requests. Partial responses are kept with a
+  subtle "(stopped)" label. Consensus is skipped when stopped. Each provider's existing
+  timeout still applies; the Stop just adds a user-triggered abort on top.
