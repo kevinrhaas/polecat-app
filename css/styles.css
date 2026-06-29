@@ -294,6 +294,12 @@ body.processing .send-btn { display: none; }
 /* image attachments inside a message */
 .msg-attachments { display: flex; flex-wrap: wrap; gap: 6px; max-width: 90%; }
 .msg.user .msg-attachments { justify-content: flex-end; }
+/* "Edit prompt" hover action on user messages */
+.msg-user-actions { display: flex; justify-content: flex-end; padding: 2px 0; opacity: 0; transition: opacity .15s; }
+.msg.user:hover .msg-user-actions, .msg.user:focus-within .msg-user-actions { opacity: 1; }
+.user-edit-btn { background: none; border: none; color: var(--text-3); cursor: pointer; padding: 3px 6px; border-radius: 5px; display: inline-flex; align-items: center; line-height: 0; transition: all .15s; }
+.user-edit-btn:hover { color: var(--text); background: var(--surface-3); }
+@media (hover: none) { .msg-user-actions { opacity: .55; } }
 .msg-thumb { width: 130px; max-width: 46vw; height: auto; max-height: 160px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); display: block; cursor: zoom-in; }
 .msg-file-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-2); background: var(--surface-3); border: 1px solid var(--border); border-radius: 100px; padding: 4px 10px; }
 .msg-file-chip svg { flex-shrink: 0; }

@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-29 12:22 CT",
+  "updated": "2026-06-29 16:00 CT",
   "entries": [
+    {
+      "date": "2026-06-29",
+      "time": "16:00 CT",
+      "title": "Edit prompt button on your messages",
+      "items": [
+        "Hover over any message you sent and a small pencil icon appears — click it to copy that prompt back to the composer so you can tweak it and resend without retyping",
+        "Works in every tab: individual model responses and the consensus view all show the edit button on hover",
+        "On touch screens the button stays gently visible so it is always easy to find"
+      ]
+    },
     {
       "date": "2026-06-29",
       "time": "12:22 CT",

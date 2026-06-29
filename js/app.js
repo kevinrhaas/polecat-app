@@ -795,6 +795,7 @@ function userMsgHtml(userContent, images) {
   return `<div class="msg user"><span class="msg-label">You</span>` +
     attachThumbsHtml(images) +
     (userContent ? `<div class="msg-bubble">${nl2br(userContent)}</div>` : '') +
+    (userContent ? `<div class="msg-user-actions"><button class="user-edit-btn" data-edit-prompt="${escapeHtml(userContent)}" title="Edit this prompt" aria-label="Edit this prompt">${EDIT_SVG}</button></div>` : '') +
     `</div>`;
 }
 function assistantPair(label, userContent, images) {
@@ -1420,7 +1421,7 @@ function showConsensusStatic(text, isError = false) {
   };
   const pair = el('div', 'qa-pair');
   pair.innerHTML =
-    `<div class="msg user"><span class="msg-label">You</span><div class="msg-bubble">${nl2br(lastPrompt)}</div></div>` +
+    userMsgHtml(lastPrompt) +
     `<div class="msg assistant"><div class="msg-head"><span class="msg-label">Consensus</span>` +
     (isError ? '' : `<button class="copy-btn" title="Copy">${COPY_SVG}</button><button class="copy-btn share-btn" title="Share this consensus" aria-label="Share this consensus">${SHARE_SVG}</button><button class="copy-btn copy-md-btn" title="Copy thread as markdown" aria-label="Copy thread as markdown">${COPY_MD_SVG}</button>`) + `</div>` +
     `<div class="msg-bubble">${isError ? `<span class="msg-error">${escapeHtml(text)}</span>` : renderMarkdown(text)}</div></div>`;
@@ -3096,6 +3097,11 @@ function init() {
   document.addEventListener('click', (e) => {
     const img = e.target.closest('.msg-thumb, .attach-thumb img');
     if (img && img.src) { e.preventDefault(); openLightbox(img.src, img.alt); }
+  });
+  // User message "Edit" button — copy the prompt back to the composer for editing / resending
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-edit-prompt]');
+    if (btn) fillPrompt(btn.dataset.editPrompt);
   });
   $('lightbox').onclick = (e) => { if (e.target.id !== 'lightboxImg') closeLightbox(); };
   $('lightboxClose').onclick = closeLightbox;
