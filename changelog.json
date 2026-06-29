@@ -1,6 +1,15 @@
 {
-  "updated": "2026-06-28 20:34 CT",
+  "updated": "2026-06-28 20:45 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "20:45 CT",
+      "title": "Clearer status for the slow Polecat Model Server",
+      "items": [
+        "A self-hosted Polecat model that's just warming up (CPU, slow first response) now shows a neutral amber 'slow' mark instead of a red ✗ that looked broken",
+        "These models still work — they're just slower than cloud APIs; re-test from Settings once they've warmed up"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "20:34 CT",

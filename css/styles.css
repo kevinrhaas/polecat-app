@@ -406,6 +406,7 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .sel-status { font-size: 12px; width: 18px; text-align: center; cursor: pointer; flex-shrink: 0; color: var(--text-3); }
 .sel-status.ok { color: #34d399; }
 .sel-status.bad { color: #f87171; }
+.sel-status.slow { color: #f59e0b; }
 .sel-status.testing { color: var(--brand-b); }
 .test-all { width: 100%; margin-top: 8px; font-size: 12px; }
 .m-chip.failing { border-color: #f8717155; }

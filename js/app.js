@@ -2141,11 +2141,18 @@ async function testAllModels() {
   await Promise.all(Array.from({ length: Math.min(3, targets.length) }, worker));
   toast('Model test complete');
 }
+// A probe timeout on a SLOW self-hosted provider (Polecat MS) means the model is
+// warming up / slow on CPU — not broken. Show a neutral "slow" mark, not a ✗.
+function isSlowWarming(provider, st) {
+  return !!(PROVIDERS[provider]?.slow && st && st.ok === false && /tim(e|ed)\s*out|abort/i.test(st.error || ''));
+}
 function statusGlyph(provider, model) {
   const st = statusOf(provider, model);
   if (!st) return '';
   if (st.testing) return '⋯ ';
-  return st.ok ? '✓ ' : '✗ ';
+  if (st.ok) return '✓ ';
+  if (isSlowWarming(provider, st)) return '◴ ';
+  return '✗ ';
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -2212,8 +2219,9 @@ function statusBadge(provider, model) {
   if (!providerKey(cfg, provider)) return '';
   if (!st) return `<span class="sel-status" title="Not tested">•</span>`;
   if (st.testing) return `<span class="sel-status testing" title="Testing…">⋯</span>`;
-  return st.ok ? `<span class="sel-status ok" title="Available">✓</span>`
-               : `<span class="sel-status bad" title="${escapeHtml(st.error || 'Unavailable')}">✗</span>`;
+  if (st.ok) return `<span class="sel-status ok" title="Available">✓</span>`;
+  if (isSlowWarming(provider, st)) return `<span class="sel-status slow" title="Slow to respond (self-hosted, CPU) — it may still work; give it a few seconds, or re-test">◴</span>`;
+  return `<span class="sel-status bad" title="${escapeHtml(st.error || 'Unavailable')}">✗</span>`;
 }
 function renderModels() { renderSelList(); renderAddRow(); }
 function renderSelList() {
