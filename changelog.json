@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-28 20:45 CT",
+  "updated": "2026-06-29 01:00 CT",
   "entries": [
+    {
+      "date": "2026-06-29",
+      "time": "01:00 CT",
+      "title": "Expand any model's full response inline",
+      "items": [
+        "Each model card in 'Responses at a glance' now has an expand button (the down-arrow icon) — click it to read that model's complete response right below the strip, without leaving the consensus view",
+        "The expanded panel shows the full markdown-rendered answer with syntax-highlighted code, and an 'Open full tab' button for when you want to go deeper",
+        "Clicking a different card's expand button swaps the panel to that model; clicking again collapses it — no more tab-switching just to peek at one model's full reply"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "20:45 CT",

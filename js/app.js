@@ -41,6 +41,7 @@ const PIN_SVG     = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none"
 const EDIT_SVG    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 const BLEND_SVG   = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`;
 const CHECK_SM_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`;
+const EXPAND_SVG  = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>`;
 
 const DEFAULT_TITLE = document.title;
 let cfg = loadCfg();
@@ -1688,6 +1689,7 @@ function renderModelSnapshotsEl(pair) {
       `<span class="ms-label">${escapeHtml(e.label)}</span>` +
       (e.time ? `<span class="ms-time">${escapeHtml(e.time)}</span>` : '') +
       `<button class="ms-copy-btn" title="Copy ${escapeHtml(e.label)}'s full response" aria-label="Copy ${escapeHtml(e.label)}'s response">${COPY_SVG}</button>` +
+      `<button class="ms-expand-btn" title="Read full response inline" aria-label="Expand ${escapeHtml(e.label)}'s full response" aria-expanded="false">${EXPAND_SVG}</button>` +
       `</div>` +
       speedBar +
       (metaParts.length ? `<div class="ms-meta-row">${metaParts.join('')}</div>` : '') +
@@ -1697,8 +1699,14 @@ function renderModelSnapshotsEl(pair) {
       `</div>`;
   }).join('');
 
+  // Expandable panel: sits below the horizontal scroll strip and shows the
+  // selected model's full rendered response without leaving the consensus view.
+  const expandPanel = el('div', 'ms-expanded-panel');
+  expandPanel.hidden = true;
+
   body.querySelectorAll('.ms-card').forEach((card, i) => {
     const capturedText = entries[i]?.rawText || '';
+    const entry = entries[i];
     const copyBtn = card.querySelector('.ms-copy-btn');
     if (copyBtn) {
       copyBtn.addEventListener('click', (e) => {
@@ -1706,7 +1714,47 @@ function renderModelSnapshotsEl(pair) {
         copyText(capturedText, copyBtn);
       });
     }
-    card.onclick = () => switchTab(card.dataset.tab);
+    const expandBtn = card.querySelector('.ms-expand-btn');
+    if (expandBtn && entry) {
+      expandBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const isOpen = !expandPanel.hidden && expandPanel.dataset.openTab === card.dataset.tab;
+        // Collapse all expand buttons first
+        body.querySelectorAll('.ms-expand-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+        if (isOpen) {
+          expandPanel.hidden = true;
+          delete expandPanel.dataset.openTab;
+        } else {
+          expandPanel.dataset.openTab = card.dataset.tab;
+          expandBtn.setAttribute('aria-expanded', 'true');
+          expandPanel.innerHTML =
+            `<div class="ms-ep-head">` +
+            `<span class="ms-ep-dot" style="background:${escapeHtml(entry.color)}"></span>` +
+            `<span class="ms-ep-label">${escapeHtml(entry.label)}</span>` +
+            (entry.time ? `<span class="ms-ep-time">${escapeHtml(entry.time)}</span>` : '') +
+            `<button class="ms-ep-tab-btn">Open full tab</button>` +
+            `<button class="ms-ep-close" aria-label="Close expanded view">` +
+            `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>` +
+            `</button>` +
+            `</div>` +
+            `<div class="ms-ep-body">${renderMarkdown(entry.rawText || '')}</div>`;
+          expandPanel.querySelectorAll('pre code').forEach(b => { if (typeof hljs !== 'undefined') hljs.highlightElement(b); });
+          const closeBtn = expandPanel.querySelector('.ms-ep-close');
+          if (closeBtn) closeBtn.onclick = () => {
+            expandPanel.hidden = true;
+            delete expandPanel.dataset.openTab;
+            body.querySelectorAll('.ms-expand-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+          };
+          const tabBtn = expandPanel.querySelector('.ms-ep-tab-btn');
+          if (tabBtn) tabBtn.onclick = () => switchTab(card.dataset.tab);
+          expandPanel.hidden = false;
+        }
+      });
+    }
+    card.onclick = (ev) => {
+      if (ev.target.closest('.ms-copy-btn') || ev.target.closest('.ms-expand-btn')) return;
+      switchTab(card.dataset.tab);
+    };
     card.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); switchTab(card.dataset.tab); } };
   });
 
@@ -1719,6 +1767,7 @@ function renderModelSnapshotsEl(pair) {
 
   wrap.appendChild(toggle);
   wrap.appendChild(body);
+  wrap.appendChild(expandPanel);
   assistantMsg.appendChild(wrap);
 }
 
