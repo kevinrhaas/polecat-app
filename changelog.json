@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-28 18:49 CT",
+  "updated": "2026-06-28 20:33 CT",
   "entries": [
+    {
+      "date": "2026-06-28",
+      "time": "20:33 CT",
+      "title": "Polecat Model Server: reliable connections",
+      "items": [
+        "Fixed Polecat Model Server connections failing or showing a red ✗ — the self-hosted models are CPU-served and can be slow to warm up, but the app's timeouts were too short",
+        "Much longer probe and request timeouts for this provider so a cold model load no longer looks like a failure",
+        "The model list now leads with the fastest small models (Qwen2.5 0.5B first) instead of the slow 32B, so adding the provider just works"
+      ]
+    },
     {
       "date": "2026-06-28",
       "time": "18:49 CT",

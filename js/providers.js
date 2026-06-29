@@ -154,15 +154,22 @@ export const PROVIDERS = {
     placeholder: 'sk-ms-…',
     keyUrl: POLECAT_MS_KEY_URL || POLECAT_MS_URL, keyLabel: POLECAT_MS_KEY_URL ? 'get a free key' : 'modelserver.polecat.live',
     allowCustomModel: true,
-    rateNote: "Polecat's own free community server — bring a free sk-ms- key. Per-key rate limits apply; be kind so it stays up for everyone.",
+    // Self-hosted CPU inference: slower than cloud APIs, and the FIRST request to
+    // a model loads it into memory (cold start). Give it generous timeouts so the
+    // probe / first send don't false-fail, and default to the fastest small models.
+    slow: true,
+    timeoutMs: 180000,        // request: allow cold model load + slow CPU generation
+    probeTimeoutMs: 40000,    // probe: a cold small model can take ~20-40s on first hit
+    rateNote: "Polecat's own free community server — self-hosted CPU inference, so it's slower than cloud APIs and the first call to a model warms it up (a few seconds). Smaller models are fastest. Bring a free sk-ms- key; be kind so it stays up for everyone.",
     models: [
-      { value: 'qwen2.5:32b',     label: 'Qwen2.5 32B',    price: 'free', free: true },
-      { value: 'deepseek-r1:32b', label: 'DeepSeek-R1 32B', price: 'free', free: true },
-      { value: 'mistral:7b',      label: 'Mistral 7B',     price: 'free', free: true },
-      { value: 'phi3.5:latest',   label: 'Phi-3.5',        price: 'free', free: true },
-      { value: 'llama3.2:3b',     label: 'Llama 3.2 3B',   price: 'free', free: true },
-      { value: 'gemma2:2b',       label: 'Gemma2 2B',      price: 'free', free: true },
-      { value: 'qwen2.5:3b',      label: 'Qwen2.5 3B',     price: 'free', free: true },
+      { value: 'qwen2.5:0.5b',  label: 'Qwen2.5 0.5B', price: 'free', free: true },
+      { value: 'llama3.2:1b',   label: 'Llama 3.2 1B', price: 'free', free: true },
+      { value: 'qwen2.5:1.5b',  label: 'Qwen2.5 1.5B', price: 'free', free: true },
+      { value: 'gemma2:2b',     label: 'Gemma2 2B',    price: 'free', free: true },
+      { value: 'qwen2.5:3b',    label: 'Qwen2.5 3B',   price: 'free', free: true },
+      { value: 'llama3.2:3b',   label: 'Llama 3.2 3B', price: 'free', free: true },
+      { value: 'phi3.5:latest', label: 'Phi-3.5',      price: 'free', free: true },
+      { value: 'mistral:7b',    label: 'Mistral 7B',   price: 'free', free: true },
     ],
   },
 };
@@ -354,15 +361,18 @@ export function makeGen(selection, messages, cfg, opts = {}) {
   const sysp = (cfg.systemPrompt || '').trim();
   // Only forward images to models we know can read them.
   opts = { ...opts, vision: modelSupportsVision(selection.provider, selection.model), ...(sysp ? { systemPrompt: sysp } : {}) };
+  if (opts.timeoutMs == null && p.timeoutMs) opts.timeoutMs = p.timeoutMs;   // slow self-hosted providers get longer
   if (p.kind === 'anthropic') return apiClaude(messages, key, selection.model, opts);
   if (p.kind === 'gemini')    return apiGemini(messages, key, selection.model, opts);
   return apiOpenAICompatible(messages, key, selection.model, p, opts);
 }
 
 // Lightweight availability probe: tiny request + short timeout. Returns { ok, error? }.
-export async function probeModel(selection, cfg, timeoutMs = 12000) {
+export async function probeModel(selection, cfg, timeoutMs) {
+  const p = PROVIDERS[selection.provider];
+  const t = timeoutMs ?? p?.probeTimeoutMs ?? 12000;   // slow self-hosted providers get a longer probe
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  const timer = setTimeout(() => ctrl.abort(), t);
   try {
     const gen = makeGen(selection, [{ role: 'user', content: 'ping' }], cfg, { maxTokens: 5, signal: ctrl.signal });
     for await (const _ of gen) break;   // first token (or clean completion) ⇒ alive
