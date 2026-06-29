@@ -1,4 +1,4 @@
-name: Hourly self-improve
+name: Self-improve (every 4h)
 
 # Autonomously evolves the Polecat APP (this repo) and, when a cross-repo token
 # is provided, the public WEBSITE (kevinrhaas/polecat) every hour — each with a
@@ -17,7 +17,7 @@ name: Hourly self-improve
 
 on:
   schedule:
-    - cron: '17 * * * *'      # hourly, off the :00 mark
+    - cron: '17 */4 * * *'    # every 4 hours, off the :00 mark
   workflow_dispatch:
     inputs:
       focus:
