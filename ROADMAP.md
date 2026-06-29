@@ -254,3 +254,8 @@ confusing, with a consistent icon language and zero emoji.
   "How this was formed" provenance panel now shows an "Ask about this →" button. Clicking
   it pre-fills a rich, targeted prompt that names each model's exact stated position on that
   specific point — making it trivial to interrogate any divergence without typing from scratch.
+- [x] **Model track record in Settings (2026-06-29).** After each consensus session, Polecat
+  stores each model's stance and contribution % to localStorage. Settings → Models shows a
+  subtle historical hint per model after 3+ sessions ("Usually aligns", "Often takes a distinct
+  angle", "Mixed") with a tooltip showing exact session count and avg contribution %. Zero extra
+  API calls — all derived from provenance data already computed in the page.

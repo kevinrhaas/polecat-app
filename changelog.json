@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-29 01:00 CT",
+  "updated": "2026-06-29 04:59 CT",
   "entries": [
+    {
+      "date": "2026-06-29",
+      "time": "04:59 CT",
+      "title": "Model track record in Settings",
+      "items": [
+        "After each consensus session, Polecat now quietly tracks how each model contributed — whether it usually aligns with the group, takes a distinct angle, or shows mixed patterns",
+        "Open Settings → Models and you'll see a subtle note under each model after 3+ consensus sessions: 'Usually aligns with consensus' (green), 'Often takes a distinct angle' (amber), or 'Mixed agreement patterns'",
+        "Hover the note for the full breakdown: exact session count and average contribution percentage — no extra API calls, all computed from provenance data already in the page"
+      ]
+    },
     {
       "date": "2026-06-29",
       "time": "01:00 CT",

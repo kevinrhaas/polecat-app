@@ -2125,6 +2125,12 @@ function onProvenance(data) {
 
   if (lastConsensusProvenance) renderProvenancePanel(pair, lastConsensusProvenance);
 
+  // Record model performance before P4's early-return guards, so it always fires
+  // when real provenance data arrives (regardless of attribution availability).
+  if (lastConsensusProvenance?.perModel?.length >= 2) {
+    recordModelPerf(lastConsensusProvenance.perModel);
+  }
+
   // P4 — Inline attribution (no extra model call, runs synchronously)
   if (!lastConsensusText) return;
   const ordered = order.filter(id => results[id])
@@ -2149,6 +2155,42 @@ function onProvenance(data) {
     if (!on) hideAttrTip();
   };
   msgHead.appendChild(btn);
+}
+
+// ── Model performance history ────────────────────────────────────────────────
+// Persists each model's consensus contribution data to localStorage so users
+// can see historical performance trends in Settings → Models.
+const MODEL_PERF_KEY = 'polecat_model_perf';
+const MODEL_PERF_MAX = 25;   // entries kept per model key
+
+function recordModelPerf(perModel) {
+  let store = {};
+  try { store = JSON.parse(localStorage.getItem(MODEL_PERF_KEY) || '{}'); } catch {}
+  perModel.forEach(m => {
+    const sel = sels().find(s => selectionLabel(s) === m.label);
+    const key = sel ? (sel.provider + '|' + sel.model) : ('lbl|' + (m.label || ''));
+    if (!key) return;
+    if (!store[key]) store[key] = { s: [], p: [] };
+    store[key].s.push(m.stance || '');
+    store[key].p.push(typeof m.contributionPct === 'number' ? m.contributionPct : 0);
+    if (store[key].s.length > MODEL_PERF_MAX) {
+      store[key].s = store[key].s.slice(-MODEL_PERF_MAX);
+      store[key].p = store[key].p.slice(-MODEL_PERF_MAX);
+    }
+  });
+  try { localStorage.setItem(MODEL_PERF_KEY, JSON.stringify(store)); } catch {}
+}
+
+function getModelPerfSummary(provider, model) {
+  let store = {};
+  try { store = JSON.parse(localStorage.getItem(MODEL_PERF_KEY) || '{}'); } catch {}
+  const d = store[provider + '|' + model];
+  if (!d || !d.s || d.s.length < 3) return null;
+  const n = d.s.length;
+  const aligned = d.s.filter(s => s === 'aligned').length;
+  const outlier  = d.s.filter(s => s === 'outlier').length;
+  const avgPct   = Math.round(d.p.reduce((a, b) => a + b, 0) / n);
+  return { n, aligned, outlier, avgPct };
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -2297,7 +2339,22 @@ function renderSelList() {
     const badge = row.querySelector('.sel-status');
     if (badge) badge.onclick = () => testOne(sel.provider, sel.model);
     row.querySelector('.sel-x').onclick = () => removeSelection(sel.id);
-    list.appendChild(row);
+    const itemWrap = el('div', 'sel-item');
+    itemWrap.appendChild(row);
+    const perf = getModelPerfSummary(sel.provider, sel.model);
+    if (perf) {
+      const alignedPct = perf.aligned / perf.n;
+      const outlierPct = perf.outlier / perf.n;
+      const cls = alignedPct >= 0.7 ? 'perf-good' : outlierPct >= 0.3 ? 'perf-outlier' : 'perf-mixed';
+      const note = alignedPct >= 0.7 ? 'Usually aligns with consensus'
+                 : outlierPct >= 0.3 ? 'Often takes a distinct angle'
+                 : 'Mixed agreement patterns';
+      const perfEl = el('div', 'sel-perf-note ' + cls);
+      perfEl.title = 'Model track record across ' + perf.n + ' consensus session' + (perf.n === 1 ? '' : 's') + ' \xb7 avg ~' + perf.avgPct + '% contribution';
+      perfEl.textContent = note + ' \xb7 ' + perf.n + ' session' + (perf.n === 1 ? '' : 's');
+      itemWrap.appendChild(perfEl);
+    }
+    list.appendChild(itemWrap);
   });
   if (!(cfg.selections || []).length)
     list.innerHTML = `<div class="muted-hint">No models yet — add one below.</div>`;
