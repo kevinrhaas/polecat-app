@@ -259,3 +259,7 @@ confusing, with a consistent icon language and zero emoji.
   subtle historical hint per model after 3+ sessions ("Usually aligns", "Often takes a distinct
   angle", "Mixed") with a tooltip showing exact session count and avg contribution %. Zero extra
   API calls — all derived from provenance data already computed in the page.
+- [x] **Prompt history recall (2026-06-29).** Press ↑ in an empty composer to load the
+  previous prompt; press again to go further back (up to 50 prompts stored). ↓ moves forward;
+  typing anything exits history mode. Mentioned in the keyboard shortcuts cheatsheet (?).
+  Zero API calls, purely localStorage.

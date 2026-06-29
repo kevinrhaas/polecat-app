@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-29 04:59 CT",
+  "updated": "2026-06-29 08:54 CT",
   "entries": [
+    {
+      "date": "2026-06-29",
+      "time": "08:54 CT",
+      "title": "Prompt history recall with arrow keys",
+      "items": [
+        "Press the up arrow key when the composer is empty to load your last prompt — press it again to go further back through your recent prompts (up to 50 stored)",
+        "Press the down arrow key to move forward through history, or back to a blank input",
+        "Typing anything immediately exits history mode so you can edit freely — your original draft is preserved if you press up and then change your mind"
+      ]
+    },
     {
       "date": "2026-06-29",
       "time": "04:59 CT",

@@ -64,6 +64,11 @@ let attachments = [];               // [{ id, name, mime, data(base64), dataUrl 
 let _attc = 0;
 let responseTimes = {};             // selectionId -> ms elapsed for that model's response
 let queryStartTime = 0;             // performance.now() when the user clicks Send
+// Prompt history recall: ↑/↓ in an empty input cycles through past prompts
+const PROMPT_HIST_KEY = 'polecat_prompt_history';
+const PROMPT_HIST_MAX = 50;
+let _promptHistIdx = -1;            // -1 = not browsing history; 0+ = index into history list
+let _promptHistDraft = '';          // text that was in input when user first pressed ↑
 
 // Format modifiers for consensus re-synthesis — appended to the active strategy
 // prompt so users can reformat the same answer without re-querying models.
@@ -80,6 +85,25 @@ const selById  = (id) => (cfg.selections || []).find(s => s.id === id);
 const getConvo = (id) => (convos[id] ||= []);
 const statusKey = (provider, model) => provider + '|' + model;
 const statusOf  = (provider, model) => cfg.modelStatus[statusKey(provider, model)];
+
+// ── Prompt history recall (↑/↓ in empty input) ──────────────────────────────
+function loadPromptHistory() {
+  try { return JSON.parse(localStorage.getItem(PROMPT_HIST_KEY) || '[]'); } catch { return []; }
+}
+function addToPromptHistory(text) {
+  if (!text || !text.trim()) return;
+  let hist = loadPromptHistory().filter(h => h !== text);
+  hist.unshift(text);
+  if (hist.length > PROMPT_HIST_MAX) hist.length = PROMPT_HIST_MAX;
+  try { localStorage.setItem(PROMPT_HIST_KEY, JSON.stringify(hist)); } catch { /* storage full */ }
+}
+function applyPromptHistory(inp, hist, idx) {
+  inp.value = idx < 0 ? _promptHistDraft : (hist[idx] || '');
+  inp.style.height = 'auto';
+  inp.style.height = Math.min(inp.scrollHeight, 200) + 'px';
+  inp.setSelectionRange(inp.value.length, inp.value.length);
+  updateSendEnabled();
+}
 
 // ── Clipboard ───────────────────────────────────────────────────────────────
 function copyText(text, btn) {
@@ -1021,6 +1045,8 @@ async function sendAll() {
   runStatus = {}; streamPreviews = {}; responseTimes = {}; queryStartTime = performance.now();
   list.forEach(s => runStatus[s.id] = 'pending');
   consensusPhase = 'waiting'; consensusStatusText = ''; consensusStepText = '';
+  addToPromptHistory(text);
+  _promptHistIdx = -1; _promptHistDraft = '';
   $('promptInput').value = ''; $('promptInput').style.height = 'auto';
   clearAttachments();
   $('sendBtn').disabled = true;
@@ -2933,6 +2959,27 @@ function init() {
     ? 'Type your prompt — sent to all selected models at once\nTap ➤ to send · attach images or text files'
     : 'Type your prompt — sent to all selected models at once\nEnter to send · Shift+Enter for new line · paste or drop images / text files';
   $('promptInput').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; updateSendEnabled(); });
+  // Prompt history recall: ↑ (when empty or already browsing) loads previous prompts;
+  // ↓ moves forward; any other edit key exits history mode.
+  $('promptInput').addEventListener('keydown', e => {
+    const inp = $('promptInput');
+    if (e.key === 'ArrowUp') {
+      if (inp.value.trim() && _promptHistIdx < 0) return; // not in history mode and input has content
+      const hist = loadPromptHistory();
+      if (!hist.length) return;
+      e.preventDefault();
+      if (_promptHistIdx < 0) _promptHistDraft = inp.value; // save current draft
+      _promptHistIdx = Math.min(_promptHistIdx + 1, hist.length - 1);
+      applyPromptHistory(inp, hist, _promptHistIdx);
+    } else if (e.key === 'ArrowDown' && _promptHistIdx >= 0) {
+      e.preventDefault();
+      _promptHistIdx--;
+      applyPromptHistory(inp, loadPromptHistory(), _promptHistIdx);
+    } else if (_promptHistIdx >= 0 && e.key !== 'ArrowUp' && e.key !== 'ArrowDown' &&
+               e.key !== 'Shift' && e.key !== 'Control' && e.key !== 'Meta' && e.key !== 'Alt') {
+      _promptHistIdx = -1; // user is editing — exit history mode
+    }
+  });
   $('sbTheme').onclick = () => applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
 
   // ── Tab bar keyboard navigation (← / → to switch model tabs) ──────────────
