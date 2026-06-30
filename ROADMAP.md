@@ -267,3 +267,16 @@ confusing, with a consistent icon language and zero emoji.
   Click it (or press Esc) to abort all in-flight requests. Partial responses are kept with a
   subtle "(stopped)" label. Consensus is skipped when stopped. Each provider's existing
   timeout still applies; the Stop just adds a user-triggered abort on top.
+- [ ] **Contribution as ONE stacked 100% bar (operator-requested 2026-06-29).** In the
+  "How this was formed" panel, replace the three separate per-model contribution lines/bars
+  with a SINGLE horizontal stacked bar (full width = 100%), split into colored segments — one
+  per model, each in that model's brand color, sized by its `contributionPct`. Contribution is
+  a share of the whole, so a stacked bar reads far better than independent bars. Details:
+  normalize segment widths so they fill 100% (the arbiter's % are approximate and may not sum
+  to exactly 100 — keep showing the arbiter's value as the label, but scale widths to the sum);
+  labeling needs care — show the % inline inside a segment only when it's wide enough, otherwise
+  rely on a compact legend below the bar (color swatch + short model label + %); every segment
+  gets a hover/tap tooltip with model name + %. Keep it accessible (never color-only — the
+  legend carries text), reduced-motion friendly, and tidy on mobile. Keep the "(approximate)"
+  caption. Single model → just a full-width bar (or skip). This replaces the current
+  three-separate-bars layout.
