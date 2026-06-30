@@ -372,3 +372,18 @@ confusing, with a consistent icon language and zero emoji.
   as the top line and be clearly distinct (e.g. "agreement so far, based on N of {total}") so the
   two numbers can never contradict. Keep the live agreement signal itself (it's a nice feature) —
   just remove/reconcile the confusing second counter.
+- [ ] **BUG (operator-reported 2026-06-30): restored chats lose the consensus provenance /
+  "How this was formed" analysis (contribution charts, agreement map).** A saved turn
+  (`js/app.js` ~line 1218: `currentThread.turns.push({ prompt, answers, attachments, consensus })`)
+  does NOT persist `lastConsensusProvenance` — the agreement-map object (perModel contribution %
+  + stance, agreements, disagreements, notable claims, agreementSignal). So reopening a chat from
+  history shows the consensus text but drops the entire "How this was formed" panel + stacked
+  contribution bar + disagreement/notable sections (and the snapshot cards' stance/% lose their
+  source). Fix: (1) Persist provenance with each turn — add `provenance: lastConsensusProvenance`
+  to the saved turn (only when consensus is on and provenance exists; it's a small JSON object,
+  fine for localStorage). (2) On restore (`restoreThread` ~line 2933 / the consensus render path),
+  when `turn.provenance` exists, render the full panel via `renderProvenancePanel(consensusPair,
+  turn.provenance)` and feed it to the snapshot-card stance/% and inline-attribution code so the
+  whole analysis comes back. Degrade gracefully for old saved chats that have no provenance (no
+  panel, exactly as today). Mind the history storage cap (MAX_HISTORY) — provenance is small, keep
+  it compact. Goal: a restored chat is identical to the live one, analysis and all.
