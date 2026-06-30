@@ -300,3 +300,25 @@ confusing, with a consistent icon language and zero emoji.
   `sk-ant-oat01-`, skip the probe and show a red hint: "That's a Claude Code OAuth token —
   Polecat needs an API key (sk-ant-api03…) from console.anthropic.com." (Subscription OAuth
   tokens don't work with the direct Messages API.)
+- [ ] **Models screen: ordering, visible roles, and arbiter-only models (operator-requested
+  2026-06-30).** Make Settings → Models communicate and control each model's ROLE in a
+  consensus run, not just the list. Can be split across runs:
+  1. **Reorder selected models.** Let the user drag-to-reorder the rows (with up/down buttons +
+     keyboard a11y as fallback). Order = `cfg.selections` array order and drives the response
+     tab order / display order. Persist.
+  2. **Show roles on this screen.** For each selected model, indicate its role: clearly mark
+     which one is the **Arbiter** (the model that synthesizes the consensus — currently set
+     only in the Consensus tab as `cfg.arbitration.arbiter`). Surface it here and let it be set
+     here too (e.g. a small "Arbiter" radio/toggle per row), kept in sync with the Consensus tab
+     (single source of truth). The others are the parallel "answerers". Make it legible at a
+     glance who answers vs who arbitrates.
+  3. **Arbiter-only mode (don't answer, just arbitrate).** Allow a selected model to be marked
+     **arbiter-only**: excluded from the parallel answering round (no own answer/tab, not counted
+     in "N models answered"), used SOLELY to synthesize the consensus from the others' answers.
+     Operator's use case: set up several FREE models as answerers and use **Claude as an
+     arbiter-only** — one high-quality synthesis call instead of answering+arbitrating, minimizing
+     cost. This requires decoupling the arbiter from the answering set (today the arbiter must be
+     one of the answering models — see `arbitration.js` ~line 320 `overrideId` path and ~348-352
+     where the arbiter is pulled from `ctx.results`). Guard: need ≥1 answering model; if every
+     selected model is arbiter-only, warn. Default behavior unchanged (arbiter = auto, all models
+     answer). Accessible, mobile, light/dark, persisted, no regression to existing consensus.
