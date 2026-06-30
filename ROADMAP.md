@@ -181,6 +181,40 @@ confusing, with a consistent icon language and zero emoji.
 
 ## WEBSITE (kevinrhaas/polecat) — the loop's Part 2 should advance these too
 
+**Periodic homepage glow-up (every few website passes — operator priority).** The app
+has grown a LOT (agreement map, attachments, arbiter-only/synthesis-only, model server,
+re-synthesis, etc.) and the homepage must show it off boldly. Every few website passes,
+go beyond brand/changelog sync and meaningfully strengthen polecat.live's homepage to
+reflect the current feature set — fresh screenshots/visuals, sharper copy, new sections.
+The operator likes a **"YouTube-y", show-don't-tell visual** feel: lead with the product
+in motion (demo clip / animated walkthrough / screen-capture), not paragraphs.
+
+**Landing-page craft — treat as INSPIRATION, not gospel; apply judgement, a little each
+pass, never a jarring rewrite, never regress:**
+- **Hero sells it alone** — ~80% never scroll; a first-timer must *get it and want it* in
+  seconds. One emotional, memorable headline a fifth-grader understands; describe the
+  outcome, not features. The product should be sellable from the hero alone.
+- **Numbers, not adjectives** — "Ask 7 models at once, get one answer you can trust" beats
+  "fast & powerful." Concrete claims (model count, "100% in your browser", "your keys",
+  "free demo, no signup").
+- **One idea per screen / section** — each communicates one thing; don't cram.
+- **Show, don't tell** — lead with a real demo/screen-capture; a short founder/screen
+  recording beats a wall of features.
+- **One CTA that says what happens** — a single primary action ("Try the free demo →"),
+  not competing buttons; remove uncertainty about the next step.
+- **Sell the human desire** (trust the answer, dodge one model's blind spots, save time),
+  not the feature list.
+- **Comparison vs single-model chat** — a simple table: Polecat vs ChatGPT/Gemini/Claude
+  (multi-model, consensus, agreement map, BYOK, privacy) so "why use this" is obvious.
+- **Proof** — add testimonials/quotes as they become available (even beta users).
+- **OG image = YouTube thumbnail** — the `og:image` is seen more than the page; design it
+  to make people click.
+- **Ride the wave** — lean into the multi-model / AI-consensus moment.
+- **Voice only you could write** — copy from the real product experience, not generic SaaS.
+- **Strong, shareable footer** — memorable closing line + share/links.
+- **Keep it ONE thing** — Polecat = ask every model at once, get one trusted consensus.
+  Don't dilute that core promise.
+
 - [x] **BUG (FIXED 2026-06-26): the homepage examples section was UNSTYLED.** Root
       cause: prior runs embedded the carousel inside a `<section class="band">` wrapper
       whose styles conflicted. Fixed by replacing the entire band+carousel block with
