@@ -8,16 +8,16 @@ can be safely advanced.
 
 ## 🔝 DO THIS NEXT (operator priority, set 2026-06-30) — ahead of ALL epics
 
-Until these are done, prioritize making **model roles + the consensus flow legible**
-across the Models and Consensus settings screens. Work the two operator-requested
-items below (in the "Operator-requested" section near the end) as the highest
-priority, in this order, one shippable step per run:
+Work these in order, one shippable step per run:
 
-1. **Models screen: ordering, visible roles, and arbiter-only models** — reorder
-   selected models; show/set which model is the Arbiter on the Models screen; allow a
-   model to be **arbiter-only** (doesn't answer, only synthesizes — e.g. free models
-   answer, Claude arbitrates only).
-2. **Rethink the Models + Consensus screens** so the "N models answer → 1 arbitrates →
+1. **Make Polecat installable (PWA) + data durability — DO THIS FIRST.** Users must never
+   lose their keys/chats/settings. Add a web app manifest + `apple-mobile-web-app-*` meta
+   tags so the app is installable (Home Screen / Chrome install), the durable fix for storage
+   eviction. (See the "Data durability" item in the Operator-requested section for the full
+   spec; `navigator.storage.persist()` is already wired.) Then the easier-backup nudge.
+2. **Models screen: ordering, visible roles, arbiter-only models** — DONE (shipped 2026-06-30:
+   reorder, set Arbiter, synthesis-only mode). Leaving here for context.
+3. **Rethink the Models + Consensus screens** so the "N models answer → 1 arbitrates →
    consensus" flow is obvious at a glance (show the answering set on the Consensus tab,
    a small visual flow, less jargon, tightly link the two tabs).
 
