@@ -400,3 +400,16 @@ confusing, with a consistent icon language and zero emoji.
   the consensus bubble). On `restoreThread`, after rendering the provenance panel for the last
   turn, re-run the P4 inline-attribution pass against the restored consensus pair so the
   highlight toggle works on reopened chats too. Degrade gracefully when provenance is absent.
+- [ ] **Make the consensus "race bar" self-explanatory (operator-reported 2026-06-30).** The row
+  of colored dots under "Blended from N models" (`js/app.js` ~line 1392-1408, `.cs-race` /
+  `.cs-race-dot`) plots each model by response time — a nice "parallel execution" visual — but
+  it's unlabeled, so users can't tell what it is. Each dot already has a desktop `title`
+  (model + time, e.g. "Groq · GPT-OSS 120B: 3.3s"), but: (a) there's NO caption saying what the
+  bar represents; (b) the whole thing is `aria-hidden="true"` so screen readers skip it; (c)
+  `title` tooltips don't appear on touch/mobile. Fix: (1) add a small visible caption/legend —
+  e.g. "Response speed · fastest → slowest" (with a faint fastest←→slowest axis hint), so it
+  reads as a finish-order/speed race at a glance; (2) make each dot's info available on TAP as
+  well as hover (a tiny popover with model name + time + finish rank, e.g. "1st · 3.3s"), since
+  hover-only fails on mobile; (3) give it an accessible description instead of pure aria-hidden —
+  an sr-only summary like "Response times: Groq 3.3s (fastest) … Claude 17s (slowest)" so the
+  info isn't lost to screen readers. Keep it compact, on-brand, light/dark, mobile-tidy.
