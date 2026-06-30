@@ -379,6 +379,15 @@ body.processing .send-btn { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .consensus-insight { animation: none; } }
 
+/* Arbiter-failure notice — warm amber, sits above the fallback consensus answer. */
+.consensus-fallback-note {
+  font-size: 12.5px; line-height: 1.5;
+  padding: 8px 12px; margin: 0 0 10px;
+  color: #9a6a00; background: rgba(240, 168, 48, .12);
+  border: 1px solid rgba(240, 168, 48, .35); border-radius: 7px;
+}
+[data-theme="dark"] .consensus-fallback-note { color: #f0c069; }
+
 /* ── Modal ───────────────────────────────────────────────── */
 /* The blur lives on a ::before layer (not the modal's ancestor) so the panel
    itself never renders blurred on open. */

@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-30 12:09 CT",
+  "updated": "2026-06-30 15:25 CT",
   "entries": [
+    {
+      "date": "2026-06-30",
+      "time": "15:25 CT",
+      "title": "Consensus no longer goes blank when the arbiter can't run",
+      "items": [
+        "If your chosen Arbiter model fails mid-synthesis (most often an exhausted or invalid API key), Polecat now falls back to the most representative model answer and still shows the full agreement map and 'Responses at a glance' — instead of an empty bubble with no comparison",
+        "A clear amber note explains what happened and points you to change the Arbiter in Settings to restore full synthesis",
+        "Applies to all strategies — Single Judge, Debate, and Chain"
+      ]
+    },
     {
       "date": "2026-06-30",
       "time": "12:09 CT",

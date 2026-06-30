@@ -2263,6 +2263,18 @@ function renderConsensusInsight(pair, prov) {
   else assistantMsg.appendChild(div);
 }
 
+// Small amber notice shown in the consensus bubble when the arbiter couldn't run
+// and we fell back to the most representative answer + locally measured agreement.
+function renderArbiterFallbackNote(pair, note) {
+  const msg = pair.querySelector('.msg.assistant');
+  if (!msg || msg.querySelector('.consensus-fallback-note')) return;
+  const div = el('div', 'consensus-fallback-note');
+  div.textContent = note;
+  const bubble = msg.querySelector('.msg-bubble');
+  if (bubble) msg.insertBefore(div, bubble);
+  else msg.appendChild(div);
+}
+
 // EPIC 1 · P1 — receive the arbiter's machine-readable agreement map. Stamped
 // on the consensus pair and rendered as the provenance panel immediately after.
 // Also triggers P4: computes paragraph attribution and wires the toggle button.
@@ -2271,6 +2283,12 @@ function onProvenance(data) {
   const pair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
   if (!pair) return;
   pair._provenance = lastConsensusProvenance;
+
+  // Arbiter failed (dead/exhausted key, network) — explain why this looks like a
+  // single answer + agreement map rather than a synthesis, so the user can fix it.
+  if (lastConsensusProvenance?.fallbackNote) {
+    renderArbiterFallbackNote(pair, lastConsensusProvenance.fallbackNote);
+  }
 
   // Update Consensus tab with an agreement signal badge — visible at a glance.
   const _agreeBadge = $('consensus-agree-badge');

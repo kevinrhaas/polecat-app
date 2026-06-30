@@ -334,6 +334,36 @@ function resolveArbiter(strategy, results, overrideId, allSelections) {
   return found ? found.selection : results[0].selection;
 }
 
+// Arbiter unavailable (exhausted/invalid key, network error, model refusal).
+// Never go blank: show the most representative model answer as the consensus and
+// still emit the locally-measured agreement analysis (map + snapshots), so the
+// comparison the user relies on never disappears just because the judge couldn't
+// run. `preferredText` lets a chain hand over its accumulated refinement instead.
+function fallbackConsensus(ctx, preferredText) {
+  const { results } = ctx;
+  if (!results.length) { ctx.fail('All models failed to respond — no consensus available.'); return; }
+  if (results.length === 1) { ctx.showStatic(results[0].text); return; }
+  let text = preferredText;
+  if (!text) {
+    // Centrality (mean similarity to the other answers) is independent of the
+    // consensus text, so this cheap pass surfaces the answer closest to all the
+    // others — the nearest thing to a consensus when no one could synthesize.
+    const base = computeLocalAgreement(results, '', ctx.labelOf);
+    const rank = new Map((base?.perModel || []).map(m => [m.label, m.centrality]));
+    const pick = [...results].sort((a, b) =>
+      (rank.get(ctx.labelOf(b.selection)) || 0) - (rank.get(ctx.labelOf(a.selection)) || 0))[0];
+    text = (pick || results[0]).text;
+  }
+  ctx.showStatic(text);
+  if (ctx.provenanceEnabled && typeof ctx.provenance === 'function') {
+    const prov = provenanceFromLocal(computeLocalAgreement(results, text, ctx.labelOf));
+    if (prov) {
+      prov.fallbackNote = 'The chosen arbiter could not run (often an exhausted or invalid API key), so this is the most representative response plus a measured agreement map — not a synthesized answer. Pick a different Arbiter model in Settings to restore full synthesis.';
+      ctx.provenance(prov);
+    }
+  }
+}
+
 // ── Engine ───────────────────────────────────────────────────────────────
 // ctx = { prompt, results:[{selection,text}], labelOf(sel)->str,
 //         silent(sel,msgs)->Promise<str>, stream(sel,msgs)->Promise<str>,
@@ -371,8 +401,9 @@ async function runChain(strategy, ctx) {
     } else {
       ctx.status('Finalizing consensus…');
       let finalText = null;
-      try { finalText = await ctx.stream(r.selection, msgs); } catch { ctx.showStatic(draft); }
+      try { finalText = await ctx.stream(r.selection, msgs); } catch {}
       if (finalText) await maybeProvenance(ctx, r.selection, finalText);
+      else fallbackConsensus(ctx, draft);
     }
   }
 }
@@ -386,8 +417,9 @@ async function runJudge(strategy, ctx) {
   ctx.step(`${ctx.labelOf(arbiter)} judging`);
   let finalText = null;
   try { finalText = await ctx.stream(arbiter, [{ role: 'user', content: judgePrompt }]); }
-  catch { ctx.showStatic(results[0].text); }
+  catch {}
   if (finalText) await maybeProvenance(ctx, arbiter, finalText);
+  else fallbackConsensus(ctx);
 }
 
 async function runDebate(strategy, ctx) {
@@ -408,8 +440,9 @@ async function runDebate(strategy, ctx) {
   ];
   let finalText = null;
   try { finalText = await ctx.stream(arbiter, msgs); }
-  catch { ctx.showStatic(results[0].text); }
+  catch {}
   if (finalText) await maybeProvenance(ctx, arbiter, finalText);
+  else fallbackConsensus(ctx);
 }
 
 // ── Settings portability (export / import to another instance) ──────────────
