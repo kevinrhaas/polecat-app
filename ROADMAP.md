@@ -447,3 +447,27 @@ pass, never a jarring rewrite, never regress:**
   hover-only fails on mobile; (3) give it an accessible description instead of pure aria-hidden —
   an sr-only summary like "Response times: Groq 3.3s (fastest) … Claude 17s (slowest)" so the
   info isn't lost to screen readers. Keep it compact, on-brand, light/dark, mobile-tidy.
+
+### Data durability — keep users' keys/chats/settings across updates (operator priority 2026-06-30)
+**STANDING (sacrosanct, EVERY run):** never lose user data. NEVER change the localStorage
+keys (`STORAGE_KEY='polecat'`, `HISTORY_KEY='polecat_history'`, `THEME_KEY`, etc.) or rename
+them. Evolve the saved shape ONLY via additive defaults in `normalize()` or a proper
+`MIGRATIONS[n]` step (bump `SCHEMA_VERSION`) that preserves all existing fields. Never wipe,
+reset, or clear storage on load/upgrade; corrupt data is backed up, not dropped. App updates
+must always carry over keys, chats, models, and preferences. (Note: deploys already preserve
+localStorage — verified the keys have never changed. The real loss vector is BROWSER eviction,
+addressed below.)
+- [x] **Request persistent storage** — call `navigator.storage.persist()` on load so the
+  browser won't evict our data under pressure/inactivity (done; best-effort, silent where
+  unsupported).
+- [ ] **Make Polecat installable (PWA) + iOS durability.** Add a web app manifest
+  (`manifest.webmanifest` with name, icons, theme/background color, display: standalone,
+  start_url) and the `apple-mobile-web-app-*` meta tags so it can be added to the Home Screen.
+  This is the durable fix for **iOS Safari**, which evicts localStorage after ~7 days of not
+  visiting a non-installed site (the likely cause of the operator's "my data disappeared").
+  Optionally a subtle, dismissible "Add to Home Screen to keep your data" hint on iOS Safari.
+  No service worker required for storage durability; keep it light. Reuse existing favicons.
+- [ ] **One-tap backup nudge / auto-export.** Export/Import already exist — make backup
+  easier: a gentle, infrequent reminder to export a backup (especially before clearing data),
+  and/or a "last backed up" note. Consider an optional auto-download snapshot. Low-friction,
+  never nags.

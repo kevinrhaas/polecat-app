@@ -3131,9 +3131,25 @@ function gotoWelcome(n, dir) {
 // ════════════════════════════════════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════════════════════════════════════
+// Ask the browser to keep our localStorage (API keys, chats, settings) durable so
+// it isn't evicted under storage pressure or inactivity. Best-effort and silent:
+// unsupported on some browsers (notably iOS Safari — there, "Add to Home Screen"
+// is the durable path). App updates never wipe storage; this guards against the
+// browser's own eviction.
+function requestPersistentStorage() {
+  try {
+    const s = navigator.storage;
+    if (!s || !s.persist) return;
+    Promise.resolve(s.persisted ? s.persisted() : false)
+      .then(already => { if (!already) return s.persist(); })
+      .catch(() => {});
+  } catch { /* no-op */ }
+}
+
 function init() {
   if (typeof marked !== 'undefined') marked.setOptions({ breaks: true, gfm: true });
   applyTheme(localStorage.getItem('polecat_theme') || 'dark');
+  requestPersistentStorage();
   buildChips();
   { const lv = $('logoVer'); if (lv) lv.textContent = buildStamp(); }
 
