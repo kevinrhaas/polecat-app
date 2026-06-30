@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-29 20:27 CT",
+  "updated": "2026-06-30 00:43 CT",
   "entries": [
+    {
+      "date": "2026-06-30",
+      "time": "00:43 CT",
+      "title": "Stacked contribution bar in consensus panel",
+      "items": [
+        "The 'How this was formed' panel now shows a single horizontal bar split into colored segments — one per model — so you can see each model's share of the consensus at a glance",
+        "Segment widths are normalized to fill 100% of the bar even when the arbiter's percentages don't add up exactly; the original approximate values are still shown in the legend below",
+        "Hovering a segment shows a tooltip with the model name and contribution %; percentage labels appear inline for segments wide enough to hold them",
+        "A compact legend below the bar pairs each model's color swatch with its name, percentage, and stance label so the bar is never color-only"
+      ]
+    },
     {
       "date": "2026-06-29",
       "time": "20:27 CT",

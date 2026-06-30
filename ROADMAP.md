@@ -267,7 +267,7 @@ confusing, with a consistent icon language and zero emoji.
   Click it (or press Esc) to abort all in-flight requests. Partial responses are kept with a
   subtle "(stopped)" label. Consensus is skipped when stopped. Each provider's existing
   timeout still applies; the Stop just adds a user-triggered abort on top.
-- [ ] **Contribution as ONE stacked 100% bar (operator-requested 2026-06-29).** In the
+- [x] **Contribution as ONE stacked 100% bar (operator-requested 2026-06-29).** In the
   "How this was formed" panel, replace the three separate per-model contribution lines/bars
   with a SINGLE horizontal stacked bar (full width = 100%), split into colored segments — one
   per model, each in that model's brand color, sized by its `contributionPct`. Contribution is

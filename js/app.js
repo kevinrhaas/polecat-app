@@ -1584,18 +1584,37 @@ function renderProvenancePanel(pair, prov) {
     : sig >= 0.11 ? { label: 'Moderate agreement', cls: 'agree-mid' }
     : { label: 'Diverse views', cls: 'agree-low' };
 
-  const barsHtml = prov.perModel.map(m => {
+  // Stacked 100% bar: one horizontal bar split into colored segments, one per model.
+  // Segment widths are normalized so they always fill 100% (arbiter %s may not sum exactly).
+  const rawSum = prov.perModel.reduce((acc, m) => acc + (m.contributionPct || 0), 0);
+  const normSum = rawSum > 0 ? rawSum : 100;
+  const barAriaLabel = 'Contribution: ' + prov.perModel.map(m => m.label + ' ' + m.contributionPct + '%').join(', ');
+  const segs = prov.perModel.map((m, i) => {
     const color = getModelColor(m);
-    const mismatchTip = m.mismatch ? ' title="Estimated contribution differs noticeably from measured overlap"' : '';
-    const stanceCls = { aligned: 'prov-aligned', partial: 'prov-partial', outlier: 'prov-outlier' }[m.stance] || 'prov-partial';
-    return `<div class="prov-bar-row">` +
-      `<span class="prov-model-dot" style="background:${escapeHtml(color)}"></span>` +
-      `<span class="prov-model-name" title="${escapeHtml(m.label)}">${escapeHtml(m.label)}</span>` +
-      `<div class="prov-bar-track"><div class="prov-bar-fill" style="width:${m.contributionPct}%;background:${escapeHtml(color)}"></div></div>` +
-      `<span class="prov-pct"${mismatchTip}>${m.contributionPct}%${m.mismatch ? '<span class="prov-mismatch" aria-hidden="true">~</span>' : ''}</span>` +
-      `<span class="prov-stance ${stanceCls}">${escapeHtml(m.stance)}</span>` +
+    const norm = ((m.contributionPct || 0) / normSum) * 100;
+    const showInline = norm >= 14;
+    const tip = m.label + ': ' + m.contributionPct + '%' + (m.mismatch ? ' (approx)' : '');
+    const isLast = i === prov.perModel.length - 1;
+    return `<div class="prov-seg${isLast ? ' prov-seg-last' : ''}" ` +
+      `style="width:${norm.toFixed(2)}%;background:${escapeHtml(color)}" ` +
+      `title="${escapeHtml(tip)}" aria-hidden="true">` +
+      (showInline ? `<span class="prov-seg-label">${m.contributionPct}%</span>` : '') +
       `</div>`;
   }).join('');
+  const legendItems = prov.perModel.map(m => {
+    const color = getModelColor(m);
+    const stanceCls = { aligned: 'prov-aligned', partial: 'prov-partial', outlier: 'prov-outlier' }[m.stance] || 'prov-partial';
+    const mismatchAttr = m.mismatch ? ' title="Estimated contribution differs noticeably from measured overlap"' : '';
+    return `<span class="prov-legend-item">` +
+      `<span class="prov-legend-swatch" style="background:${escapeHtml(color)}" aria-hidden="true"></span>` +
+      `<span class="prov-legend-name">${escapeHtml(m.label)}</span>` +
+      `<span class="prov-legend-pct"${mismatchAttr}>${m.contributionPct}%${m.mismatch ? '<span class="prov-mismatch" aria-hidden="true">~</span>' : ''}</span>` +
+      `<span class="prov-stance ${stanceCls}">${escapeHtml(m.stance)}</span>` +
+      `</span>`;
+  }).join('');
+  const barsHtml =
+    `<div class="prov-stacked-bar" role="img" aria-label="${escapeHtml(barAriaLabel)}">` + segs + `</div>` +
+    `<div class="prov-legend">${legendItems}</div>`;
 
   let agreesHtml = '';
   if (!isLocal && prov.agreements && prov.agreements.length) {
