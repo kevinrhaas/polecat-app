@@ -321,7 +321,7 @@ confusing, with a consistent icon language and zero emoji.
   `sk-ant-oat01-`, skip the probe and show a red hint: "That's a Claude Code OAuth token —
   Polecat needs an API key (sk-ant-api03…) from console.anthropic.com." (Subscription OAuth
   tokens don't work with the direct Messages API.)
-- [ ] **Models screen: ordering, visible roles, and arbiter-only models (operator-requested
+- [x] **Models screen: ordering, visible roles, and arbiter-only models (operator-requested
   2026-06-30).** Make Settings → Models communicate and control each model's ROLE in a
   consensus run, not just the list. Can be split across runs:
   1. **Reorder selected models.** Let the user drag-to-reorder the rows (with up/down buttons +
@@ -363,7 +363,7 @@ confusing, with a consistent icon language and zero emoji.
     - Beginner-first, accessible, mobile, light/dark; no regression to the existing config options.
   This and the "Models screen: ordering, visible roles, arbiter-only" item are the same theme —
   do them together or in sequence.
-- [ ] **BUG (operator-reported 2026-06-30): two conflicting "X of Y responded" counts on the
+- [x] **BUG (operator-reported 2026-06-30): two conflicting "X of Y responded" counts on the
   consensus progress screen.** The top progress line ("Waiting for models — 7/8 responded",
   `refreshConsensusProgress` ~line 1334) uses `done/total` where `total` = all selected models.
   The bottom live-agreement pill ("6 of 6 responded — divergent views so far", `liveAgreementHtml`

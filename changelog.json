@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-30 10:49 CT",
+  "updated": "2026-06-30 12:09 CT",
   "entries": [
+    {
+      "date": "2026-06-30",
+      "time": "12:09 CT",
+      "title": "Model roles: reorder, set Arbiter, and synthesis-only mode",
+      "items": [
+        "Settings → Models now shows up/down arrows on every row so you can reorder your models — tab order, chip order, and response order all follow",
+        "Each model row now has an Arbiter button: click it to set that model as the one that synthesizes the final consensus answer. The Arbiter is shown in both the Models and Consensus tabs, kept in sync",
+        "New “Synthesis only” toggle on the Arbiter row: when checked, that model skips the answering round entirely and only synthesizes from the others — great for using a powerful model just to combine free-tier answers without paying for its own response",
+        "The progress screen no longer shows two conflicting 'X of Y responded' counts — the agreement signal now just shows the agreement level without a second counter"
+      ]
+    },
     {
       "date": "2026-06-30",
       "time": "10:49 CT",

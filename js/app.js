@@ -3,7 +3,7 @@
 // instance), so the same provider can appear multiple times (Opus + Sonnet).
 // ─────────────────────────────────────────────────────────────────────────
 import {
-  loadCfg, saveCfg, activeSelections, configuredProviders, providerKey, setProviderKey,
+  loadCfg, saveCfg, activeSelections, answeringSelections, configuredProviders, providerKey, setProviderKey,
   mkSelection, MAX_SELECTIONS, takeMigrationNote, loadHistory, saveHistory,
 } from './config.js';
 import {
@@ -89,7 +89,7 @@ const FORMAT_MODIFIERS = [
 ];
 
 const persist  = () => saveCfg(cfg);
-const sels     = () => activeSelections(cfg);
+const sels     = () => answeringSelections(cfg);
 const selById  = (id) => (cfg.selections || []).find(s => s.id === id);
 const getConvo = (id) => (convos[id] ||= []);
 const statusKey = (provider, model) => provider + '|' + model;
@@ -726,6 +726,19 @@ function removeSelection(id) {
   if (activeTab === id) { const f = sels()[0]; if (f) switchTab(f.id); }
   buildChips(); renderModels();
 }
+function moveSelection(id, dir) {
+  const arr = cfg.selections || [];
+  const idx = arr.findIndex(s => s.id === id);
+  if (idx < 0) return;
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= arr.length) return;
+  [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+  persist(); renderModels(); buildChips();
+}
+function setArbiter(id) {
+  cfg.arbitration.arbiter = id;
+  persist(); renderModels(); renderArbitration();
+}
 
 // ── Tabs ─────────────────────────────────────────────────────────────────
 function pruneTabs() {
@@ -1122,7 +1135,11 @@ async function sendAll() {
 
   if (!userTextFull && !imgAtts.length && !rawPdfAtts.length) return;
   const list = sels();
-  if (!list.length) { openConfig('models'); return; }
+  if (!list.length) {
+    const allArbiterOnly = (cfg.selections || []).length > 0 && (cfg.selections || []).every(s => s.arbiterOnly);
+    if (allArbiterOnly) { toast('All models are set to synthesis only — at least one must answer. Open Settings to adjust.'); return; }
+    openConfig('models'); return;
+  }
 
   lastPrompt = text; results = {}; order = []; lastConsensusText = ''; lastConsensusProvenance = null;
   runStatus = {}; streamPreviews = {}; responseTimes = {}; queryStartTime = performance.now();
@@ -1313,8 +1330,7 @@ function liveAgreementHtml() {
     :           { label: 'divergent views', cls: 'cp-agree-low'  };
   return `<div class="cp-agree-teaser ${cls}">` +
     `<span class="cp-agree-dot" aria-hidden="true"></span>` +
-    `<span>${escapeHtml(String(doneIds.length))} of ${escapeHtml(String(order.length))} responded ` +
-    `— <strong>${label}</strong> so far</span>` +
+    `<span><strong>${label}</strong> so far</span>` +
     `</div>`;
 }
 
@@ -1537,6 +1553,7 @@ async function runConsensus() {
     prompt: lastPrompt,
     results: ordered,
     arbiterId: cfg.arbitration.arbiter,
+    allSelections: cfg.selections,
     labelOf: (sel) => selectionLabel(sel),
     silent: (sel, msgs) => getSilentText(sel, msgs),
     stream: (sel, msgs) => streamToConsensus(sel, msgs),
@@ -2131,6 +2148,7 @@ async function rerunConsensusWith(capturedOrdered, capturedPrompt, strategyId, s
       prompt: capturedPrompt,
       results: capturedOrdered,
       arbiterId: cfg.arbitration.arbiter,
+      allSelections: cfg.selections,
       labelOf: sel => selectionLabel(sel),
       silent: (sel, msgs) => getSilentText(sel, msgs),
       stream:  (sel, msgs) => streamToConsensus(sel, msgs),
@@ -2495,29 +2513,55 @@ function renderModels() { renderSelList(); renderAddRow(); }
 function renderSelList() {
   const list = $('selList'); if (!list) return;
   list.innerHTML = '';
-  (cfg.selections || []).forEach(sel => {
+  const allSels = cfg.selections || [];
+  const currentArbiter = cfg.arbitration.arbiter;
+  allSels.forEach((sel, idx) => {
     const p = PROVIDERS[sel.provider]; if (!p) return;
     const ready = p.noKey || !!providerKey(cfg, sel.provider);
-    const row = el('div', 'sel-row' + (ready ? '' : ' needs-key'));
+    const isArbiter = currentArbiter === sel.id;
     const vision = modelSupportsVision(sel.provider, sel.model);
     const readyBadge = p.noKey
       ? `<span class="sel-free" title="No key needed — runs through the free demo">free</span>`
       : statusBadge(sel.provider, sel.model);
+    const row = el('div', 'sel-row' + (ready ? '' : ' needs-key'));
     row.innerHTML =
+      `<div class="sel-move">` +
+      `<button class="sel-mv" title="Move up" aria-label="Move up"${idx === 0 ? ' disabled' : ''}>&#9650;</button>` +
+      `<button class="sel-mv" title="Move down" aria-label="Move down"${idx === allSels.length - 1 ? ' disabled' : ''}>&#9660;</button>` +
+      `</div>` +
       `<span class="sel-dot" style="background:${p.color}"></span>` +
       `<span class="sel-name">${escapeHtml(p.short)}</span>` +
       `<select class="field-input sel-model"></select>` +
       (vision ? `<span class="sel-vision" title="Reads images">${EYE_SVG_SM}</span>` : '') +
       (ready ? readyBadge : `<span class="sel-warn" title="Add a ${escapeHtml(p.name)} key in the Keys tab">no key</span>`) +
-      `<button class="sel-x" title="Remove">×</button>`;
+      `<button class="sel-arb${isArbiter ? ' arb-on' : ''}" title="${isArbiter ? 'Remove arbiter role (revert to auto)' : 'Set as arbiter — synthesizes the consensus'}" aria-pressed="${isArbiter}">Arbiter</button>` +
+      `<button class="sel-x" title="Remove" aria-label="Remove ${escapeHtml(p.short)}">&#215;</button>`;
     const select = row.querySelector('.sel-model');
     select.innerHTML = modelOptionsHtml(sel.provider, sel.model);
     select.onchange = () => onSelModelChange(sel.id, sel.provider, select);
     const badge = row.querySelector('.sel-status');
     if (badge) badge.onclick = () => testOne(sel.provider, sel.model);
     row.querySelector('.sel-x').onclick = () => removeSelection(sel.id);
+    const [upBtn, downBtn] = row.querySelectorAll('.sel-mv');
+    upBtn.onclick = () => moveSelection(sel.id, -1);
+    downBtn.onclick = () => moveSelection(sel.id, 1);
+    row.querySelector('.sel-arb').onclick = () => setArbiter(isArbiter ? 'auto' : sel.id);
     const itemWrap = el('div', 'sel-item');
     itemWrap.appendChild(row);
+    if (isArbiter) {
+      const onlyRow = el('div', 'sel-arb-only-row');
+      onlyRow.innerHTML =
+        `<label class="sel-arb-only-label">` +
+        `<input type="checkbox" class="sel-arb-only-cb"${sel.arbiterOnly ? ' checked' : ''}>` +
+        `<span>Synthesis only</span>` +
+        `<span class="mini-note"> \xb7 does not answer, just synthesizes from the others</span>` +
+        `</label>`;
+      onlyRow.querySelector('.sel-arb-only-cb').onchange = (e) => {
+        sel.arbiterOnly = e.target.checked;
+        persist(); buildChips(); renderSelList();
+      };
+      itemWrap.appendChild(onlyRow);
+    }
     const perf = getModelPerfSummary(sel.provider, sel.model);
     if (perf) {
       const alignedPct = perf.aligned / perf.n;
@@ -2533,7 +2577,7 @@ function renderSelList() {
     }
     list.appendChild(itemWrap);
   });
-  if (!(cfg.selections || []).length)
+  if (!allSels.length)
     list.innerHTML = `<div class="muted-hint">No models yet — add one below.</div>`;
 }
 function onSelModelChange(id, provider, select) {
@@ -2699,7 +2743,10 @@ function renderArbitration() {
   const stratOpts = allStrategies(cfg).map(s =>
     `<option value="${escapeHtml(s.id)}"${s.id === strat.id ? ' selected' : ''}>${escapeHtml(s.name)}${s.builtin ? '' : ' (custom)'}</option>`).join('');
   const arbiterOpts = [`<option value="auto"${cfg.arbitration.arbiter === 'auto' ? ' selected' : ''}>Auto (strategy default)</option>`]
-    .concat((cfg.selections || []).map(s => `<option value="${s.id}"${cfg.arbitration.arbiter === s.id ? ' selected' : ''}>${escapeHtml(selectionLabel(s))}</option>`)).join('');
+    .concat((cfg.selections || []).map(s => {
+      const suffix = s.arbiterOnly ? ' (synthesis only)' : '';
+      return `<option value="${escapeHtml(s.id)}"${cfg.arbitration.arbiter === s.id ? ' selected' : ''}>${escapeHtml(selectionLabel(s))}${suffix}</option>`;
+    })).join('');
   const promptFields = Object.entries(strat.prompts || {}).map(([k, v]) =>
     `<label class="arb-plabel">${escapeHtml(k)}</label><textarea class="field-input arb-ptext" data-key="${escapeHtml(k)}" rows="4"${editable ? '' : ' readonly'}>${escapeHtml(v)}</textarea>`).join('');
 
@@ -2733,7 +2780,7 @@ function renderArbitration() {
   $('provSwitch').onclick = provToggle;
   $('provSwitch').onkeydown = (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); provToggle(); } };
   $('arbSelect').onchange = (e) => { cfg.arbitration.activeId = e.target.value; persist(); renderArbitration(); };
-  $('arbiterSelect').onchange = (e) => { cfg.arbitration.arbiter = e.target.value; persist(); };
+  $('arbiterSelect').onchange = (e) => { cfg.arbitration.arbiter = e.target.value; persist(); renderModels(); };
   $('arbDup') && ($('arbDup').onclick = () => duplicateStrategy(strat));
   $('arbSave') && ($('arbSave').onclick = () => saveStrategyEdits(strat.id));
   $('arbDelete') && ($('arbDelete').onclick = () => deleteStrategy(strat.id));

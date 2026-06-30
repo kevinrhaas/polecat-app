@@ -130,3 +130,7 @@ export function configuredProviders(cfg) {
 export function activeSelections(cfg) {
   return (cfg.selections || []).filter(s => s.provider === 'demo' || providerKey(cfg, s.provider));
 }
+// Selections that actually answer (excludes arbiter-only models, which only synthesize).
+export function answeringSelections(cfg) {
+  return activeSelections(cfg).filter(s => !s.arbiterOnly);
+}

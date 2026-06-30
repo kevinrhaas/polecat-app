@@ -460,8 +460,21 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 /* selections */
 .sel-list { display: flex; flex-direction: column; gap: 8px; }
 .sel-item { display: flex; flex-direction: column; gap: 2px; }
-.sel-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.sel-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .sel-perf-note { font-size: 10px; padding-left: 17px; color: var(--text-3); line-height: 1.3; }
+/* reorder arrows */
+.sel-move { display: flex; flex-direction: column; gap: 0; flex-shrink: 0; }
+.sel-mv { background: none; border: none; cursor: pointer; color: var(--text-3); font-size: 7px; line-height: 1.2; padding: 1px 3px; border-radius: 3px; }
+.sel-mv:hover:not(:disabled) { color: var(--text-1); background: var(--surface-3); }
+.sel-mv:disabled { opacity: .22; cursor: default; }
+/* arbiter badge button */
+.sel-arb { background: none; border: 1px solid var(--border); border-radius: 100px; font-size: 9px; font-weight: 700; letter-spacing: .3px; cursor: pointer; color: var(--text-3); padding: 1px 7px; white-space: nowrap; flex-shrink: 0; transition: background .12s, color .12s; }
+.sel-arb:hover:not(.arb-on) { border-color: var(--brand-b); color: var(--brand-b); }
+.sel-arb.arb-on { background: var(--brand-b); border-color: var(--brand-b); color: #fff; }
+/* arbiter-only sub-row */
+.sel-arb-only-row { padding-left: 20px; padding-top: 2px; }
+.sel-arb-only-label { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-2); cursor: pointer; user-select: none; }
+.sel-arb-only-cb { width: 13px; height: 13px; flex-shrink: 0; accent-color: var(--brand-b); cursor: pointer; }
 .sel-perf-note.perf-good { color: #34d399; opacity: .85; }
 .sel-perf-note.perf-outlier { color: #f59e0b; opacity: .85; }
 .sel-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
@@ -585,7 +598,8 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
   .backdrop { padding: 8px; }
   .modal-body { padding: 14px; gap: 18px; }
   .tab { padding: 9px 12px; }
-  .sel-name { width: 58px; font-size: 11px; }
+  .sel-name { width: 52px; font-size: 11px; }
+  .sel-arb { font-size: 8px; padding: 1px 5px; }
   .welcome-slide { padding: 30px 20px 20px; }
   .welcome-tagline { font-size: 19px; }
   .sidebar { width: 86vw; }

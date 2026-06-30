@@ -316,10 +316,15 @@ function mostCapable(results) {
     ((PROV_RANK[a.provider] || 0) + modelPriceScore(a) * 2)
   )[0];
 }
-function resolveArbiter(strategy, results, overrideId) {
+function resolveArbiter(strategy, results, overrideId, allSelections) {
   if (overrideId && overrideId !== 'auto') {            // explicit user pick from settings
     const f = results.find(r => r.selection.id === overrideId);
     if (f) return f.selection;                          // (only if it actually produced a result)
+    // arbiter-only model: not in results but may be in allSelections
+    if (allSelections) {
+      const s = allSelections.find(x => x.id === overrideId);
+      if (s) return s;
+    }
   }
   const a = strategy.arbiter;
   if (a === 'first-done')   return results[0].selection;
@@ -374,7 +379,7 @@ async function runChain(strategy, ctx) {
 
 async function runJudge(strategy, ctx) {
   const { prompt, results } = ctx;
-  const arbiter = resolveArbiter(strategy, results, ctx.arbiterId);
+  const arbiter = resolveArbiter(strategy, results, ctx.arbiterId, ctx.allSelections);
   const answers = formatAnswers(results, ctx.labelOf);
   const judgePrompt = fill(strategy.prompts.judge, { prompt, answers, n: results.length });
   ctx.status('Synthesizing…');
@@ -387,7 +392,7 @@ async function runJudge(strategy, ctx) {
 
 async function runDebate(strategy, ctx) {
   const { prompt, results } = ctx;
-  const arbiter = resolveArbiter(strategy, results, ctx.arbiterId);
+  const arbiter = resolveArbiter(strategy, results, ctx.arbiterId, ctx.allSelections);
   const answers = formatAnswers(results, ctx.labelOf);
   const critiquePrompt = fill(strategy.prompts.critique, { prompt, answers, n: results.length });
   ctx.status('Reviewing perspectives…');
