@@ -280,3 +280,23 @@ confusing, with a consistent icon language and zero emoji.
   legend carries text), reduced-motion friendly, and tidy on mobile. Keep the "(approximate)"
   caption. Single model → just a full-width bar (or skip). This replaces the current
   three-separate-bars layout.
+- [ ] **BUG (operator-requested 2026-06-30): Keys tab shows "connected" for an invalid key.**
+  In Settings → Keys, the per-provider status (`js/app.js` ~line 2673/2678) shows "● connected"
+  whenever a key STRING is present — it never checks the key actually works. So a wrong or
+  wrong-TYPE key (e.g. a Claude Code OAuth token `sk-ant-oat01-…` pasted into the Claude field,
+  which 401s, or a typo'd key) still lights up green "connected" while every request fails. Fix:
+  make the Keys-tab status reflect REAL verification, reusing the existing probe / `modelStatus`
+  mechanism (the Models tab already probes). Behaviour:
+    - No key → neutral grey "No key".
+    - Key entered, probe in flight → **yellow** "Checking…".
+    - Probe succeeded → **green** "Connected" (verified — only state that should look "good").
+    - Probe failed → **red** "Not connected — invalid key" with the error (e.g. "401 Unauthorized")
+      in a tooltip.
+  Trigger a lightweight probe automatically a short debounce (~600ms) after the key input changes
+  (probe the provider's default model), and cache the result so we don't spam the API. Never use
+  color alone — pair each state with a text label + a small SVG icon (check / cross / clock) in
+  the existing icon style; accessible, light/dark, mobile-tidy.
+  Claude-specific helper (folds in an earlier idea): if the entered key starts with
+  `sk-ant-oat01-`, skip the probe and show a red hint: "That's a Claude Code OAuth token —
+  Polecat needs an API key (sk-ant-api03…) from console.anthropic.com." (Subscription OAuth
+  tokens don't work with the direct Messages API.)
