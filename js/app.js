@@ -69,6 +69,10 @@ const PROMPT_HIST_KEY = 'polecat_prompt_history';
 const PROMPT_HIST_MAX = 50;
 let _promptHistIdx = -1;            // -1 = not browsing history; 0+ = index into history list
 let _promptHistDraft = '';          // text that was in input when user first pressed ↑
+// Composer draft auto-save: persist whatever the user is typing so it survives
+// accidental page reloads or browser crashes.  Cleared on send.
+const DRAFT_KEY = 'polecat_composer_draft';
+const DRAFT_MAX = 10000;            // char cap to keep localStorage tidy
 // Stop generation: an AbortController created per sendAll() run so the user can
 // cancel all in-flight streams mid-response.  _userStopped distinguishes an
 // intentional cancel (keep partial text) from a provider timeout (show error).
@@ -108,6 +112,35 @@ function applyPromptHistory(inp, hist, idx) {
   inp.style.height = Math.min(inp.scrollHeight, 200) + 'px';
   inp.setSelectionRange(inp.value.length, inp.value.length);
   updateSendEnabled();
+}
+
+// ── Composer draft auto-save ────────────────────────────────────────────────
+let _draftSaveTimer;
+function saveDraft(text) {
+  clearTimeout(_draftSaveTimer);
+  _draftSaveTimer = setTimeout(() => {
+    try {
+      if (text && text.length <= DRAFT_MAX) localStorage.setItem(DRAFT_KEY, text);
+      else localStorage.removeItem(DRAFT_KEY);
+    } catch { /* storage full */ }
+  }, 400);
+}
+function clearDraft() {
+  clearTimeout(_draftSaveTimer);
+  try { localStorage.removeItem(DRAFT_KEY); } catch {}
+}
+function restoreComposerDraft() {
+  const inp = $('promptInput');
+  if (!inp || inp.value.trim()) return;
+  try {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (!draft || !draft.trim()) return;
+    inp.value = draft;
+    inp.style.height = 'auto';
+    inp.style.height = Math.min(inp.scrollHeight, 200) + 'px';
+    updateSendEnabled();
+    toast('Draft restored');
+  } catch {}
 }
 
 // ── Stop generation ─────────────────────────────────────────────────────────
@@ -1091,6 +1124,7 @@ async function sendAll() {
   consensusPhase = 'waiting'; consensusStatusText = ''; consensusStepText = '';
   addToPromptHistory(text);
   _promptHistIdx = -1; _promptHistDraft = '';
+  clearDraft();
   $('promptInput').value = ''; $('promptInput').style.height = 'auto';
   clearAttachments();
   $('sendBtn').disabled = true;
@@ -3028,7 +3062,7 @@ function init() {
   $('promptInput').placeholder = isTouch
     ? 'Type your prompt — sent to all selected models at once\nTap ➤ to send · attach images or text files'
     : 'Type your prompt — sent to all selected models at once\nEnter to send · Shift+Enter for new line · paste or drop images / text files';
-  $('promptInput').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; updateSendEnabled(); });
+  $('promptInput').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; updateSendEnabled(); saveDraft(this.value); });
   // Prompt history recall: ↑ (when empty or already browsing) loads previous prompts;
   // ↓ moves forward; any other edit key exits history mode.
   $('promptInput').addEventListener('keydown', e => {
@@ -3160,8 +3194,13 @@ function init() {
     }
   });
 
-  // Reset the tab title notification whenever the user focuses back to this tab.
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) document.title = DEFAULT_TITLE; });
+  // Restore any draft the user was typing before the page closed/refreshed.
+  restoreComposerDraft();
+  // Save draft when the tab is hidden (navigation, close) so nothing is lost.
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) saveDraft($('promptInput').value);
+    else document.title = DEFAULT_TITLE;
+  });
 
   const hasKeys = configuredProviders(cfg).length > 0 || (cfg.selections || []).some(s => s.provider === 'demo');
   const seen = !!localStorage.getItem(WELCOME_KEY);

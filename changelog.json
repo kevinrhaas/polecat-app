@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-29 16:00 CT",
+  "updated": "2026-06-29 20:27 CT",
   "entries": [
+    {
+      "date": "2026-06-29",
+      "time": "20:27 CT",
+      "title": "Draft auto-save: never lose a half-typed prompt again",
+      "items": [
+        "Polecat now quietly saves whatever you are typing in the composer to your browser's local storage — if you accidentally close or refresh the tab, your prompt is waiting for you when you come back",
+        "A brief 'Draft restored' message appears when a saved draft is loaded, so you always know it happened",
+        "The draft is cleared the moment you send, so stale text never shows up after a fresh chat"
+      ]
+    },
     {
       "date": "2026-06-29",
       "time": "16:00 CT",
