@@ -21,7 +21,11 @@ priority, in this order, one shippable step per run:
    consensus" flow is obvious at a glance (show the answering set on the Consensus tab,
    a small visual flow, less jargon, tightly link the two tabs).
 
-These are one theme — do them together/in sequence before resuming the other epics.
+These are one theme — lead with them. They span several runs, so on any run where
+you can't advance them safely, pick up the next **operator-requested** item below
+(the small high-value bug-fixes/polish — conflicting counts, Keys-tab status, image
+hint, etc.) so the queue keeps flowing. Once these two are done, work the
+operator-requested backlog top-to-bottom, then resume the regular epics.
 
 ---
 
@@ -387,3 +391,12 @@ confusing, with a consistent icon language and zero emoji.
   whole analysis comes back. Degrade gracefully for old saved chats that have no provenance (no
   panel, exactly as today). Mind the history storage cap (MAX_HISTORY) — provenance is small, keep
   it compact. Goal: a restored chat is identical to the live one, analysis and all.
+- [ ] **Restore inline source-attribution highlighting on reopened chats (follow-up to the
+  provenance-restore fix, 2026-06-30).** Saved chats now restore the "How this was formed"
+  panel, snapshot stance/%, and follow-up chips (done). The remaining gap: EPIC 1 · P4 inline
+  attribution — the toggle that color-highlights consensus sentences by originating model — is
+  NOT re-applied on restore (it runs live in the consensus finalize, ~app.js line 2309+, and
+  needs the per-sentence attribution recomputed from the restored `lastConsensusProvenance` +
+  the consensus bubble). On `restoreThread`, after rendering the provenance panel for the last
+  turn, re-run the P4 inline-attribution pass against the restored consensus pair so the
+  highlight toggle works on reopened chats too. Degrade gracefully when provenance is absent.
