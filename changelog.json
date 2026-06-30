@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-30 00:43 CT",
+  "updated": "2026-06-30 04:31 CT",
   "entries": [
+    {
+      "date": "2026-06-30",
+      "time": "04:31 CT",
+      "title": "Number key shortcuts to jump between model tabs",
+      "items": [
+        "Press 1, 2, 3 (and so on) anywhere in the app to jump straight to model tab 1, 2, 3 — no need to focus the tab bar first",
+        "Press 0 to jump directly to the Consensus tab",
+        "Left/Right arrow keys already worked for stepping between tabs when the tab bar was focused — the new number shortcuts work from anywhere, making multi-model comparison much faster to navigate",
+        "Keyboard shortcuts panel (press ?) now shows a Navigation section documenting all tab shortcuts",
+        "Accessibility: tabs now correctly link to their panels via aria-controls, and panels are keyboard-focusable per the ARIA tabpanel spec"
+      ]
+    },
     {
       "date": "2026-06-30",
       "time": "00:43 CT",

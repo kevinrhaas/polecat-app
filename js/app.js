@@ -753,6 +753,7 @@ function ensureTabs() {
     const btn = el('button', 'tab');
     btn.id = 'tab_' + sel.id; btn.dataset.svc = sel.id;
     btn.setAttribute('role', 'tab'); btn.setAttribute('aria-selected', 'false');
+    btn.setAttribute('aria-controls', 'panel_' + sel.id);
     btn.onclick = () => switchTab(sel.id);
     btn.innerHTML =
       `<span class="tab-dot" id="tdot_${sel.id}" style="background:${p.color};--dot-c:${p.color}"></span>` +
@@ -762,6 +763,8 @@ function ensureTabs() {
     const panel = el('div', 'tab-panel');
     panel.id = 'panel_' + sel.id;
     panel.setAttribute('role', 'tabpanel');
+    panel.setAttribute('tabindex', '0');
+    panel.setAttribute('aria-labelledby', 'tab_' + sel.id);
     panel.innerHTML =
       `<div class="conversation" id="conv_${sel.id}"><div class="empty-state" id="empty_${sel.id}">` +
       `<div class="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>` +
@@ -773,6 +776,7 @@ function ensureTabs() {
     const btn = el('button', 'tab');
     btn.id = 'tab_consensus'; btn.dataset.svc = 'consensus';
     btn.setAttribute('role', 'tab'); btn.setAttribute('aria-selected', 'false');
+    btn.setAttribute('aria-controls', 'panel_consensus');
     btn.onclick = () => switchTab('consensus');
     btn.innerHTML =
       `<span class="tab-dot" id="tdot_consensus" style="background:var(--consensus);--dot-c:var(--consensus)"></span>` +
@@ -782,6 +786,8 @@ function ensureTabs() {
     const panel = el('div', 'tab-panel');
     panel.id = 'panel_consensus';
     panel.setAttribute('role', 'tabpanel');
+    panel.setAttribute('tabindex', '0');
+    panel.setAttribute('aria-labelledby', 'tab_consensus');
     panel.innerHTML =
       `<div class="conversation" id="conv_consensus"><div class="empty-state" id="empty_consensus">` +
       `<div class="empty-icon consensus-glyph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="5.6" y1="5.6" x2="7.8" y2="7.8"/><line x1="16.2" y1="16.2" x2="18.4" y2="18.4"/><line x1="5.6" y1="18.4" x2="7.8" y2="16.2"/><line x1="16.2" y1="7.8" x2="18.4" y2="5.6"/></svg></div>` +
@@ -3210,6 +3216,22 @@ function init() {
         $('lightbox').classList.contains('open') ||
         !!document.querySelector('.compare-overlay, .exp-overlay');
       if (!anyOverlay) { e.preventDefault(); stopGeneration(); }
+    }
+    // Number keys 1-9 jump to model tabs; 0 jumps to the Consensus tab.
+    // Only fires when no input/textarea is focused and no modifier key is held.
+    if (/^[0-9]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+      const allTabs = [...($('tabBar')?.querySelectorAll('[role="tab"]') || [])];
+      if (!allTabs.length) return;
+      let target;
+      if (e.key === '0') {
+        target = allTabs.find(t => t.dataset.svc === 'consensus');
+      } else {
+        const modelTabs = allTabs.filter(t => t.dataset.svc !== 'consensus');
+        target = modelTabs[parseInt(e.key) - 1];
+      }
+      if (target) { e.preventDefault(); switchTab(target.dataset.svc); target.focus(); }
     }
   });
 
