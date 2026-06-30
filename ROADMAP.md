@@ -359,3 +359,16 @@ confusing, with a consistent icon language and zero emoji.
     - Beginner-first, accessible, mobile, light/dark; no regression to the existing config options.
   This and the "Models screen: ordering, visible roles, arbiter-only" item are the same theme —
   do them together or in sequence.
+- [ ] **BUG (operator-reported 2026-06-30): two conflicting "X of Y responded" counts on the
+  consensus progress screen.** The top progress line ("Waiting for models — 7/8 responded",
+  `refreshConsensusProgress` ~line 1334) uses `done/total` where `total` = all selected models.
+  The bottom live-agreement pill ("6 of 6 responded — divergent views so far", `liveAgreementHtml`
+  ~line 1314) uses a DIFFERENT pair: `doneIds.length of order.length`, where `order.length` is only
+  the models already in the results pipeline and `doneIds` = responses >80 chars. So the two counts
+  legitimately disagree (7/8 vs 6/6) on the same screen, which looks broken. Fix: don't show two
+  contradictory "X of Y responded" counts. Preferred — drop the count from the live-agreement pill
+  entirely and show just the agreement label (e.g. "divergent views so far"); the top line is the
+  single authoritative responded count. If a count is kept on the pill, it MUST use the same total
+  as the top line and be clearly distinct (e.g. "agreement so far, based on N of {total}") so the
+  two numbers can never contradict. Keep the live agreement signal itself (it's a nice feature) —
+  just remove/reconcile the confusing second counter.
