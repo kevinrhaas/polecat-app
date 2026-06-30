@@ -322,3 +322,23 @@ confusing, with a consistent icon language and zero emoji.
      where the arbiter is pulled from `ctx.results`). Guard: need ≥1 answering model; if every
      selected model is arbiter-only, warn. Default behavior unchanged (arbiter = auto, all models
      answer). Accessible, mobile, light/dark, persisted, no regression to existing consensus.
+- [ ] **Rethink the Models + Consensus screens so model ROLES + the consensus flow are obvious
+  (operator-requested 2026-06-30).** Right now the config is split confusingly across two tabs and
+  neither shows the whole picture: the **Models** tab lists selected models but not who arbitrates;
+  the **Consensus** tab shows the strategy + arbiter model but gives NO indication of which models
+  actually answer. A user can't see, in one place, the core story: "these N models answer in
+  parallel → this arbiter (+ strategy) synthesizes → one consensus answer." This is the signature
+  differentiator, so it must be effortless to understand. Do a holistic IA pass (per the North Star
+  — reorganise/rename/move freely). Direction (use judgement):
+    - Make the multi-model → consensus flow legible at a glance, ideally a small visual flow:
+      [answering models] → [arbiter model + strategy] → [consensus answer] (echo the website hero).
+    - On the Consensus tab, SHOW the answering set (not just the arbiter) — e.g. "Your 6 models
+      answer in parallel, then GPT-4o validates & merges them" in plain language.
+    - Clarify the arbiter selector's relationship to the model list: is the arbiter also one of the
+      answerers, or arbiter-only? (ties directly to the "arbiter-only models" item above.)
+    - Consider unifying or tightly cross-linking Models + Consensus so roles are understood
+      together rather than in two disconnected places; reduce jargon ("arbiter", "strategy") with
+      gentle inline explanations.
+    - Beginner-first, accessible, mobile, light/dark; no regression to the existing config options.
+  This and the "Models screen: ordering, visible roles, arbiter-only" item are the same theme —
+  do them together or in sequence.
