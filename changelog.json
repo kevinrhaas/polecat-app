@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-30 08:09 CT",
+  "updated": "2026-06-30 10:49 CT",
   "entries": [
+    {
+      "date": "2026-06-30",
+      "time": "10:49 CT",
+      "title": "Saved chats keep their consensus analysis",
+      "items": [
+        "Reopening a conversation from history now restores the full 'How this was formed' panel — the contribution bars, agreement map, where models differed, and notable claims — not just the answer text",
+        "The agreement analysis is saved with each consensus turn, so a restored chat looks identical to the live one",
+        "Older chats saved before this update simply show without the panel (no errors) — new chats keep everything"
+      ]
+    },
     {
       "date": "2026-06-30",
       "time": "08:09 CT",

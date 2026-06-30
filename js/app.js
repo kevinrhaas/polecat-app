@@ -1215,7 +1215,9 @@ function recordTurn(prompt, atts) {
     history.unshift(currentThread);
   }
   const attMeta = (atts && atts.length) ? atts.map(a => ({ name: a.name, mime: a.mime, kind: a.kind || 'image' })) : undefined;
-  currentThread.turns.push({ prompt, answers, attachments: attMeta, consensus: cfg.consensus ? (lastConsensusText || null) : null });
+  currentThread.turns.push({ prompt, answers, attachments: attMeta,
+    consensus: cfg.consensus ? (lastConsensusText || null) : null,
+    provenance: cfg.consensus ? (lastConsensusProvenance || null) : null });
   currentThread.updatedAt = Date.now();
   saveHistory(history);
   renderHistoryList();
@@ -2941,6 +2943,7 @@ function restoreThread(id) {
   buildChips();
   hideGreeting();
   ensureTabs();
+  const lastTurn = (t.turns || []).length > 0 ? t.turns[t.turns.length - 1] : null;
   (t.turns || []).forEach(turn => {
     (t.selections || []).forEach(sel => {
       const ans = turn.answers ? turn.answers[sel.id] : undefined;
@@ -2949,18 +2952,27 @@ function restoreThread(id) {
       if (ans != null) co.push({ role: 'assistant', content: ans });
       renderStaticPair(sel.id, selectionLabel(sel), turn.prompt, ans, turn.attachments);
     });
-    if (turn.consensus != null) renderStaticConsensus(turn.prompt, turn.consensus);
+    if (turn.consensus != null) {
+      renderStaticConsensus(turn.prompt, turn.consensus);
+      // Restore the "How this was formed" panel for EARLIER turns inline. The last
+      // turn's panel is rendered after its snapshot/chips strip below (live order).
+      if (turn.provenance && turn !== lastTurn) {
+        const cp = $('conv_consensus')?.querySelector('.qa-pair:last-child');
+        if (cp) renderProvenancePanel(cp, turn.provenance);
+      }
+    }
   });
   lastPrompt = t.turns && t.turns.length ? t.turns[t.turns.length - 1].prompt : '';
 
   // Re-populate live state from the last turn so model snapshot cards, follow-up
-  // chips, and the re-synthesis strip work on restored conversations just like live ones.
-  const lastTurn = (t.turns || []).length > 0 ? t.turns[t.turns.length - 1] : null;
+  // chips, the re-synthesis strip, AND the provenance panel work on restored
+  // conversations just like live ones.
   if (lastTurn && lastTurn.consensus && cfg.consensus) {
     const rSels = (t.selections || []);
     order = rSels.map(s => s.id);
     rSels.forEach(s => { results[s.id] = lastTurn.answers?.[s.id] ?? null; });
     lastConsensusText = lastTurn.consensus;
+    lastConsensusProvenance = lastTurn.provenance || null;
     lastSynthesisOrdered = order.filter(id => results[id]).map(id => ({
       selection: selById(id) || { id, provider: 'openai', model: '' },
       text: results[id],
@@ -2969,9 +2981,10 @@ function restoreThread(id) {
     const lastConsPair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
     if (lastConsPair) {
       renderModelSnapshotsEl(lastConsPair);
-      renderFollowUpChips(lastConsPair, null);
+      renderFollowUpChips(lastConsPair, lastConsensusProvenance);
       if (lastSynthesisOrdered.length >= 2)
         renderResynthStrip(lastConsPair, lastSynthesisOrdered, lastSynthesisPrompt, activeStrategy(cfg).id);
+      if (lastConsensusProvenance) renderProvenancePanel(lastConsPair, lastConsensusProvenance);
     }
   }
 
