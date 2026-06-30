@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-30 04:31 CT",
+  "updated": "2026-06-30 08:09 CT",
   "entries": [
+    {
+      "date": "2026-06-30",
+      "time": "08:09 CT",
+      "title": "Model race bar, inline expand scroll fix, and compare shortcut",
+      "items": [
+        "The consensus 'blended from' footer now shows a compact horizontal race bar — colored dots at relative positions reveal which model finished first and how far ahead it was, making the parallel-execution advantage instantly visible",
+        "Expanding a model response card inline in 'Responses at a glance' now smoothly scrolls the expanded panel into view automatically, so you no longer have to scroll down to find it",
+        "Press 'c' anywhere in the app (outside a text field) to instantly open the side-by-side compare modal — see all model responses at once without reaching for the grid button",
+        "Keyboard shortcut 'c' is now documented in the shortcuts panel (press ?)"
+      ]
+    },
     {
       "date": "2026-06-30",
       "time": "04:31 CT",

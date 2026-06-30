@@ -1387,10 +1387,29 @@ function consensusSourcesEl(arbiterSel) {
     const fmt = ms => ms < 10000 ? (ms / 1000).toFixed(1) + 's' : Math.round(ms / 1000) + 's';
     timeLabel = minMs === maxMs ? fmt(maxMs) : fmt(minMs) + '–' + fmt(maxMs);
   }
+  // Compact race-bar: colored dots at relative positions show which model finished when.
+  // Gives the "parallel execution" advantage a concrete, glanceable visual.
+  let raceHtml = '';
+  if (allMs.length >= 2) {
+    const maxMs = Math.max(...allMs);
+    const fmt2 = ms => ms < 10000 ? (ms / 1000).toFixed(1) + 's' : Math.round(ms / 1000) + 's';
+    const dots = order
+      .filter(id => responseTimes[id] && selById(id))
+      .map(id => {
+        const sel = selById(id);
+        const ms = responseTimes[id] || 0;
+        const pct = Math.max(2, Math.min(97, (ms / maxMs) * 100));
+        const color = PROVIDERS[sel.provider]?.color || '#888';
+        const tip = escapeHtml(selectionLabel(sel) + ': ' + fmt2(ms));
+        return `<span class="cs-race-dot" style="left:${pct.toFixed(1)}%;background:${escapeHtml(color)}" title="${tip}" aria-hidden="true"></span>`;
+      }).join('');
+    raceHtml = `<div class="cs-race" aria-hidden="true"><div class="cs-race-track">${dots}</div></div>`;
+  }
   const wrap = el('div', 'consensus-sources');
   wrap.innerHTML =
     `<span class="cs-label">${BLEND_SVG} Blended from ${contributors.length} models \xb7 ${escapeHtml(strat.name)}${timeLabel ? ' \xb7 <span class="cs-timerange" title="Model response time range">' + escapeHtml(timeLabel) + '</span>' : ''}</span>` +
-    `<div class="cs-chips">${chips}</div>`;
+    `<div class="cs-chips">${chips}</div>` +
+    raceHtml;
   wrap.querySelectorAll('.cs-chip').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
   return wrap;
 }
@@ -1902,6 +1921,8 @@ function renderModelSnapshotsEl(pair) {
           const tabBtn = expandPanel.querySelector('.ms-ep-tab-btn');
           if (tabBtn) tabBtn.onclick = () => switchTab(card.dataset.tab);
           expandPanel.hidden = false;
+          // Ensure the expanded panel is fully visible without manual scrolling.
+          setTimeout(() => expandPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 30);
         }
       });
     }
@@ -3206,6 +3227,13 @@ function init() {
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
       e.preventDefault(); openKbd();
+    }
+    // 'c' — open the side-by-side compare modal when 2+ model responses exist
+    if (e.key === 'c' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+      const cmpEntries = buildCompareEntries();
+      if (cmpEntries.length >= 2) { e.preventDefault(); openCompareModal(cmpEntries); }
     }
     if (e.key === ',' && (e.metaKey || e.ctrlKey) && !e.altKey) { e.preventDefault(); openConfig(); }
     // Escape stops an active generation when no modal/overlay is open.

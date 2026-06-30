@@ -354,6 +354,21 @@ body.processing .send-btn { display: none; }
 .cs-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, #888); flex-shrink: 0; }
 .cs-chip.cs-arbiter { color: var(--text); font-weight: 600; border-color: color-mix(in srgb, var(--consensus) 50%, var(--border)); }
 .cs-chip.cs-arbiter .cs-dot { background: var(--consensus); }
+/* Compact race-bar: shows each model's relative response time as a colored dot
+   on a horizontal track — the leftmost dot = fastest, rightmost = slowest. */
+.cs-race { padding: 4px 0 2px; }
+.cs-race-track {
+  position: relative; height: 2px; background: var(--border); border-radius: 2px;
+  overflow: visible;
+}
+.cs-race-dot {
+  position: absolute; width: 10px; height: 10px; border-radius: 50%;
+  top: 50%; transform: translate(-50%, -50%);
+  border: 1.5px solid var(--bg);
+  cursor: default; transition: transform .12s;
+}
+.cs-race-dot:hover { transform: translate(-50%, -50%) scale(1.3); }
+@media (prefers-reduced-motion: reduce) { .cs-race-dot { transition: none; } }
 
 /* Consensus insight — one-liner agreement summary, shown right after the answer */
 .consensus-insight {
