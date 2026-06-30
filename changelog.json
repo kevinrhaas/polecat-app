@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-30 15:40 CT",
+  "updated": "2026-06-30 15:57 CT",
   "entries": [
+    {
+      "date": "2026-06-30",
+      "time": "15:57 CT",
+      "title": "Polecat is now installable",
+      "items": [
+        "Add Polecat to your phone or desktop Home Screen / app dock — it now ships a proper web app manifest with icons, so Chrome/Edge/Android show an Install option and iOS Safari supports Add to Home Screen",
+        "This matters for keeping your data: iOS Safari quietly clears site storage after about a week of not visiting in the browser tab, which is the main way people lose saved keys and chats — an installed app is exempt from that eviction",
+        "No account, no server, nothing new tracked — just a manifest and a few meta tags"
+      ]
+    },
     {
       "date": "2026-06-30",
       "time": "15:40 CT",

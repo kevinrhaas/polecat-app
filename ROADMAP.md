@@ -10,11 +10,11 @@ can be safely advanced.
 
 Work these in order, one shippable step per run:
 
-1. **Make Polecat installable (PWA) + data durability — DO THIS FIRST.** Users must never
-   lose their keys/chats/settings. Add a web app manifest + `apple-mobile-web-app-*` meta
-   tags so the app is installable (Home Screen / Chrome install), the durable fix for storage
-   eviction. (See the "Data durability" item in the Operator-requested section for the full
-   spec; `navigator.storage.persist()` is already wired.) Then the easier-backup nudge.
+1. **Make Polecat installable (PWA) + data durability — DONE (shipped 2026-06-30):** web app
+   manifest + `apple-mobile-web-app-*` meta tags landed, so the app is installable (Home Screen
+   / Chrome install) — the durable fix for iOS storage eviction. (`navigator.storage.persist()`
+   was already wired.) NEXT: the easier-backup nudge (see "One-tap backup nudge" in the Data
+   durability backlog section below).
 2. **Models screen: ordering, visible roles, arbiter-only models** — DONE (shipped 2026-06-30:
    reorder, set Arbiter, synthesis-only mode). Leaving here for context.
 3. **Rethink the Models + Consensus screens** so the "N models answer → 1 arbitrates →
@@ -473,13 +473,15 @@ addressed below.)
 - [x] **Request persistent storage** — call `navigator.storage.persist()` on load so the
   browser won't evict our data under pressure/inactivity (done; best-effort, silent where
   unsupported).
-- [ ] **Make Polecat installable (PWA) + iOS durability.** Add a web app manifest
-  (`manifest.webmanifest` with name, icons, theme/background color, display: standalone,
-  start_url) and the `apple-mobile-web-app-*` meta tags so it can be added to the Home Screen.
+- [x] **Make Polecat installable (PWA) + iOS durability (shipped 2026-06-30).** Added
+  `manifest.webmanifest` (name, short_name, description, icons at 192/512 incl. maskable,
+  standalone display, start_url, theme/background color matching the header) plus
+  `apple-mobile-web-app-capable` / `apple-mobile-web-app-status-bar-style` /
+  `apple-mobile-web-app-title` and `mobile-web-app-capable` meta tags + the manifest `<link>`
+  in `index.html`'s head. Reuses existing favicon assets; no service worker, no new tracking.
   This is the durable fix for **iOS Safari**, which evicts localStorage after ~7 days of not
-  visiting a non-installed site (the likely cause of the operator's "my data disappeared").
-  Optionally a subtle, dismissible "Add to Home Screen to keep your data" hint on iOS Safari.
-  No service worker required for storage durability; keep it light. Reuse existing favicons.
+  visiting a non-installed site. FOLLOW-UP (left for a future run): an optional, dismissible
+  "Add to Home Screen to keep your data" hint on iOS Safari.
 - [ ] **One-tap backup nudge / auto-export.** Export/Import already exist — make backup
   easier: a gentle, infrequent reminder to export a backup (especially before clearing data),
   and/or a "last backed up" note. Consider an optional auto-download snapshot. Low-friction,
