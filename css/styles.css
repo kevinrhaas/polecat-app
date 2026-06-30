@@ -915,6 +915,13 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .prov-seg:hover { filter: brightness(1.12); cursor: default; }
 .prov-seg-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,.92); text-shadow: 0 1px 2px rgba(0,0,0,.35); pointer-events: none; white-space: nowrap; line-height: 1; }
 @media (prefers-reduced-motion: reduce) { .prov-seg { transition: none; } }
+/* Texture overlays so two same-color (same-provider) models stay distinguishable
+   in the bar + legend. Layered over the inline background-color via background-image. */
+.prov-pat-1 { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.45) 0 1.5px, transparent 1.5px 5px); }
+.prov-pat-2 { background-image: radial-gradient(rgba(255,255,255,.5) 1px, transparent 1.4px); background-size: 5px 5px; }
+.prov-pat-3 { background-image: repeating-linear-gradient(-45deg, rgba(0,0,0,.32) 0 1.5px, transparent 1.5px 5px); }
+.prov-pat-4 { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,.42) 0 1.5px, transparent 1.5px 5px); }
+.prov-legend-swatch.prov-pat-2 { background-size: 4px 4px; }
 .prov-legend { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; }
 .prov-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-2); }
 .prov-legend-swatch { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; opacity: .85; }

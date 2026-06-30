@@ -1,6 +1,15 @@
 {
-  "updated": "2026-06-30 15:25 CT",
+  "updated": "2026-06-30 15:40 CT",
   "entries": [
+    {
+      "date": "2026-06-30",
+      "time": "15:40 CT",
+      "title": "Tell same-provider models apart in the contribution bar",
+      "items": [
+        "When two models share a color (e.g. two OpenRouter models), the contribution bar and legend now add a texture — stripes, then dots — to each repeat, so you can tell them apart at a glance even in the small bar",
+        "The bar segment and its legend swatch always use the same texture, so they stay matched"
+      ]
+    },
     {
       "date": "2026-06-30",
       "time": "15:25 CT",

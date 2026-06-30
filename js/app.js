@@ -1633,14 +1633,26 @@ function renderProvenancePanel(pair, prov) {
   const rawSum = prov.perModel.reduce((acc, m) => acc + (m.contributionPct || 0), 0);
   const normSum = rawSum > 0 ? rawSum : 100;
   const barAriaLabel = 'Contribution: ' + prov.perModel.map(m => m.label + ' ' + m.contributionPct + '%').join(', ');
+  // Two models from the same provider resolve to the same color. To keep them
+  // distinguishable in the (often small) bar + legend, give each repeat of a
+  // color a texture overlay (stripes/dots/…). The first model of a color stays
+  // solid; the Nth repeat gets pattern class prov-pat-(N). Same index drives the
+  // bar segment and its legend swatch so they always match.
+  const _patSeen = {};
+  const patClassFor = (color) => {
+    const n = (_patSeen[color] = (_patSeen[color] || 0) + 1);
+    return n > 1 ? ' prov-pat-' + Math.min(n - 1, 4) : '';
+  };
+  const _patByLabel = {};
+  prov.perModel.forEach(m => { _patByLabel[m.label] = patClassFor(getModelColor(m)); });
   const segs = prov.perModel.map((m, i) => {
     const color = getModelColor(m);
     const norm = ((m.contributionPct || 0) / normSum) * 100;
     const showInline = norm >= 14;
     const tip = m.label + ': ' + m.contributionPct + '%' + (m.mismatch ? ' (approx)' : '');
     const isLast = i === prov.perModel.length - 1;
-    return `<div class="prov-seg${isLast ? ' prov-seg-last' : ''}" ` +
-      `style="width:${norm.toFixed(2)}%;background:${escapeHtml(color)}" ` +
+    return `<div class="prov-seg${isLast ? ' prov-seg-last' : ''}${_patByLabel[m.label]}" ` +
+      `style="width:${norm.toFixed(2)}%;background-color:${escapeHtml(color)}" ` +
       `title="${escapeHtml(tip)}" aria-hidden="true">` +
       (showInline ? `<span class="prov-seg-label">${m.contributionPct}%</span>` : '') +
       `</div>`;
@@ -1650,7 +1662,7 @@ function renderProvenancePanel(pair, prov) {
     const stanceCls = { aligned: 'prov-aligned', partial: 'prov-partial', outlier: 'prov-outlier' }[m.stance] || 'prov-partial';
     const mismatchAttr = m.mismatch ? ' title="Estimated contribution differs noticeably from measured overlap"' : '';
     return `<span class="prov-legend-item">` +
-      `<span class="prov-legend-swatch" style="background:${escapeHtml(color)}" aria-hidden="true"></span>` +
+      `<span class="prov-legend-swatch${_patByLabel[m.label]}" style="background-color:${escapeHtml(color)}" aria-hidden="true"></span>` +
       `<span class="prov-legend-name">${escapeHtml(m.label)}</span>` +
       `<span class="prov-legend-pct"${mismatchAttr}>${m.contributionPct}%${m.mismatch ? '<span class="prov-mismatch" aria-hidden="true">~</span>' : ''}</span>` +
       `<span class="prov-stance ${stanceCls}">${escapeHtml(m.stance)}</span>` +
