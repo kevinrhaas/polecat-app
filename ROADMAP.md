@@ -237,6 +237,19 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **Consensus never goes blank on arbiter failure** (operator-reported 2026-06-30):
+  when the chosen arbiter can't stream a synthesis (dead/exhausted/invalid key, network),
+  all strategies now fall back to the most representative answer + local agreement
+  provenance, with an amber explainer. (js/arbitration.js fallbackConsensus, js/app.js
+  renderArbiterFallbackNote.) FOLLOW-UPS still open:
+  - [ ] **Decouple "Responses at a glance" from the agreement map.** The per-model
+    snapshot strip only needs the model answers, not the arbiter — render it after every
+    consensus even when the agreement map (provenance) is turned OFF. Today it lives
+    inside onProvenance, so map-off users never see it.
+  - [ ] **Proactive arbiter-health warning.** Before/at synthesis, if the chosen arbiter's
+    provider has no key or a known-bad key (e.g. last call returned 401/credit error),
+    surface a one-line warning in the Consensus tab up front rather than only after it fails.
+
 - [x] Onboarding/demo polish: rotating clickable example questions (done), demo starts
   with two fast free models + light consensus (done), subtle first-time callout below
   the Consensus tab after first synthesis (done), staggered chip entrance after
