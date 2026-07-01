@@ -13,8 +13,7 @@ Work these in order, one shippable step per run:
 1. **Make Polecat installable (PWA) + data durability — DONE (shipped 2026-06-30):** web app
    manifest + `apple-mobile-web-app-*` meta tags landed, so the app is installable (Home Screen
    / Chrome install) — the durable fix for iOS storage eviction. (`navigator.storage.persist()`
-   was already wired.) NEXT: the easier-backup nudge (see "One-tap backup nudge" in the Data
-   durability backlog section below).
+   was already wired.) The backup nudge (below) is now also DONE, closing out this item.
 2. **Models screen: ordering, visible roles, arbiter-only models** — DONE (shipped 2026-06-30:
    reorder, set Arbiter, synthesis-only mode). Leaving here for context.
 3. **Rethink the Models + Consensus screens** so the "N models answer → 1 arbitrates →
@@ -531,7 +530,13 @@ addressed below.)
   This is the durable fix for **iOS Safari**, which evicts localStorage after ~7 days of not
   visiting a non-installed site. FOLLOW-UP (left for a future run): an optional, dismissible
   "Add to Home Screen to keep your data" hint on iOS Safari.
-- [ ] **One-tap backup nudge / auto-export.** Export/Import already exist — make backup
-  easier: a gentle, infrequent reminder to export a backup (especially before clearing data),
-  and/or a "last backed up" note. Consider an optional auto-download snapshot. Low-friction,
-  never nags.
+- [x] **One-tap backup nudge (shipped 2026-07-01).** Sidebar now shows a quiet "Backed up Nd
+  ago" / "Never backed up" note under Export/Import (`js/app.js` `renderBackupStatus`), plus
+  a rare, dismissible reminder card ("Back up your chats & keys before you lose them?" with
+  "Not now" / "Export…") that only appears when there's real data at risk (`hasBackupWorthyData`
+  = a saved conversation or a configured provider key), the user has been on the app 14+ days
+  with no recent backup, and it hasn't been shown in the last 3 weeks (`maybeShowBackupNudge`,
+  `BACKUP_STALE_MS`/`BACKUP_NUDGE_QUIET_MS`). Exporting immediately stamps `polecat_last_backup`
+  and hides the nudge. Brand-new users never see it. Verified end-to-end in headless Chromium:
+  fresh user -> hidden; seeded 20-day-old + unbacked-up user -> nudge shows -> Export -> hides
+  + status updates to "Backed up just now" -> stays hidden on reopen. Zero console errors.

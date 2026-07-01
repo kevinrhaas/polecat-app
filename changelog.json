@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-01 11:12 CT",
+  "updated": "2026-07-01 13:06 CT",
   "entries": [
+    {
+      "date": "2026-07-01",
+      "time": "13:06 CT",
+      "title": "One-tap backup nudge",
+      "items": [
+        "The sidebar now shows a quiet 'Backed up 3d ago' (or 'Never backed up') note next to Export/Import, so you always know where you stand",
+        "If you've been using Polecat for a couple of weeks with no recent backup, a small dismissible reminder appears -- 'Back up your chats & keys before you lose them?' -- with one-tap Export or 'Not now'",
+        "It only shows up when there's actually something to lose (a saved chat or a key), never for brand-new users, and never more than once every few weeks -- low-friction, no nagging"
+      ]
+    },
     {
       "date": "2026-07-01",
       "time": "11:12 CT",

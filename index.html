@@ -63,6 +63,13 @@
   <div class="sb-section-label">History</div>
   <div class="sb-history" id="sbHistory"></div>
   <div class="sb-foot">
+    <div class="sb-backup-nudge" id="sbBackupNudge" hidden>
+      <span>Back up your chats &amp; keys before you lose them?</span>
+      <div class="sb-backup-nudge-actions">
+        <button class="btn btn-ghost" id="sbBackupNudgeLater">Not now</button>
+        <button class="btn btn-solid" id="sbBackupNudgeGo">Export…</button>
+      </div>
+    </div>
     <div class="sb-private">
       <span>Private mode<br><span class="mini-note">don't save chats</span></span>
       <span class="switch" id="privateSwitch" role="switch" aria-checked="false" tabindex="0"><span class="knob"></span></span>
@@ -73,6 +80,7 @@
     <button class="sb-link" id="sbTheme"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor" stroke="none"/></svg> Theme</button>
     <button class="sb-link" id="sbExport"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export…</button>
     <button class="sb-link" id="sbImport"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import…</button>
+    <div class="mini-note sb-backup-status" id="sbBackupStatus" hidden></div>
     <button class="sb-link danger" id="sbClear"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Clear history</button>
   </div>
 </aside>

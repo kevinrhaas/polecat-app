@@ -19,6 +19,11 @@ import { $, el, escapeHtml, nl2br, renderMarkdown, highlightBubble, toast, apply
 const DONATE_URL = 'https://ko-fi.com/polecatlive';
 const WELCOME_KEY = 'polecat_welcomed';
 const CONS_HINT_KEY = 'polecat_cons_hint';
+const BACKUP_KEY = 'polecat_last_backup';        // ms timestamp of the last successful export
+const BACKUP_NUDGE_KEY = 'polecat_backup_nudge_at'; // ms timestamp the backup nudge was last shown
+const FIRST_USE_KEY = 'polecat_first_use';        // ms timestamp of this browser's first visit
+const BACKUP_STALE_MS = 14 * 86400000;            // consider a backup "due" after 2 weeks
+const BACKUP_NUDGE_QUIET_MS = 21 * 86400000;      // never nudge again within 3 weeks of the last nudge
 const COPY_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 // EPIC 1 · P4 — layers icon for the inline attribution toggle
 const ATTR_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`;
@@ -3028,6 +3033,9 @@ function openExport() {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const a = el('a'); a.href = URL.createObjectURL(blob); a.download = 'polecat-export.json'; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    localStorage.setItem(BACKUP_KEY, String(Date.now()));
+    renderBackupStatus();
+    $('sbBackupNudge')?.setAttribute('hidden', '');
     close(); toast('Exported');
   };
 }
@@ -3058,9 +3066,36 @@ function openImport() {
 // ════════════════════════════════════════════════════════════════════════════
 //  SIDEBAR + CONVERSATION HISTORY
 // ════════════════════════════════════════════════════════════════════════════
-function openSidebar() { renderHistoryList(); $('sidebar').classList.add('open'); $('sidebarBackdrop').classList.add('open'); }
+function openSidebar() { renderHistoryList(); renderBackupStatus(); maybeShowBackupNudge(); $('sidebar').classList.add('open'); $('sidebarBackdrop').classList.add('open'); }
 function closeSidebar() { $('sidebar').classList.remove('open'); $('sidebarBackdrop').classList.remove('open'); }
 function toggleSidebar() { $('sidebar').classList.contains('open') ? closeSidebar() : openSidebar(); }
+
+// One-tap backup nudge: a quiet "last backed up" note plus a rare, dismissible
+// reminder — never shown to brand-new users, never more than once every few weeks.
+function hasBackupWorthyData() { return history.length > 0 || configuredProviders(cfg).length > 0; }
+function renderBackupStatus() {
+  const note = $('sbBackupStatus'); if (!note) return;
+  if (!hasBackupWorthyData()) { note.hidden = true; return; }
+  const last = Number(localStorage.getItem(BACKUP_KEY)) || 0;
+  note.hidden = false;
+  note.textContent = last ? `Backed up ${timeAgo(last)}` : 'Never backed up — Export keeps a copy of your chats & keys';
+}
+function maybeShowBackupNudge() {
+  const banner = $('sbBackupNudge'); if (!banner) return;
+  if (!hasBackupWorthyData()) { banner.hidden = true; return; }
+  const now = Date.now();
+  const firstUse = Number(localStorage.getItem(FIRST_USE_KEY)) || now;
+  const lastBackup = Number(localStorage.getItem(BACKUP_KEY)) || 0;
+  const lastNudge = Number(localStorage.getItem(BACKUP_NUDGE_KEY)) || 0;
+  const dueForBackup = (now - lastBackup) > BACKUP_STALE_MS && (now - firstUse) > BACKUP_STALE_MS;
+  const dueForNudge = (now - lastNudge) > BACKUP_NUDGE_QUIET_MS;
+  if (dueForBackup && dueForNudge) {
+    banner.hidden = false;
+    localStorage.setItem(BACKUP_NUDGE_KEY, String(now));
+  } else {
+    banner.hidden = true;
+  }
+}
 
 function timeAgo(ts) {
   const s = (Date.now() - (ts || 0)) / 1000;
@@ -3478,7 +3513,11 @@ function init() {
   $('sbImport').onclick = openImport;
   $('sbClear').onclick = clearHistory;
   $('sbWhatsNew') && ($('sbWhatsNew').onclick = openWhatsNew);
+  $('sbBackupNudgeGo') && ($('sbBackupNudgeGo').onclick = () => { $('sbBackupNudge').hidden = true; openExport(); });
+  $('sbBackupNudgeLater') && ($('sbBackupNudgeLater').onclick = () => { $('sbBackupNudge').hidden = true; });
   loadChangelog();
+  if (!localStorage.getItem(FIRST_USE_KEY)) localStorage.setItem(FIRST_USE_KEY, String(Date.now()));
+  renderBackupStatus();
   $('privateSwitch').onclick = togglePrivate;
   $('privateSwitch').onkeydown = (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); togglePrivate(); } };
   renderHistoryList(); updatePrivateUI();

@@ -705,6 +705,11 @@ button.sel-addkey:hover { background: rgba(240,168,48,.22); border-color: rgba(2
 .sb-link:hover { background: var(--surface-2); color: var(--text); }
 .sb-link.danger { color: #f87171; }
 .sb-link.danger:hover { background: rgba(248,113,113,.1); }
+.sb-backup-status { padding: 2px 6px 6px; font-size: 11px; }
+.sb-backup-nudge { display: flex; flex-direction: column; gap: 8px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; margin: 2px 6px 10px; font-size: 12.5px; line-height: 1.4; color: var(--text-2); animation: cons-tip-in .22s ease; }
+.sb-backup-nudge-actions { display: flex; justify-content: flex-end; gap: 6px; }
+.sb-backup-nudge-actions .btn { font-size: 12px; padding: 5px 10px; }
+@media (prefers-reduced-motion: reduce) { .sb-backup-nudge { animation: none; } }
 
 /* ── What's new ──────────────────────────────────────────── */
 .wn-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--brand-b); margin-left: 6px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-b) 28%, transparent); }
