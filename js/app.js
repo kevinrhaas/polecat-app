@@ -2400,7 +2400,15 @@ function onProvenance(data) {
   }
 
   // P4 — Inline attribution (no extra model call, runs synchronously)
-  if (!lastConsensusText) return;
+  tryApplyInlineAttribution(pair);
+}
+
+// P4 — computes and applies paragraph-level source-model attribution to a
+// consensus pair's bubble, from whatever the current order/results/
+// lastConsensusText globals hold. Shared by the live path (onProvenance) and
+// restored-thread path (restoreThread) so reopened chats get the same toggle.
+function tryApplyInlineAttribution(pair) {
+  if (!pair || !lastConsensusText) return;
   const ordered = order.filter(id => results[id])
     .map(id => ({ selection: selById(id) || { id, provider: 'openai', model: '' }, text: results[id] }));
   if (ordered.length < 2) return;
@@ -3198,6 +3206,7 @@ function restoreThread(id) {
       if (lastSynthesisOrdered.length >= 2)
         renderResynthStrip(lastConsPair, lastSynthesisOrdered, lastSynthesisPrompt, activeStrategy(cfg).id);
       if (lastConsensusProvenance) renderProvenancePanel(lastConsPair, lastConsensusProvenance);
+      tryApplyInlineAttribution(lastConsPair);
     }
   }
 

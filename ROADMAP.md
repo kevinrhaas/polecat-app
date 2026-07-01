@@ -436,30 +436,21 @@ pass, never a jarring rewrite, never regress:**
   as the top line and be clearly distinct (e.g. "agreement so far, based on N of {total}") so the
   two numbers can never contradict. Keep the live agreement signal itself (it's a nice feature) —
   just remove/reconcile the confusing second counter.
-- [ ] **BUG (operator-reported 2026-06-30): restored chats lose the consensus provenance /
-  "How this was formed" analysis (contribution charts, agreement map).** A saved turn
-  (`js/app.js` ~line 1218: `currentThread.turns.push({ prompt, answers, attachments, consensus })`)
-  does NOT persist `lastConsensusProvenance` — the agreement-map object (perModel contribution %
-  + stance, agreements, disagreements, notable claims, agreementSignal). So reopening a chat from
-  history shows the consensus text but drops the entire "How this was formed" panel + stacked
-  contribution bar + disagreement/notable sections (and the snapshot cards' stance/% lose their
-  source). Fix: (1) Persist provenance with each turn — add `provenance: lastConsensusProvenance`
-  to the saved turn (only when consensus is on and provenance exists; it's a small JSON object,
-  fine for localStorage). (2) On restore (`restoreThread` ~line 2933 / the consensus render path),
-  when `turn.provenance` exists, render the full panel via `renderProvenancePanel(consensusPair,
-  turn.provenance)` and feed it to the snapshot-card stance/% and inline-attribution code so the
-  whole analysis comes back. Degrade gracefully for old saved chats that have no provenance (no
-  panel, exactly as today). Mind the history storage cap (MAX_HISTORY) — provenance is small, keep
-  it compact. Goal: a restored chat is identical to the live one, analysis and all.
-- [ ] **Restore inline source-attribution highlighting on reopened chats (follow-up to the
-  provenance-restore fix, 2026-06-30).** Saved chats now restore the "How this was formed"
-  panel, snapshot stance/%, and follow-up chips (done). The remaining gap: EPIC 1 · P4 inline
-  attribution — the toggle that color-highlights consensus sentences by originating model — is
-  NOT re-applied on restore (it runs live in the consensus finalize, ~app.js line 2309+, and
-  needs the per-sentence attribution recomputed from the restored `lastConsensusProvenance` +
-  the consensus bubble). On `restoreThread`, after rendering the provenance panel for the last
-  turn, re-run the P4 inline-attribution pass against the restored consensus pair so the
-  highlight toggle works on reopened chats too. Degrade gracefully when provenance is absent.
+- [x] **BUG (operator-reported 2026-06-30, FIXED): restored chats lose the consensus provenance /
+  "How this was formed" analysis (contribution charts, agreement map).** `recordTurn` now persists
+  `provenance: lastConsensusProvenance` on each saved turn, and `restoreThread` renders the full
+  panel (+ snapshot stance/%, follow-up chips, re-synthesis strip) from `turn.provenance` for both
+  earlier and the last turn. Degrades gracefully for old saved chats with no provenance.
+- [x] **Restore inline source-attribution highlighting on reopened chats (2026-07-01, follow-up to
+  the provenance-restore fix).** The remaining gap after the fix above: EPIC 1 · P4 inline
+  attribution (the toggle that color-highlights consensus paragraphs by originating model) wasn't
+  re-applied on restore — it only ran in the live `onProvenance` path. Fixed by extracting that
+  logic into a shared `tryApplyInlineAttribution(pair)` (uses the current `order`/`results`/
+  `lastConsensusText` globals, which `restoreThread` already repopulates from the last turn) and
+  calling it from both `onProvenance` and `restoreThread`. Verified in a real headless-Chromium
+  session: seeded a 2-model consensus thread into `polecat_history`, reopened it from the sidebar,
+  confirmed the highlight toggle button appears, both paragraphs get model-attributed coloring, and
+  clicking the toggle activates `.attribution-active` — zero console errors.
 - [ ] **Make the consensus "race bar" self-explanatory (operator-reported 2026-06-30).** The row
   of colored dots under "Blended from N models" (`js/app.js` ~line 1392-1408, `.cs-race` /
   `.cs-race-dot`) plots each model by response time — a nice "parallel execution" visual — but

@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-01 02:56 CT",
+  "updated": "2026-07-01 04:34 CT",
   "entries": [
+    {
+      "date": "2026-07-01",
+      "time": "04:34 CT",
+      "title": "Reopened chats now restore the full source-highlighting toggle",
+      "items": [
+        "Reopening a past multi-model chat from history already brought back the consensus answer and its 'How this was formed' agreement map -- but the inline highlight toggle (which colors each paragraph by the model that shaped it) didn't come back with it",
+        "That toggle now reappears on restored consensus answers too, working exactly like it does right after a live answer",
+        "Verified in a real browser session: reopened a saved chat, confirmed the highlight button, per-paragraph coloring, and toggle all work with zero console errors"
+      ]
+    },
     {
       "date": "2026-07-01",
       "time": "02:56 CT",
