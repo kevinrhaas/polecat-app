@@ -1,6 +1,15 @@
 {
-  "updated": "2026-06-30 22:37 CT",
+  "updated": "2026-06-30 23:05 CT",
   "entries": [
+    {
+      "date": "2026-06-30",
+      "time": "23:05 CT",
+      "title": "One-tap 'Add key' from any model that needs one",
+      "items": [
+        "A model row that is missing its key now shows a clickable 'Add key' badge (instead of a dead 'no key' label)",
+        "Clicking it jumps straight to Settings -> Keys, scrolls to that exact provider's key box, and focuses it with a brief highlight so you know where to type"
+      ]
+    },
     {
       "date": "2026-06-30",
       "time": "22:37 CT",

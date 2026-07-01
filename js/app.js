@@ -2488,6 +2488,18 @@ function setConfigTab(name) {
   document.querySelectorAll('.cfg-section').forEach(s => s.classList.toggle('active', s.dataset.tab === name));
   $('modal')?.scrollTo?.(0, 0);
 }
+// Jump from a model row's "Add key" badge straight to that provider's key input:
+// switch to the Keys tab, scroll the field into view, flash it, and focus it.
+function goToProviderKey(provider) {
+  setConfigTab('keys');
+  const input = $('key_' + provider);
+  if (!input) return;
+  const field = input.closest('.key-field') || input;
+  field.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  input.focus({ preventScroll: true });
+  field.classList.add('key-field-flash');
+  setTimeout(() => field.classList.remove('key-field-flash'), 1400);
+}
 function openConfig(tab) {
   closeSidebar();   // opening Settings from the sidebar's own link left its higher z-index
                      // backdrop covering the modal, eating the first click
@@ -2572,7 +2584,7 @@ function renderSelList() {
       `<span class="sel-name">${escapeHtml(p.short)}</span>` +
       `<select class="field-input sel-model"></select>` +
       (vision ? `<span class="sel-vision" title="Reads images">${EYE_SVG_SM}</span>` : '') +
-      (ready ? readyBadge : `<span class="sel-warn" title="Add a ${escapeHtml(p.name)} key in the Keys tab">no key</span>`) +
+      (ready ? readyBadge : `<button type="button" class="sel-warn sel-addkey" title="Add your ${escapeHtml(p.name)} key">Add key</button>`) +
       `<button class="sel-arb${isArbiter ? ' arb-on' : ''}" title="${isArbiter ? 'Remove arbiter role (revert to auto)' : 'Set as arbiter — synthesizes the consensus'}" aria-pressed="${isArbiter}">Arbiter</button>` +
       `<button class="sel-x" title="Remove" aria-label="Remove ${escapeHtml(p.short)}">&#215;</button>`;
     const select = row.querySelector('.sel-model');
@@ -2585,6 +2597,8 @@ function renderSelList() {
     upBtn.onclick = () => moveSelection(sel.id, -1);
     downBtn.onclick = () => moveSelection(sel.id, 1);
     row.querySelector('.sel-arb').onclick = () => setArbiter(isArbiter ? 'auto' : sel.id);
+    const addKeyBtn = row.querySelector('.sel-addkey');
+    if (addKeyBtn) addKeyBtn.onclick = () => goToProviderKey(sel.provider);
     const itemWrap = el('div', 'sel-item');
     itemWrap.appendChild(row);
     if (isArbiter) {

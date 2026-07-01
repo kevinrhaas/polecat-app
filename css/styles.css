@@ -490,6 +490,11 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .sel-name { font-size: 12px; font-weight: 700; width: 78px; flex-shrink: 0; }
 .sel-model { flex: 1; min-width: 0; }
 .sel-warn { font-size: 10px; color: #f0a830; background: rgba(240,168,48,.12); padding: 2px 6px; border-radius: 100px; white-space: nowrap; }
+button.sel-addkey { border: 1px solid rgba(240,168,48,.4); cursor: pointer; font-family: inherit; font-weight: 600; line-height: 1.4; transition: background .12s, border-color .12s; }
+button.sel-addkey:hover { background: rgba(240,168,48,.22); border-color: rgba(240,168,48,.7); }
+@keyframes key-flash { 0%, 100% { box-shadow: 0 0 0 0 rgba(240,168,48,0); } 30% { box-shadow: 0 0 0 3px rgba(240,168,48,.45); } }
+.key-field-flash { border-radius: 8px; animation: key-flash 1.4s ease; }
+@media (prefers-reduced-motion: reduce) { .key-field-flash { animation: none; } }
 .sel-vision { display: inline-flex; align-items: center; flex-shrink: 0; cursor: default; }
 .cfg-legend { font-size: 11px; color: var(--text-3); display: flex; align-items: center; gap: 5px; }
 .cfg-link { background: none; border: none; padding: 0; margin: 0; cursor: pointer; color: var(--brand-b); font-size: inherit; font-family: inherit; text-decoration: underline; text-underline-offset: 2px; }
