@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-30 23:11 CT",
+  "updated": "2026-06-30 23:15 CT",
   "entries": [
+    {
+      "date": "2026-06-30",
+      "time": "23:15 CT",
+      "title": "No more raw chat-template tokens leaking into answers",
+      "items": [
+        "Some models (often via the free demo) occasionally leak internal chat-template markers (raw start/end/eot control tokens) into their reply — these are now stripped from every answer, the consensus, saved history, and copied text",
+        "When a model returns nothing usable, the response now reads a clear 'No usable answer came back — use regenerate to try again' instead of a bare '(no response)', and a regenerate button is always offered",
+        "Because those junk tokens are removed before consensus, a model that only emitted a control token no longer gets mislabeled as an 'outlier'"
+      ]
+    },
     {
       "date": "2026-06-30",
       "time": "23:11 CT",

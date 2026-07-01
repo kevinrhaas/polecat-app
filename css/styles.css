@@ -291,6 +291,7 @@ body.processing .send-btn { display: none; }
 .msg.assistant .msg-bubble th, .msg.assistant .msg-bubble td { border: 1px solid var(--border); padding: 5px 9px; text-align: left; }
 .msg.assistant .msg-bubble th { background: var(--surface-3); font-weight: 600; }
 .msg-error { color: #f87171; font-size: 13px; }
+.msg-empty { color: var(--text-3); font-size: 13px; font-style: italic; }
 /* image attachments inside a message */
 .msg-attachments { display: flex; flex-wrap: wrap; gap: 6px; max-width: 90%; }
 .msg.user .msg-attachments { justify-content: flex-end; }

@@ -876,10 +876,25 @@ function setMsgTime(pair, ms) {
   t.title = `Responded in ${label}`;
   t.hidden = false;
 }
+// Strip chat-template control tokens that some models (especially via the
+// free-demo proxy) leak into their output — e.g. <|start|>, <|end|>, <|eot_id|>,
+// <|im_start|>, <s>, </s>. These are never meaningful content; showing them (or
+// feeding them to the arbiter) just looks broken. Conservative: only removes the
+// well-known <|...|> and <s>/</s> markers, leaving all real text intact.
+function cleanModelText(s) {
+  if (!s) return s;
+  return s
+    .replace(/<\|[^|>]*\|>/g, '')   // <|start|>, <|end|>, <|eot_id|>, <|im_start|>, ...
+    .replace(/<\/?s>/g, '')         // <s>  </s>
+    .trim();
+}
 function finishBubble(pair, full) {
   const bubble = pair.querySelector('.msg.assistant .msg-bubble');
   const copyBtn = pair.querySelector('.copy-btn');
-  if (!full) { bubble.textContent = '(no response)'; return; }
+  if (!full) {
+    bubble.innerHTML = '<span class="msg-empty">No usable answer came back from this model. Use the regenerate button above to try again.</span>';
+    return;
+  }
   highlightBubble(bubble);
   copyBtn.hidden = false; copyBtn.onclick = () => copyText(full, copyBtn);
 }
@@ -910,13 +925,14 @@ async function streamTo(sel, userContent, images, displayAtts, nativePdfs = null
     // the answer grows below it, so the reader keeps their place (Gemini-style).
     for await (const chunk of gen) {
       full += chunk;
-      bubble.innerHTML = renderMarkdown(full);
+      const shown = cleanModelText(full);
+      bubble.innerHTML = renderMarkdown(shown);
       // Live preview in the consensus progress box — throttled to ~8fps so it stays smooth.
       if (cfg.consensus) {
         const now = performance.now();
         if (now - _prevTs > 125) {
           _prevTs = now;
-          const raw = full.replace(/[#*`_>\[\]!]/g, ' ').replace(/\s+/g, ' ').trim();
+          const raw = shown.replace(/[#*`_>\[\]!]/g, ' ').replace(/\s+/g, ' ').trim();
           const preview = raw.length > 90 ? raw.slice(0, 87) + '…' : raw;
           streamPreviews[sel.id] = preview;
           const prevEl = $('cprev_' + sel.id);
@@ -924,18 +940,20 @@ async function streamTo(sel, userContent, images, displayAtts, nativePdfs = null
         }
       }
     }
+    full = cleanModelText(full);
     finishBubble(pair, full);
     if (full) {
       const elapsed = performance.now() - t0;
       responseTimes[sel.id] = elapsed;
       setMsgTime(pair, elapsed);
-      addRegenBtn(sel, pair);
     }
+    addRegenBtn(sel, pair);   // always offer retry — including on empty/garbage responses
     co.push({ role: 'assistant', content: full });
     markRun(sel.id, 'done');
     return full;
   } catch (err) {
     const isStop = err?.name === 'AbortError' && _userStopped;
+    full = cleanModelText(full);
     if (isStop && full) {
       // User pressed Stop mid-stream — keep the partial response, add a subtle indicator.
       finishBubble(pair, full);
@@ -1387,7 +1405,7 @@ async function getSilentText(sel, messages) {
     if (err?.name !== 'AbortError') throw err;
     // AbortError (user stop or timeout) — return whatever arrived so far.
   }
-  return text;
+  return cleanModelText(text);
 }
 // Attribution footer under a finished consensus answer: which models fed it,
 // which one arbitrated, and a tap-through to each model's raw reply. Makes the
@@ -1459,10 +1477,11 @@ async function streamToConsensus(sel, messages) {
     for await (const chunk of makeGen(sel, messages, cfg, runOpts)) {
       full += chunk;
       if (firstChunk) { firstChunk = false; bubble.classList.add('cons-answer-in'); }
-      bubble.innerHTML = renderMarkdown(full);
+      bubble.innerHTML = renderMarkdown(cleanModelText(full));
     }
   } catch (err) {
     if (err?.name === 'AbortError' && _userStopped) {
+      full = cleanModelText(full);
       if (full) {
         finishBubble(pair, full);
         const stEl = el('span', 'msg-stopped'); stEl.textContent = ' (stopped)';
@@ -1474,6 +1493,7 @@ async function streamToConsensus(sel, messages) {
     }
     throw err;
   }
+  full = cleanModelText(full);
   // Arbiter produced nothing (no error, no tokens) — drop the empty bubble so the
   // caller's fallback can render cleanly instead of leaving a stuck placeholder.
   if (!full) { pair.remove(); return full; }
