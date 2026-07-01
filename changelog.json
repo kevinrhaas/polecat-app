@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-01 04:34 CT",
+  "updated": "2026-07-01 06:29 CT",
   "entries": [
+    {
+      "date": "2026-07-01",
+      "time": "06:29 CT",
+      "title": "\"Responses at a glance\" now always shows up after a consensus",
+      "items": [
+        "The per-model preview strip below each consensus answer used to only appear when the Agreement map setting was on, since it was rendered as a side effect of that feature -- turning the map off silently hid it too",
+        "It now always appears after a consensus, since it only needs each model's answer, not the arbiter's agreement analysis",
+        "The Agreement map setting still controls the deeper 'How this was formed' breakdown and contribution/stance badges on each card -- just not whether the strip itself shows up"
+      ]
+    },
     {
       "date": "2026-07-01",
       "time": "04:34 CT",

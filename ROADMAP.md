@@ -258,10 +258,16 @@ pass, never a jarring rewrite, never regress:**
   all strategies now fall back to the most representative answer + local agreement
   provenance, with an amber explainer. (js/arbitration.js fallbackConsensus, js/app.js
   renderArbiterFallbackNote.) FOLLOW-UPS still open:
-  - [ ] **Decouple "Responses at a glance" from the agreement map.** The per-model
-    snapshot strip only needs the model answers, not the arbiter — render it after every
-    consensus even when the agreement map (provenance) is turned OFF. Today it lives
-    inside onProvenance, so map-off users never see it.
+  - [x] **Decouple "Responses at a glance" from the agreement map (fixed 2026-07-01).**
+    The per-model snapshot strip only needs the model answers, not the arbiter — it now
+    renders after every consensus even when the agreement map (provenance) is turned OFF.
+    Previously it only rendered as a side effect of `onProvenance()`, which is itself
+    gated behind the provenance setting (`arbitration.js` `maybeProvenance`), so map-off
+    users never saw it. `runConsensus()` and `rerunConsensusWith()` now call
+    `renderModelSnapshotsEl()` unconditionally right after `runArbitration()` resolves
+    (idempotent — it no-ops if the strip already exists from the live provenance path,
+    and needs no provenance data since the stance/contribution badges on each card are
+    already optional/graceful when missing).
   - [ ] **Proactive arbiter-health warning.** Before/at synthesis, if the chosen arbiter's
     provider has no key or a known-bad key (e.g. last call returned 401/credit error),
     surface a one-line warning in the Consensus tab up front rather than only after it fails.

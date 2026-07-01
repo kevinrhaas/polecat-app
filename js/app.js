@@ -1607,6 +1607,11 @@ async function runConsensus() {
     provenanceEnabled: cfg.arbitration.provenance !== false,
     provenance: (data) => onProvenance(data),
   });
+  // "Responses at a glance" only needs the model answers, not the arbiter's
+  // provenance analysis — always show it, even with the agreement map off.
+  // (No-op if onProvenance already rendered it above.)
+  const _consPair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
+  if (_consPair) renderModelSnapshotsEl(_consPair);
 }
 // EPIC 1 · P4 — Inline attribution: color-coded paragraph highlighting.
 // A floating tooltip div is shared across all attributed paragraphs.
@@ -2214,6 +2219,10 @@ async function rerunConsensusWith(capturedOrdered, capturedPrompt, strategyId, s
       provenanceEnabled: cfg.arbitration.provenance !== false,
       provenance: data => onProvenance(data),
     });
+    // Always show the per-model snapshot strip, independent of the agreement
+    // map setting — must run before the `finally` restores the live globals.
+    const _consPair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
+    if (_consPair) renderModelSnapshotsEl(_consPair);
   } finally {
     lastPrompt = savedPrompt;
     results    = savedResults;
