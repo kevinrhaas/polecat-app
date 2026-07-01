@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-30 23:15 CT",
+  "updated": "2026-07-01 02:56 CT",
   "entries": [
+    {
+      "date": "2026-07-01",
+      "time": "02:56 CT",
+      "title": "Keys tab now shows a real, verified connection status",
+      "items": [
+        "Settings -> Keys used to show 'connected' the moment you typed anything, even a wrong or wrong-type key -- it never actually checked. It now probes the provider automatically ~600ms after you stop typing and shows the real result: No key, Checking..., Connected, or Not connected with the provider's error",
+        "Pasting a Claude Code OAuth token (sk-ant-oat01-...) into the Claude field is caught instantly with a clear hint to use a real API key from console.anthropic.com instead",
+        "Every status pairs a small icon with a text label -- never color alone -- and reuses the same probe cache the Models tab already relies on, so it stays fast and doesn't spam any provider's API"
+      ]
+    },
     {
       "date": "2026-06-30",
       "time": "23:15 CT",

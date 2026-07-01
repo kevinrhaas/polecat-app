@@ -364,26 +364,20 @@ pass, never a jarring rewrite, never regress:**
   legend carries text), reduced-motion friendly, and tidy on mobile. Keep the "(approximate)"
   caption. Single model → just a full-width bar (or skip). This replaces the current
   three-separate-bars layout.
-- [ ] **BUG (operator-requested 2026-06-30): Keys tab shows "connected" for an invalid key.**
-  In Settings → Keys, the per-provider status (`js/app.js` ~line 2673/2678) shows "● connected"
-  whenever a key STRING is present — it never checks the key actually works. So a wrong or
-  wrong-TYPE key (e.g. a Claude Code OAuth token `sk-ant-oat01-…` pasted into the Claude field,
-  which 401s, or a typo'd key) still lights up green "connected" while every request fails. Fix:
-  make the Keys-tab status reflect REAL verification, reusing the existing probe / `modelStatus`
-  mechanism (the Models tab already probes). Behaviour:
-    - No key → neutral grey "No key".
-    - Key entered, probe in flight → **yellow** "Checking…".
-    - Probe succeeded → **green** "Connected" (verified — only state that should look "good").
-    - Probe failed → **red** "Not connected — invalid key" with the error (e.g. "401 Unauthorized")
-      in a tooltip.
-  Trigger a lightweight probe automatically a short debounce (~600ms) after the key input changes
-  (probe the provider's default model), and cache the result so we don't spam the API. Never use
-  color alone — pair each state with a text label + a small SVG icon (check / cross / clock) in
-  the existing icon style; accessible, light/dark, mobile-tidy.
-  Claude-specific helper (folds in an earlier idea): if the entered key starts with
-  `sk-ant-oat01-`, skip the probe and show a red hint: "That's a Claude Code OAuth token —
-  Polecat needs an API key (sk-ant-api03…) from console.anthropic.com." (Subscription OAuth
-  tokens don't work with the direct Messages API.)
+- [x] **BUG (FIXED 2026-07-01, operator-requested 2026-06-30): Keys tab shows "connected" for
+  an invalid key.** Settings → Keys now shows REAL verification, reusing the same probe /
+  `modelStatus` cache the Models tab already uses (keyed by provider + default model). States:
+  neutral grey "No key" / "Key added" (untested), yellow "Checking…" while a probe is in
+  flight, green "Connected" only once a probe actually succeeds, red "Not connected" with the
+  provider's error (e.g. "invalid x-api-key") in a title tooltip on failure. A probe fires
+  automatically ~600ms after the key input stops changing (debounced), and any cached result is
+  invalidated the moment the key text changes so a stale "Connected" never lingers for a key
+  that's since been edited. A Claude Code OAuth token (`sk-ant-oat01-…`) is detected client-side
+  by prefix — no network probe — and shows a red hint pointing at console.anthropic.com for a
+  real API key. Every state pairs a small SVG icon (dot/clock/check/cross) with a text label,
+  never color alone. Verified in a real headless-Chromium session: no key → "No key", a fake key
+  → "Key added" → "Checking…" → "Not connected" (with error tooltip), an OAuth token → instant
+  "Not connected" with the console.anthropic.com hint, zero console errors throughout.
 - [x] **Models screen: ordering, visible roles, and arbiter-only models (operator-requested
   2026-06-30).** Make Settings → Models communicate and control each model's ROLE in a
   consensus run, not just the list. Can be split across runs:

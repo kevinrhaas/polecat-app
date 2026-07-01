@@ -42,6 +42,9 @@ const EDIT_SVG    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none"
 const BLEND_SVG   = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`;
 const CHECK_SM_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`;
 const EXPAND_SVG  = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>`;
+const CROSS_SM_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+const CLOCK_SM_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>`;
+const DOT_SM_SVG  = `<svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>`;
 
 const DEFAULT_TITLE = document.title;
 let cfg = loadCfg();
@@ -2497,6 +2500,59 @@ async function testAllModels() {
   await Promise.all(Array.from({ length: Math.min(3, targets.length) }, worker));
   toast('Model test complete');
 }
+// ── Keys-tab live verification (reuses the same probe / modelStatus cache
+// as the Models tab, keyed on the provider's default model) ───────────────
+const CLAUDE_OAUTH_RE = /^sk-ant-oat01-/;
+const _keyProbeTimers = {};
+function keyStatusInfo(id) {
+  const val = (providerKey(cfg, id) || '').trim();
+  if (!val) return { state: 'none' };
+  if (id === 'claude' && CLAUDE_OAUTH_RE.test(val)) {
+    return { state: 'bad', error: "That's a Claude Code OAuth token — Polecat needs an API key (sk-ant-api03…) from console.anthropic.com." };
+  }
+  const st = statusOf(id, defaultModel(id));
+  if (!st) return { state: 'unknown' };
+  if (st.testing) return { state: 'checking' };
+  if (st.ok) return { state: 'ok' };
+  return { state: 'bad', error: st.error || 'Invalid key' };
+}
+function renderKeyStatusField(field, id) {
+  const badge = field.querySelector('.key-status'); if (!badge) return;
+  const info = keyStatusInfo(id);
+  const byState = {
+    none:     { cls: '',          icon: DOT_SM_SVG,   label: 'No key' },
+    unknown:  { cls: '',          icon: DOT_SM_SVG,   label: 'Key added' },
+    checking: { cls: 'checking',  icon: CLOCK_SM_SVG, label: 'Checking…' },
+    ok:       { cls: 'on',        icon: CHECK_SM_SVG, label: 'Connected' },
+    bad:      { cls: 'bad',       icon: CROSS_SM_SVG, label: 'Not connected' },
+  };
+  const v = byState[info.state];
+  badge.className = 'key-status' + (v.cls ? ' ' + v.cls : '');
+  badge.innerHTML = `${v.icon}<span>${escapeHtml(v.label)}</span>`;
+  badge.title = info.error || '';
+}
+function scheduleKeyProbe(id, field) {
+  clearTimeout(_keyProbeTimers[id]);
+  const val = (providerKey(cfg, id) || '').trim();
+  const model = defaultModel(id);
+  const k = model ? statusKey(id, model) : null;
+  // The cache is keyed by provider+model, not by key value — the key just
+  // changed, so any cached result now describes a DIFFERENT key. Drop it so
+  // the badge never shows a stale "Connected"/"Not connected" for new text.
+  if (k) delete cfg.modelStatus[k];
+  if (!val || (id === 'claude' && CLAUDE_OAUTH_RE.test(val))) { renderKeyStatusField(field, id); return; }
+  renderKeyStatusField(field, id);   // neutral "Key added" while the debounce waits
+  _keyProbeTimers[id] = setTimeout(async () => {
+    if (!model || providerKey(cfg, id) !== val) return;   // key changed again before the debounce fired
+    cfg.modelStatus[k] = { testing: true };
+    renderKeyStatusField(field, id);
+    const res = await probeModel({ provider: id, model }, cfg);
+    if (providerKey(cfg, id) !== val) return;              // key changed again while probing — drop stale result
+    cfg.modelStatus[k] = { ok: res.ok, error: res.error || '', ts: Date.now() };
+    persist();
+    renderKeyStatusField(field, id);
+  }, 600);
+}
 // A probe timeout on a SLOW self-hosted provider (Polecat MS) means the model is
 // warming up / slow on CPU — not broken. Show a neutral "slow" mark, not a ✗.
 function isSlowWarming(provider, st) {
@@ -2795,20 +2851,24 @@ function renderKeys() {
   PROVIDER_IDS.forEach(id => {
     const p = PROVIDERS[id];
     if (p.noKey) return;                       // demo needs no key field
-    const has = !!providerKey(cfg, id);
     const tier = KEY_TIER[id] || '';
     const field = el('div', 'key-field');
     field.innerHTML =
       `<div class="key-head"><span class="svc-dot" style="background:${p.color}"></span>` +
       `<span class="key-name">${escapeHtml(p.name)}</span>` +
       `<span class="key-tier ${tier === 'Paid' ? 'paid' : 'free'}">${escapeHtml(tier)}</span>` +
-      `<span class="key-status ${has ? 'on' : ''}">${has ? '● connected' : '○ no key'}</span></div>` +
+      `<span class="key-status"></span></div>` +
       `<input type="password" class="field-input" id="key_${id}" placeholder="${escapeHtml(p.placeholder)}" autocomplete="off" value="${escapeHtml(providerKey(cfg, id))}">` +
       `<span class="field-hint">Key at <a href="${p.keyUrl}" target="_blank" rel="noopener">${escapeHtml(p.keyLabel)}</a>${p.rateNote ? ' · ' + escapeHtml(p.rateNote) : ''}</span>`;
     const input = field.querySelector('input');
-    input.oninput  = () => { setProviderKey(cfg, id, input.value.trim()); persist(); };
-    input.onchange = () => { buildChips(); const f = field.querySelector('.key-status'); const on = !!input.value.trim(); f.textContent = on ? '● connected' : '○ no key'; f.classList.toggle('on', on); };
+    renderKeyStatusField(field, id);
+    input.oninput  = () => { setProviderKey(cfg, id, input.value.trim()); persist(); scheduleKeyProbe(id, field); };
+    input.onchange = () => { buildChips(); };
     wrap.appendChild(field);
+    // Verify a key that's never been probed yet (e.g. freshly imported); an
+    // already-cached result (ok/bad) is trusted as-is so reopening the tab
+    // doesn't re-hit every provider's API on each visit.
+    if (providerKey(cfg, id) && !statusOf(id, defaultModel(id))) scheduleKeyProbe(id, field);
   });
   // Export / Import lives here — it's about your keys + overall setup
   const actions = el('div', 'key-actions');
