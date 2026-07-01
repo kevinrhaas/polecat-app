@@ -483,9 +483,18 @@ pass, never a jarring rewrite, never regress:**
   "Final answer", toggle "Synthesis only" from either tab) and stays empty/hidden when there are no
   models yet (the existing "No models yet" hint already covers that case). Verified in a real
   headless-Chromium session (desktop dark, mobile-width light, before/after setting an arbiter) —
-  pills matched exactly between tabs, wrapped cleanly at 390px, zero console errors. Still open: a
-  deeper structural pass (e.g. whether Models + Consensus should be more tightly unified than
-  cross-linked) — left for a future run per the direction below.
+  pills matched exactly between tabs, wrapped cleanly at 390px, zero console errors. PLAIN-LANGUAGE
+  SENTENCE ON MODELS TAB DONE (2026-07-01): the Models tab's pill flow used to stand alone with no
+  explanation, while the Consensus tab paired its identical pills with a plain sentence ("Your 3
+  models answer in parallel, then X merges them into one answer."). Extracted that sentence into
+  a shared `consensusFlowSentence()` helper (`js/app.js`) used by both `renderModelsFlow()` and
+  `renderArbitration()`, so the Models tab now shows the same plain-language explanation right
+  under its pills — a user managing the model list gets the full story (who answers, who merges,
+  what happens) without needing the Consensus tab's wording to differ or duplicate logic. Verified
+  in a real headless-Chromium session (dark + light, 3-model + empty states): identical wording on
+  both tabs, correct model names/counts, empty state unchanged (no stray blank line), zero console
+  errors. Still open: a deeper structural pass (e.g. whether Models + Consensus should be more
+  tightly unified than cross-linked) — left for a future run per the direction below.
   Right now the config is split confusingly across two tabs and
   neither shows the whole picture: the **Models** tab lists selected models but not who arbitrates;
   the **Consensus** tab shows the strategy + arbiter model but gives NO indication of which models

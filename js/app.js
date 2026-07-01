@@ -2939,14 +2939,24 @@ function consensusFlowPills(answerers, arbSel) {
       `<span class="wm-pill wm-consensus">Consensus</span>` +
     `</div>`;
 }
-// Renders the same flow pills at the top of the Models tab (read-only summary)
-// so a user managing the model list can see who answers vs. who writes the
-// final answer without switching to the Consensus tab.
+// The plain-language "N models answer, then X merges them" sentence, shared
+// by the Models and Consensus tabs so the story reads identically in both
+// places (only the trailing link differs per tab and is added by the caller).
+function consensusFlowSentence(answerers, arbSel) {
+  const n = answerers.length;
+  return `Your ${n} model${n === 1 ? '' : 's'} answer${n === 1 ? 's' : ''} in parallel, then ${arbSel ? escapeHtml(selectionLabel(arbSel)) : 'the strategy auto-picks one to'} merge${arbSel ? 's' : ''} them into one answer.`;
+}
+// Renders the same flow pills + plain-language sentence at the top of the
+// Models tab (read-only summary) so a user managing the model list can see
+// who answers vs. who writes the final answer without switching to the
+// Consensus tab.
 function renderModelsFlow() {
   const wrap = $('modelsFlow'); if (!wrap) return;
   const answerers = answeringSelections(cfg);
   const arbSel = cfg.arbitration.arbiter !== 'auto' ? (cfg.selections || []).find(s => s.id === cfg.arbitration.arbiter) : null;
-  wrap.innerHTML = answerers.length ? consensusFlowPills(answerers, arbSel) : '';
+  wrap.innerHTML = answerers.length
+    ? consensusFlowPills(answerers, arbSel) + `<div class="cs-flow-text">${consensusFlowSentence(answerers, arbSel)}</div>`
+    : '';
 }
 
 // ── Arbitration tab ───────────────────────────────────────────────────────
@@ -2975,7 +2985,7 @@ function renderArbitration() {
   const flowHtml = n
     ? `<div class="cs-flow-wrap">` +
         consensusFlowPills(answerers, arbSel) +
-        `<div class="cs-flow-text">Your ${n} model${n === 1 ? '' : 's'} answer${n === 1 ? 's' : ''} in parallel, then ${arbSel ? escapeHtml(selectionLabel(arbSel)) : 'the strategy auto-picks one to'} merge${arbSel ? 's' : ''} them into one answer. <button class="cfg-link" id="csFlowModelsLink" type="button">Manage models &rarr;</button></div>` +
+        `<div class="cs-flow-text">${consensusFlowSentence(answerers, arbSel)} <button class="cfg-link" id="csFlowModelsLink" type="button">Manage models &rarr;</button></div>` +
       `</div>`
     : `<div class="cs-flow-wrap"><div class="cs-flow-text muted-hint">No models are set to answer yet — <button class="cfg-link" id="csFlowModelsLink" type="button">add or enable one in Models &rarr;</button></div></div>`;
 

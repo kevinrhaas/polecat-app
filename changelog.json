@@ -1,6 +1,15 @@
 {
-  "updated": "2026-07-01 17:52 CT",
+  "updated": "2026-07-01 18:56 CT",
   "entries": [
+    {
+      "date": "2026-07-01",
+      "time": "18:56 CT",
+      "title": "Models tab now explains the flow in plain language too",
+      "items": [
+        "The Models tab's [answering models] -> [final answer] -> Consensus pill flow now also shows the plain-language sentence the Consensus tab already had -- e.g. \"Your 3 models answer in parallel, then Claude Opus merges them into one answer\"",
+        "Same wording on both tabs, powered by one shared helper, so the two screens can never drift out of sync"
+      ]
+    },
     {
       "date": "2026-07-01",
       "time": "17:52 CT",
