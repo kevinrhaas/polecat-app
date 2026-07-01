@@ -1446,11 +1446,21 @@ async function streamToConsensus(sel, messages) {
   conv.appendChild(pair); scrollPairToTop(conv, pair);
   const bubble = pair.querySelector('.msg.assistant .msg-bubble');
   let full = '';
-  bubble.innerHTML = '';
+  // Elegant placeholder so the consensus bubble is never an awkward empty box
+  // while we wait for the arbiter's first token. Replaced on the first chunk,
+  // and the streamed answer fades in (see .cons-answer-in / .cons-thinking CSS).
+  bubble.innerHTML =
+    '<div class="cons-thinking"><span class="cons-thinking-dots"><i></i><i></i><i></i></span>' +
+    '<span class="cons-thinking-label">Synthesizing consensus…</span></div>';
   const t0 = performance.now();
+  let firstChunk = true;
   try {
     const runOpts = makeRunOpts(PROVIDERS[sel.provider]);
-    for await (const chunk of makeGen(sel, messages, cfg, runOpts)) { full += chunk; bubble.innerHTML = renderMarkdown(full); }
+    for await (const chunk of makeGen(sel, messages, cfg, runOpts)) {
+      full += chunk;
+      if (firstChunk) { firstChunk = false; bubble.classList.add('cons-answer-in'); }
+      bubble.innerHTML = renderMarkdown(full);
+    }
   } catch (err) {
     if (err?.name === 'AbortError' && _userStopped) {
       if (full) {
@@ -1464,6 +1474,9 @@ async function streamToConsensus(sel, messages) {
     }
     throw err;
   }
+  // Arbiter produced nothing (no error, no tokens) — drop the empty bubble so the
+  // caller's fallback can render cleanly instead of leaving a stuck placeholder.
+  if (!full) { pair.remove(); return full; }
   finishBubble(pair, full);
   if (full) {
     setMsgTime(pair, performance.now() - t0);

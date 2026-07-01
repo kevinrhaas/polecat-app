@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-30 23:05 CT",
+  "updated": "2026-06-30 23:11 CT",
   "entries": [
+    {
+      "date": "2026-06-30",
+      "time": "23:11 CT",
+      "title": "A graceful 'synthesizing' moment before the consensus answer",
+      "items": [
+        "The Consensus tab no longer flashes an awkward empty box while it waits for the arbiter to start — it now shows a subtle animated 'Synthesizing consensus…' indicator",
+        "When the answer begins, it fades in smoothly instead of popping in",
+        "Respects reduced-motion preferences"
+      ]
+    },
     {
       "date": "2026-06-30",
       "time": "23:05 CT",
