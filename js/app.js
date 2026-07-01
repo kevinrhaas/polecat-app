@@ -1374,7 +1374,14 @@ function refreshConsensusProgress() {
   const total = ids.length, done = ids.filter(s => runStatus[s.id] === 'done').length;
   const failed = ids.filter(s => runStatus[s.id] === 'error').length;
   const aId = cfg.arbitration.arbiter;
-  const arbiterLabel = (aId && aId !== 'auto' && selById(aId)) ? selectionLabel(selById(aId)) : 'auto (strategy default)';
+  const arbSelNow = (aId && aId !== 'auto') ? selById(aId) : null;
+  // Plain-language, matching the "Your N models answer in parallel, then X merges
+  // them" phrasing on the Consensus settings tab — the technical strategy name
+  // (e.g. "Sequential Refinement") moves into a title tooltip for the curious,
+  // instead of being the headline copy a beginner sees on every run.
+  const mergeLine = arbSelNow
+    ? `${total} model${total === 1 ? '' : 's'} answering in parallel, then ${escapeHtml(selectionLabel(arbSelNow))} merges them into one answer.`
+    : `${total} model${total === 1 ? '' : 's'} answering in parallel, then the strategy auto-picks one to merge them into one answer.`;
   const phaseLine = consensusPhase === 'arbitrating'
     ? (consensusStatusText || 'Synthesizing…')
     : `Waiting for models — ${done}/${total} responded${failed ? `, ${failed} failed` : ''}…`;
@@ -1393,7 +1400,7 @@ function refreshConsensusProgress() {
   box.innerHTML =
     `<div class="cp-glyph"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="5.6" y1="5.6" x2="7.8" y2="7.8"/><line x1="16.2" y1="16.2" x2="18.4" y2="18.4"/><line x1="5.6" y1="18.4" x2="7.8" y2="16.2"/><line x1="16.2" y1="7.8" x2="18.4" y2="5.6"/></svg></div>` +
     `<div class="cp-title">Building consensus</div>` +
-    `<div class="cp-strategy">${escapeHtml(strat.name)} · arbiter: ${escapeHtml(arbiterLabel)}</div>` +
+    `<div class="cp-strategy" title="Strategy: ${escapeHtml(strat.name)}">${mergeLine}</div>` +
     `<div class="cp-phase">${escapeHtml(phaseLine)}</div>` +
     `<ul class="cp-models">${modelsHtml}</ul>` +
     teaserHtml +

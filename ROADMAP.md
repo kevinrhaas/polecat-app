@@ -46,8 +46,20 @@ Work these in order, one shippable step per run:
    the pill-flow's arbiter chip now appends a small " · synthesis only" tag when
    set, so the mode is visible in the flow itself, not just in a dropdown label.
    Verified in a real headless-Chromium session: toggling either checkbox instantly
-   updates the other tab and the flow pill, zero console errors. NEXT: broader
-   "arbiter/strategy" jargon reduction remains open per the full backlog item below.
+   updates the other tab and the flow pill, zero console errors. STEP 4 DONE
+   (shipped 2026-07-01): the "Building consensus" progress screen (shown on
+   EVERY consensus run, `js/app.js` `refreshConsensusProgress`) used to headline
+   the raw strategy name + jargon, e.g. "Sequential Refinement · arbiter: auto
+   (strategy default)". Rewrote it to the same plain-language pattern already
+   used on the Consensus settings tab's pill flow — "3 models answering in
+   parallel, then Claude · Opus 4.1 merges them into one answer." (or "the
+   strategy auto-picks one to merge them" when the arbiter is auto). The
+   technical strategy name moved to a hover `title` tooltip instead of being
+   in the visible copy. This is higher-visibility than the settings-tab copy
+   since every user sees it on every run, not just when opening Settings.
+   NEXT: broader "arbiter/strategy" jargon reduction remains open per the full
+   backlog item below (e.g. the "Strategy" dropdown option names themselves,
+   like "Single Judge — Comprehensive", are still fairly technical).
 
 These are one theme — lead with them. They span several runs, so on any run where
 you can't advance them safely, pick up the next **operator-requested** item below

@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-01 08:23 CT",
+  "updated": "2026-07-01 10:21 CT",
   "entries": [
+    {
+      "date": "2026-07-01",
+      "time": "10:21 CT",
+      "title": "Plainer language on the \"Building consensus\" screen",
+      "items": [
+        "While models are answering, the progress screen used to show the technical strategy name plus jargon like 'Sequential Refinement - arbiter: auto (strategy default)'",
+        "It now reads in plain language, matching the wording already used on the Consensus settings tab -- e.g. '3 models answering in parallel, then Claude Opus 4.1 merges them into one answer'",
+        "The technical strategy name is still there for anyone curious -- it's just a hover tooltip now instead of the headline text every user sees on every run"
+      ]
+    },
     {
       "date": "2026-07-01",
       "time": "08:23 CT",
