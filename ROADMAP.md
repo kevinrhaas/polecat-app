@@ -472,8 +472,20 @@ pass, never a jarring rewrite, never regress:**
   the Consensus tab, so its dropdown/flow could show stale state until Settings was reopened).
   The "arbiter" jargon itself is now swept from user-facing copy too (2026-07-01, see DO THIS
   NEXT item 3 step 6 above) — the Consensus tab's selector is "Final answer written by" and the
-  Models tab's toggle is "Final answer". Still open: the rest of this item — a holistic visual/IA
-  pass, not just wording — per the direction below.
+  Models tab's toggle is "Final answer". VISUAL FLOW ON MODELS TAB DONE (2026-07-01): the same
+  "[answering models] → [final-answer model] → Consensus" pill flow that opened the Consensus tab
+  now also renders at the top of the Models tab (`js/app.js` `renderModelsFlow`, `#modelsFlow` in
+  `index.html`), so a user managing the model list sees the whole shape of a run — who answers and
+  who writes the final answer — without switching tabs. The pill markup itself was extracted into
+  one shared `consensusFlowPills()` helper used by both tabs, so the two can't drift out of sync
+  the way the "synthesis only" badge did before it was unified. It refreshes live on every action
+  that changes the answering set or the arbiter (reorder, remove, add via picker or browse, toggle
+  "Final answer", toggle "Synthesis only" from either tab) and stays empty/hidden when there are no
+  models yet (the existing "No models yet" hint already covers that case). Verified in a real
+  headless-Chromium session (desktop dark, mobile-width light, before/after setting an arbiter) —
+  pills matched exactly between tabs, wrapped cleanly at 390px, zero console errors. Still open: a
+  deeper structural pass (e.g. whether Models + Consensus should be more tightly unified than
+  cross-linked) — left for a future run per the direction below.
   Right now the config is split confusingly across two tabs and
   neither shows the whole picture: the **Models** tab lists selected models but not who arbitrates;
   the **Consensus** tab shows the strategy + arbiter model but gives NO indication of which models

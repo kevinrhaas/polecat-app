@@ -2698,7 +2698,7 @@ function statusBadge(provider, model) {
   if (isSlowWarming(provider, st)) return `<span class="sel-status slow" title="Slow to respond (self-hosted, CPU) — it may still work; give it a few seconds, or re-test">◴</span>`;
   return `<span class="sel-status bad" title="${escapeHtml(st.error || 'Unavailable')}">✗</span>`;
 }
-function renderModels() { renderSelList(); renderAddRow(); }
+function renderModels() { renderModelsFlow(); renderSelList(); renderAddRow(); }
 function renderSelList() {
   const list = $('selList'); if (!list) return;
   list.innerHTML = '';
@@ -2749,7 +2749,7 @@ function renderSelList() {
         `</label>`;
       onlyRow.querySelector('.sel-arb-only-cb').onchange = (e) => {
         sel.arbiterOnly = e.target.checked;
-        persist(); buildChips(); renderSelList(); renderArbitration();
+        persist(); buildChips(); renderSelList(); renderModelsFlow(); renderArbitration();
       };
       itemWrap.appendChild(onlyRow);
     }
@@ -2840,7 +2840,7 @@ function addModel(provider, model, viaAddBtn) {
   if ((cfg.selections || []).length >= MAX_SELECTIONS) { toast(`Max ${MAX_SELECTIONS} models`); return; }
   (cfg.selections = cfg.selections || []).push(mkSelection(provider, model));
   persist(); buildChips();
-  if (viaAddBtn) renderModels(); else renderSelList();        // browse: keep the panel open
+  if (viaAddBtn) renderModels(); else { renderSelList(); renderModelsFlow(); }   // browse: keep the panel open
   if (providerKey(cfg, provider)) testOne(provider, model);   // auto-test on add
   else toast(`Added — add a ${PROVIDERS[provider].name} key to use it`);
 }
@@ -2927,6 +2927,28 @@ function renderKeys() {
   $('cfgImport').onclick = openImport;
 }
 
+// Small "who answers -> who arbitrates -> consensus" flow pills, shared by the
+// Models and Consensus tabs so the shape of a run reads the same in both places
+// and never drifts out of sync (single source of truth for the markup).
+function consensusFlowPills(answerers, arbSel) {
+  return `<div class="welcome-flow cs-flow">` +
+      answerers.map(s => { const p = PROVIDERS[s.provider]; return p ? `<span class="wm-pill" style="--c:${p.color}">${escapeHtml(p.short)}</span>` : ''; }).join('') +
+      `<span class="wm-arrow">&rarr;</span>` +
+      `<span class="wm-pill wm-consensus">${escapeHtml(arbSel ? selectionLabel(arbSel) : 'Auto pick')}${arbSel && arbSel.arbiterOnly ? '<span class="wm-syn-tag"> \xb7 synthesis only</span>' : ''}</span>` +
+      `<span class="wm-arrow">&rarr;</span>` +
+      `<span class="wm-pill wm-consensus">Consensus</span>` +
+    `</div>`;
+}
+// Renders the same flow pills at the top of the Models tab (read-only summary)
+// so a user managing the model list can see who answers vs. who writes the
+// final answer without switching to the Consensus tab.
+function renderModelsFlow() {
+  const wrap = $('modelsFlow'); if (!wrap) return;
+  const answerers = answeringSelections(cfg);
+  const arbSel = cfg.arbitration.arbiter !== 'auto' ? (cfg.selections || []).find(s => s.id === cfg.arbitration.arbiter) : null;
+  wrap.innerHTML = answerers.length ? consensusFlowPills(answerers, arbSel) : '';
+}
+
 // ── Arbitration tab ───────────────────────────────────────────────────────
 function renderArbitration() {
   const wrap = $('arbControls');
@@ -2952,13 +2974,7 @@ function renderArbitration() {
   const n = answerers.length;
   const flowHtml = n
     ? `<div class="cs-flow-wrap">` +
-        `<div class="welcome-flow cs-flow">` +
-          answerers.map(s => { const p = PROVIDERS[s.provider]; return p ? `<span class="wm-pill" style="--c:${p.color}">${escapeHtml(p.short)}</span>` : ''; }).join('') +
-          `<span class="wm-arrow">&rarr;</span>` +
-          `<span class="wm-pill wm-consensus">${escapeHtml(arbSel ? selectionLabel(arbSel) : 'Auto pick')}${arbSel && arbSel.arbiterOnly ? '<span class="wm-syn-tag"> \xb7 synthesis only</span>' : ''}</span>` +
-          `<span class="wm-arrow">&rarr;</span>` +
-          `<span class="wm-pill wm-consensus">Consensus</span>` +
-        `</div>` +
+        consensusFlowPills(answerers, arbSel) +
         `<div class="cs-flow-text">Your ${n} model${n === 1 ? '' : 's'} answer${n === 1 ? 's' : ''} in parallel, then ${arbSel ? escapeHtml(selectionLabel(arbSel)) : 'the strategy auto-picks one to'} merge${arbSel ? 's' : ''} them into one answer. <button class="cfg-link" id="csFlowModelsLink" type="button">Manage models &rarr;</button></div>` +
       `</div>`
     : `<div class="cs-flow-wrap"><div class="cs-flow-text muted-hint">No models are set to answer yet — <button class="cfg-link" id="csFlowModelsLink" type="button">add or enable one in Models &rarr;</button></div></div>`;
