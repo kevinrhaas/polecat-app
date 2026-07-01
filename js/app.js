@@ -1451,17 +1451,30 @@ function consensusSourcesEl(arbiterSel) {
   if (allMs.length >= 2) {
     const maxMs = Math.max(...allMs);
     const fmt2 = ms => ms < 10000 ? (ms / 1000).toFixed(1) + 's' : Math.round(ms / 1000) + 's';
-    const dots = order
+    const ordinal = n => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : n + 'th';
+    const ranked = order
       .filter(id => responseTimes[id] && selById(id))
-      .map(id => {
+      .sort((a, b) => responseTimes[a] - responseTimes[b]);
+    const dots = ranked
+      .map((id, i) => {
         const sel = selById(id);
         const ms = responseTimes[id] || 0;
         const pct = Math.max(2, Math.min(97, (ms / maxMs) * 100));
         const color = PROVIDERS[sel.provider]?.color || '#888';
-        const tip = escapeHtml(selectionLabel(sel) + ': ' + fmt2(ms));
-        return `<span class="cs-race-dot" style="left:${pct.toFixed(1)}%;background:${escapeHtml(color)}" title="${tip}" aria-hidden="true"></span>`;
+        const rankLabel = i === 0 ? ordinal(i + 1) + ' \xb7 fastest' : i === ranked.length - 1 ? ordinal(i + 1) + ' \xb7 slowest' : ordinal(i + 1);
+        const tip = escapeHtml(`${selectionLabel(sel)}: ${fmt2(ms)} (${rankLabel})`);
+        return `<button type="button" class="cs-race-dot" tabindex="-1" style="left:${pct.toFixed(1)}%;background:${escapeHtml(color)}" data-tip="${tip}"></button>`;
       }).join('');
-    raceHtml = `<div class="cs-race" aria-hidden="true"><div class="cs-race-track">${dots}</div></div>`;
+    const srSummary = escapeHtml('Response times: ' + ranked.map((id, i) => {
+      const sel = selById(id);
+      const tag = i === 0 ? ' (fastest)' : i === ranked.length - 1 ? ' (slowest)' : '';
+      return `${selectionLabel(sel)} ${fmt2(responseTimes[id] || 0)}${tag}`;
+    }).join(', '));
+    raceHtml = `<div class="cs-race">` +
+      `<div class="cs-race-caption"><span>Response speed</span><span class="cs-race-axis">fastest → slowest</span></div>` +
+      `<div class="cs-race-track" aria-hidden="true">${dots}</div>` +
+      `<p class="sr-only">${srSummary}</p>` +
+      `</div>`;
   }
   const wrap = el('div', 'consensus-sources');
   wrap.innerHTML =
@@ -1469,6 +1482,13 @@ function consensusSourcesEl(arbiterSel) {
     `<div class="cs-chips">${chips}</div>` +
     raceHtml;
   wrap.querySelectorAll('.cs-chip').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+  // Race dots: hover shows the tip on desktop; tap toggles it on mobile (no hover state there).
+  wrap.querySelectorAll('.cs-race-dot').forEach(d => d.onclick = (e) => {
+    e.stopPropagation();
+    const wasOpen = d.classList.contains('cs-tip-open');
+    wrap.querySelectorAll('.cs-race-dot.cs-tip-open').forEach(x => x.classList.remove('cs-tip-open'));
+    if (!wasOpen) d.classList.add('cs-tip-open');
+  });
   return wrap;
 }
 
@@ -3491,6 +3511,11 @@ function init() {
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-edit-prompt]');
     if (btn) fillPrompt(btn.dataset.editPrompt);
+  });
+  // Close any open race-bar tooltip when tapping/clicking elsewhere.
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.cs-race-dot')) return;
+    document.querySelectorAll('.cs-race-dot.cs-tip-open').forEach(d => d.classList.remove('cs-tip-open'));
   });
   $('lightbox').onclick = (e) => { if (e.target.id !== 'lightboxImg') closeLightbox(); };
   $('lightboxClose').onclick = closeLightbox;

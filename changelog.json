@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-01 15:02 CT",
+  "updated": "2026-07-01 16:57 CT",
   "entries": [
+    {
+      "date": "2026-07-01",
+      "time": "16:57 CT",
+      "title": "The response-speed race bar now explains itself",
+      "items": [
+        "The row of colored dots under a consensus answer ('Blended from N models') plots how fast each model responded, but had no label and its info was hover-only -- invisible on mobile",
+        "Added a small 'Response speed / fastest -> slowest' caption above it, and each dot now shows its model, time, and finish rank on tap as well as hover -- e.g. 'Claude Opus 4.8: 3.3s (1st, fastest)'",
+        "Also gave screen readers a full ranked summary instead of skipping the whole thing"
+      ]
+    },
     {
       "date": "2026-07-01",
       "time": "15:02 CT",

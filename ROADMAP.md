@@ -521,19 +521,19 @@ pass, never a jarring rewrite, never regress:**
   session: seeded a 2-model consensus thread into `polecat_history`, reopened it from the sidebar,
   confirmed the highlight toggle button appears, both paragraphs get model-attributed coloring, and
   clicking the toggle activates `.attribution-active` — zero console errors.
-- [ ] **Make the consensus "race bar" self-explanatory (operator-reported 2026-06-30).** The row
-  of colored dots under "Blended from N models" (`js/app.js` ~line 1392-1408, `.cs-race` /
-  `.cs-race-dot`) plots each model by response time — a nice "parallel execution" visual — but
-  it's unlabeled, so users can't tell what it is. Each dot already has a desktop `title`
-  (model + time, e.g. "Groq · GPT-OSS 120B: 3.3s"), but: (a) there's NO caption saying what the
-  bar represents; (b) the whole thing is `aria-hidden="true"` so screen readers skip it; (c)
-  `title` tooltips don't appear on touch/mobile. Fix: (1) add a small visible caption/legend —
-  e.g. "Response speed · fastest → slowest" (with a faint fastest←→slowest axis hint), so it
-  reads as a finish-order/speed race at a glance; (2) make each dot's info available on TAP as
-  well as hover (a tiny popover with model name + time + finish rank, e.g. "1st · 3.3s"), since
-  hover-only fails on mobile; (3) give it an accessible description instead of pure aria-hidden —
-  an sr-only summary like "Response times: Groq 3.3s (fastest) … Claude 17s (slowest)" so the
-  info isn't lost to screen readers. Keep it compact, on-brand, light/dark, mobile-tidy.
+- [x] **Make the consensus "race bar" self-explanatory (FIXED 2026-07-01, operator-reported
+  2026-06-30).** The row of colored dots under "Blended from N models" (`js/app.js`
+  `consensusSourcesEl`, `.cs-race` / `.cs-race-dot`) plots each model by response time but was
+  unlabeled and unusable on mobile. Fixed: (1) added a visible caption/legend — "Response speed"
+  with a faint "fastest → slowest" axis hint above the track; (2) each dot is now a real button
+  with a CSS-driven tooltip that shows on hover (desktop) AND tap (a click toggles a `.cs-tip-open`
+  class; tapping elsewhere or another dot closes it) — content includes model, time, and finish
+  rank, e.g. "Claude · Opus 4.8: 3.3s (1st · fastest)"; (3) the track itself stays
+  `aria-hidden="true"` (dots use `tabindex="-1"` so they're never a stray focus stop) but a
+  sibling `.sr-only` paragraph now gives screen readers the full ranked summary, e.g. "Response
+  times: Claude 3.3s (fastest), GPT 8.7s, Gemini 14s (slowest)". Verified in a real headless-
+  Chromium session (hover, tap-open, tap-elsewhere-to-close, sr-only text, aria attributes) —
+  zero console errors.
 
 ### Data durability — keep users' keys/chats/settings across updates (operator priority 2026-06-30)
 **STANDING (sacrosanct, EVERY run):** never lose user data. NEVER change the localStorage
