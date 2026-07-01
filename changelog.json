@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-01 10:21 CT",
+  "updated": "2026-07-01 11:12 CT",
   "entries": [
+    {
+      "date": "2026-07-01",
+      "time": "11:12 CT",
+      "title": "Plain-language strategy names in Consensus settings",
+      "items": [
+        "Renamed the consensus strategy options from technical labels to plain language: 'Sequential Refinement' -> 'Refine Together', 'Single Judge - Comprehensive' -> 'Merge Everything', 'Single Judge - Best Answer' -> 'Best Answer', 'Validated Synthesis' -> 'Fact-Checked Merge', 'Debate & Synthesize' -> 'Debate & Merge'",
+        "These names show up in the Strategy dropdown and in the consensus answer's source footer ('Blended from N models...') -- a beginner can now tell what each option does without decoding arbitration jargon",
+        "No behavior change -- only display names; strategy IDs, prompts, and saved settings are untouched"
+      ]
+    },
     {
       "date": "2026-07-01",
       "time": "10:21 CT",

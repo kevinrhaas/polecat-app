@@ -57,9 +57,19 @@ Work these in order, one shippable step per run:
    technical strategy name moved to a hover `title` tooltip instead of being
    in the visible copy. This is higher-visibility than the settings-tab copy
    since every user sees it on every run, not just when opening Settings.
-   NEXT: broader "arbiter/strategy" jargon reduction remains open per the full
-   backlog item below (e.g. the "Strategy" dropdown option names themselves,
-   like "Single Judge — Comprehensive", are still fairly technical).
+   STEP 5 DONE (shipped 2026-07-01): renamed the "Strategy" dropdown option
+   names themselves from technical labels to plain language — "Sequential
+   Refinement" → "Refine Together", "Single Judge — Comprehensive" → "Merge
+   Everything", "Single Judge — Best Answer" → "Best Answer", "Validated
+   Synthesis" → "Fact-Checked Merge", "Debate & Synthesize" → "Debate & Merge"
+   (`js/arbitration.js` `DEFAULT_STRATEGIES`). These names also appear in the
+   consensus answer's source footer ("Blended from N models · Merge
+   Everything"), so the plain wording carries through everywhere the
+   strategy name surfaces. Display names only — ids, prompts, and any saved
+   `cfg.arbitration.activeId` are untouched, so no migration is needed.
+   NEXT: the remaining jargon terms are "arbiter" itself and the per-model
+   "Arbiter model" selector label/description in the Consensus tab — consider
+   plainer alternatives (e.g. "Final answer written by") in a future step.
 
 These are one theme — lead with them. They span several runs, so on any run where
 you can't advance them safely, pick up the next **operator-requested** item below

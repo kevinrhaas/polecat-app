@@ -15,7 +15,7 @@ import { newId } from './config.js';
 
 export const DEFAULT_STRATEGIES = [
   {
-    id: 'sequential', name: 'Sequential Refinement', builtin: true,
+    id: 'sequential', name: 'Refine Together', builtin: true,
     description: 'Each model refines a running draft in turn. Balanced default.',
     structure: 'chain', arbiter: 'last-done',
     prompts: {
@@ -23,7 +23,7 @@ export const DEFAULT_STRATEGIES = [
     },
   },
   {
-    id: 'comprehensive', name: 'Single Judge — Comprehensive', builtin: true,
+    id: 'comprehensive', name: 'Merge Everything', builtin: true,
     description: 'One arbiter merges all answers into the most complete, well-structured response.',
     structure: 'judge', arbiter: 'most-capable',
     prompts: {
@@ -31,7 +31,7 @@ export const DEFAULT_STRATEGIES = [
     },
   },
   {
-    id: 'best', name: 'Single Judge — Best Answer', builtin: true,
+    id: 'best', name: 'Best Answer', builtin: true,
     description: 'Arbiter picks the single strongest answer and lightly corrects it. Decisive over exhaustive.',
     structure: 'judge', arbiter: 'most-capable',
     prompts: {
@@ -39,7 +39,7 @@ export const DEFAULT_STRATEGIES = [
     },
   },
   {
-    id: 'validated', name: 'Validated Synthesis', builtin: true,
+    id: 'validated', name: 'Fact-Checked Merge', builtin: true,
     description: 'Merges everything, but cross-checks claims, keeps only well-supported points, and flags real disagreements.',
     structure: 'judge', arbiter: 'most-capable',
     prompts: {
@@ -47,7 +47,7 @@ export const DEFAULT_STRATEGIES = [
     },
   },
   {
-    id: 'debate', name: 'Debate & Synthesize', builtin: true,
+    id: 'debate', name: 'Debate & Merge', builtin: true,
     description: 'Critiques the answers against each other, then synthesizes the validated best. Highest quality, more calls.',
     structure: 'debate', arbiter: 'most-capable',
     prompts: {
