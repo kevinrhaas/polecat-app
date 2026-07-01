@@ -25,9 +25,17 @@ Work these in order, one shippable step per run:
    parallel, then Claude · Opus 4.1 merges them into one answer.") and a "Manage models →"
    link into the Models tab; the Models tab gained a reciprocal "Arbiter & consensus
    strategy are set in the Consensus tab →" link. Degrades gracefully to a "No models are
-   set to answer yet" hint when nothing is selected. NEXT: consider whether the two tabs
-   should be more tightly unified (e.g. surfacing arbiter-only badges consistently, or
-   further reducing "arbiter/strategy" jargon) per the full backlog item below.
+   set to answer yet" hint when nothing is selected. STEP 2 DONE (2026-06-30): while
+   testing the arbiter-only badge, found and fixed a real bug the pill flow exposed —
+   changing the arbiter (Models tab "Arbiter" button, or the Consensus tab dropdown) left
+   a stale `arbiterOnly` flag on the PREVIOUS arbiter, silently excluding it from answering
+   forever with no visible indicator anywhere (the "Synthesis only" checkbox only renders
+   for the current arbiter row, so there was no way to even see or undo it). `setArbiter()`
+   now clears `arbiterOnly` on the outgoing arbiter and refreshes the composer chips, so
+   "who answers" is always visibly accurate — the actual precondition for any further
+   badge/jargon unification work. NEXT: consider whether the two tabs should be more
+   tightly unified (e.g. surfacing arbiter-only badges consistently, or further reducing
+   "arbiter/strategy" jargon) per the full backlog item below.
 
 These are one theme — lead with them. They span several runs, so on any run where
 you can't advance them safely, pick up the next **operator-requested** item below

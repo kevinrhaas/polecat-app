@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-30 20:35 CT",
+  "updated": "2026-06-30 22:37 CT",
   "entries": [
+    {
+      "date": "2026-06-30",
+      "time": "22:37 CT",
+      "title": "Fixed a stale \"synthesis only\" bug when switching arbiters",
+      "items": [
+        "If a model was set to Arbiter + \"Synthesis only\" and you later picked a different arbiter, the old one silently stayed excluded from answering forever, with nothing in the UI showing why — now that flag clears automatically the moment a model stops being the arbiter",
+        "Also fixed the model chips above the send box going stale after changing the arbiter (from either the Models or Consensus tab), so the displayed answering set always matches who actually answers",
+        "Fixed opening Settings from the sidebar menu sometimes leaving the sidebar's dark overlay stuck on top of the modal, silently eating your first click"
+      ]
+    },
     {
       "date": "2026-06-30",
       "time": "20:35 CT",

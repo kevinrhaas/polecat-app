@@ -736,8 +736,15 @@ function moveSelection(id, dir) {
   persist(); renderModels(); buildChips();
 }
 function setArbiter(id) {
+  const prev = cfg.arbitration.arbiter;
+  if (prev && prev !== 'auto' && prev !== id) {
+    const prevSel = (cfg.selections || []).find(s => s.id === prev);
+    // A stale "synthesis only" flag on a model that's no longer the arbiter would
+    // silently exclude it from answering with no visible indicator anywhere.
+    if (prevSel && prevSel.arbiterOnly) prevSel.arbiterOnly = false;
+  }
   cfg.arbitration.arbiter = id;
-  persist(); renderModels(); renderArbitration();
+  persist(); renderModels(); renderArbitration(); buildChips();
 }
 
 // ── Tabs ─────────────────────────────────────────────────────────────────
@@ -2482,6 +2489,8 @@ function setConfigTab(name) {
   $('modal')?.scrollTo?.(0, 0);
 }
 function openConfig(tab) {
+  closeSidebar();   // opening Settings from the sidebar's own link left its higher z-index
+                     // backdrop covering the modal, eating the first click
   renderModels(); renderKeys(); renderArbitration(); renderDonate(); renderSystemPrompt();
   const stored = cfg.ui.lastTab;
   setConfigTab(tab || (VALID_TABS.has(stored) ? stored : 'models'));
@@ -2829,7 +2838,7 @@ function renderArbitration() {
   $('provSwitch').onclick = provToggle;
   $('provSwitch').onkeydown = (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); provToggle(); } };
   $('arbSelect').onchange = (e) => { cfg.arbitration.activeId = e.target.value; persist(); renderArbitration(); };
-  $('arbiterSelect').onchange = (e) => { cfg.arbitration.arbiter = e.target.value; persist(); renderModels(); };
+  $('arbiterSelect').onchange = (e) => { setArbiter(e.target.value); };
   $('arbDup') && ($('arbDup').onclick = () => duplicateStrategy(strat));
   $('arbSave') && ($('arbSave').onclick = () => saveStrategyEdits(strat.id));
   $('arbDelete') && ($('arbDelete').onclick = () => deleteStrategy(strat.id));
