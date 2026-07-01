@@ -19,7 +19,15 @@ Work these in order, one shippable step per run:
    reorder, set Arbiter, synthesis-only mode). Leaving here for context.
 3. **Rethink the Models + Consensus screens** so the "N models answer → 1 arbitrates →
    consensus" flow is obvious at a glance (show the answering set on the Consensus tab,
-   a small visual flow, less jargon, tightly link the two tabs).
+   a small visual flow, less jargon, tightly link the two tabs). — STEP 1 DONE (shipped
+   2026-07-01): the Consensus tab now opens with a small pill flow — [answering models]
+   → [arbiter] → [Consensus] — plus a plain-language sentence ("Your 3 models answer in
+   parallel, then Claude · Opus 4.1 merges them into one answer.") and a "Manage models →"
+   link into the Models tab; the Models tab gained a reciprocal "Arbiter & consensus
+   strategy are set in the Consensus tab →" link. Degrades gracefully to a "No models are
+   set to answer yet" hint when nothing is selected. NEXT: consider whether the two tabs
+   should be more tightly unified (e.g. surfacing arbiter-only badges consistently, or
+   further reducing "arbiter/strategy" jargon) per the full backlog item below.
 
 These are one theme — lead with them. They span several runs, so on any run where
 you can't advance them safely, pick up the next **operator-requested** item below
@@ -391,7 +399,10 @@ pass, never a jarring rewrite, never regress:**
      selected model is arbiter-only, warn. Default behavior unchanged (arbiter = auto, all models
      answer). Accessible, mobile, light/dark, persisted, no regression to existing consensus.
 - [ ] **Rethink the Models + Consensus screens so model ROLES + the consensus flow are obvious
-  (operator-requested 2026-06-30).** Right now the config is split confusingly across two tabs and
+  (operator-requested 2026-06-30).** PARTIALLY DONE (2026-07-01): the Consensus tab now opens with
+  a pill flow ([answering models] → [arbiter] → [Consensus]) + a plain-language sentence, and both
+  tabs cross-link to each other. Still open: unifying arbiter-only badges/jargon reduction below.
+  Right now the config is split confusingly across two tabs and
   neither shows the whole picture: the **Models** tab lists selected models but not who arbitrates;
   the **Consensus** tab shows the strategy + arbiter model but gives NO indication of which models
   actually answer. A user can't see, in one place, the core story: "these N models answer in

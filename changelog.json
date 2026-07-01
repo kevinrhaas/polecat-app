@@ -1,6 +1,16 @@
 {
-  "updated": "2026-06-30 15:57 CT",
+  "updated": "2026-06-30 20:35 CT",
   "entries": [
+    {
+      "date": "2026-06-30",
+      "time": "20:35 CT",
+      "title": "See the consensus flow at a glance in Settings",
+      "items": [
+        "The Consensus tab now opens with a small visual flow — your answering models, then the arbiter, then Consensus — plus a plain-language sentence like \"Your 3 models answer in parallel, then Claude merges them into one answer\"",
+        "Added a \"Manage models →\" link from Consensus to Models, and a matching link back from Models to Consensus, so the two screens are easy to hop between",
+        "Shows a friendly hint instead of a blank flow when no models are set to answer yet"
+      ]
+    },
     {
       "date": "2026-06-30",
       "time": "15:57 CT",

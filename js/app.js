@@ -2780,7 +2780,26 @@ function renderArbitration() {
   const promptFields = Object.entries(strat.prompts || {}).map(([k, v]) =>
     `<label class="arb-plabel">${escapeHtml(k)}</label><textarea class="field-input arb-ptext" data-key="${escapeHtml(k)}" rows="4"${editable ? '' : ' readonly'}>${escapeHtml(v)}</textarea>`).join('');
 
+  // Small "who answers -> who arbitrates -> consensus" flow so the shape of a
+  // run is obvious at a glance, without switching to the Models tab.
+  const answerers = answeringSelections(cfg);
+  const arbSel = cfg.arbitration.arbiter !== 'auto' ? (cfg.selections || []).find(s => s.id === cfg.arbitration.arbiter) : null;
+  const n = answerers.length;
+  const flowHtml = n
+    ? `<div class="cs-flow-wrap">` +
+        `<div class="welcome-flow cs-flow">` +
+          answerers.map(s => { const p = PROVIDERS[s.provider]; return p ? `<span class="wm-pill" style="--c:${p.color}">${escapeHtml(p.short)}</span>` : ''; }).join('') +
+          `<span class="wm-arrow">&rarr;</span>` +
+          `<span class="wm-pill wm-consensus">${escapeHtml(arbSel ? selectionLabel(arbSel) : 'Auto arbiter')}</span>` +
+          `<span class="wm-arrow">&rarr;</span>` +
+          `<span class="wm-pill wm-consensus">Consensus</span>` +
+        `</div>` +
+        `<div class="cs-flow-text">Your ${n} model${n === 1 ? '' : 's'} answer${n === 1 ? 's' : ''} in parallel, then ${arbSel ? escapeHtml(selectionLabel(arbSel)) : 'the strategy auto-picks an arbiter to'} merge${arbSel ? 's' : ''} them into one answer. <button class="cfg-link" id="csFlowModelsLink" type="button">Manage models &rarr;</button></div>` +
+      `</div>`
+    : `<div class="cs-flow-wrap"><div class="cs-flow-text muted-hint">No models are set to answer yet — <button class="cfg-link" id="csFlowModelsLink" type="button">add or enable one in Models &rarr;</button></div></div>`;
+
   wrap.innerHTML =
+    flowHtml +
     `<label class="switch-row"><span><b>Consensus answer</b><br><span class="switch-sub">Off = individual model tabs only, no combined answer</span></span>` +
       `<span class="switch ${on ? 'on' : ''}" id="consensusSwitch" role="switch" aria-checked="${on}" tabindex="0"><span class="knob"></span></span></label>` +
     `<div class="arb-body"${on ? '' : ' aria-disabled="true"'}>` +
@@ -2814,6 +2833,7 @@ function renderArbitration() {
   $('arbDup') && ($('arbDup').onclick = () => duplicateStrategy(strat));
   $('arbSave') && ($('arbSave').onclick = () => saveStrategyEdits(strat.id));
   $('arbDelete') && ($('arbDelete').onclick = () => deleteStrategy(strat.id));
+  $('csFlowModelsLink') && ($('csFlowModelsLink').onclick = () => setConfigTab('models'));
 }
 function duplicateStrategy(strat) {
   const copy = JSON.parse(JSON.stringify(strat));
@@ -3187,6 +3207,7 @@ function init() {
   if (note) setTimeout(() => toast(note, 4000), 700);
 
   document.querySelectorAll('.cfg-tab').forEach(b => b.onclick = () => setConfigTab(b.dataset.tab));
+  $('modelsToConsensusLink').onclick = () => setConfigTab('consensus');
   $('configBtn').onclick   = () => openConfig();
   $('closeConfig').onclick = closeConfig;
   $('doneConfig').onclick  = closeConfig;
