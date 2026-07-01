@@ -66,9 +66,32 @@ Work these in order, one shippable step per run:
    Everything"), so the plain wording carries through everywhere the
    strategy name surfaces. Display names only — ids, prompts, and any saved
    `cfg.arbitration.activeId` are untouched, so no migration is needed.
-   NEXT: the remaining jargon terms are "arbiter" itself and the per-model
-   "Arbiter model" selector label/description in the Consensus tab — consider
-   plainer alternatives (e.g. "Final answer written by") in a future step.
+   STEP 6 DONE (shipped 2026-07-01): swept the remaining "arbiter" jargon from
+   user-facing copy across both tabs and the welcome flow. Consensus tab: the
+   "Arbiter model" selector is now labelled "Final answer written by" (mini-note
+   "combines every model's answer into one — defaults to the strategy's pick");
+   the flow pill's auto-pick placeholder changed from "Auto arbiter" to "Auto
+   pick"; the flow sentence's fallback clause changed from "the strategy
+   auto-picks an arbiter to merge them" to "the strategy auto-picks one to
+   merge them". Models tab: the per-row toggle button changed from "Arbiter" to
+   "Final answer" with plain-language tooltips ("Writes the final answer —
+   click to switch back to auto" / "Set this model to write the final
+   answer"), and its reciprocal link to the Consensus tab changed from
+   "Arbiter & consensus strategy are set in the Consensus tab" to "Who writes
+   the final answer, and how, is set in the Consensus tab". Also updated: the
+   "Merge Everything" and "Best Answer" strategy descriptions (`arbitration.js`
+   `DEFAULT_STRATEGIES`) no longer say "arbiter"; the source-chip tooltip on a
+   consensus answer now reads "Wrote the final answer" instead of "Final
+   arbiter — wrote this consensus"; the arbiter-failure fallback note now says
+   "the model chosen to write the final answer" / "pick a different model to
+   write the final answer" instead of "the chosen arbiter" / "Arbiter model";
+   and the welcome carousel's example slide now says "set Claude Opus to write
+   the final answer" instead of "as the arbiter for the final call". Internal
+   identifiers (`cfg.arbitration.arbiter`, `arbiterOnly`, `setArbiter()`, CSS
+   classes like `.sel-arb`/`.cs-arbiter`) are untouched — display copy only, no
+   data migration needed. This closes out the DO THIS NEXT jargon-reduction
+   theme; the remaining open item is the Models+Consensus IA rethink tracked
+   in the Backlog section below.
 
 These are one theme — lead with them. They span several runs, so on any run where
 you can't advance them safely, pick up the next **operator-requested** item below
@@ -447,7 +470,10 @@ pass, never a jarring rewrite, never regress:**
   arbiter picker, the flow pill tags the arbiter chip " · synthesis only" when set, and toggling
   either tab's checkbox live-updates the other (previously the Models tab's toggle didn't refresh
   the Consensus tab, so its dropdown/flow could show stale state until Settings was reopened).
-  Still open: broader "arbiter/strategy" jargon reduction below.
+  The "arbiter" jargon itself is now swept from user-facing copy too (2026-07-01, see DO THIS
+  NEXT item 3 step 6 above) — the Consensus tab's selector is "Final answer written by" and the
+  Models tab's toggle is "Final answer". Still open: the rest of this item — a holistic visual/IA
+  pass, not just wording — per the direction below.
   Right now the config is split confusingly across two tabs and
   neither shows the whole picture: the **Models** tab lists selected models but not who arbitrates;
   the **Consensus** tab shows the strategy + arbiter model but gives NO indication of which models

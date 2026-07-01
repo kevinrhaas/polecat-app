@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-01 13:06 CT",
+  "updated": "2026-07-01 15:02 CT",
   "entries": [
+    {
+      "date": "2026-07-01",
+      "time": "15:02 CT",
+      "title": "Plainer language for 'arbiter' across Settings",
+      "items": [
+        "Continued the plain-language cleanup: the Consensus tab's 'Arbiter model' picker is now 'Final answer written by', and the Models tab's per-model 'Arbiter' toggle is now 'Final answer'",
+        "Related copy updated to match -- tooltips, the flow diagram's 'Auto arbiter' placeholder (now 'Auto pick'), two strategy descriptions, and the welcome tour's example",
+        "Wording only -- how consensus and the final-answer model are chosen is unchanged"
+      ]
+    },
     {
       "date": "2026-07-01",
       "time": "13:06 CT",

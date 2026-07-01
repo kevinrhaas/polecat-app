@@ -24,7 +24,7 @@ export const DEFAULT_STRATEGIES = [
   },
   {
     id: 'comprehensive', name: 'Merge Everything', builtin: true,
-    description: 'One arbiter merges all answers into the most complete, well-structured response.',
+    description: 'One model merges all answers into the most complete, well-structured response.',
     structure: 'judge', arbiter: 'most-capable',
     prompts: {
       judge: `You are synthesizing the best possible answer to this question:\n\n"{prompt}"\n\nBelow are {n} independent answers from different AI models:\n\n{answers}\n\nMerge them into a single, comprehensive, well-organized answer that captures every useful insight. Resolve overlaps, keep the best phrasing, and ensure nothing valuable is lost. Do not mention the individual models or that you are merging — just give the answer.`,
@@ -32,7 +32,7 @@ export const DEFAULT_STRATEGIES = [
   },
   {
     id: 'best', name: 'Best Answer', builtin: true,
-    description: 'Arbiter picks the single strongest answer and lightly corrects it. Decisive over exhaustive.',
+    description: 'Picks the single strongest answer and lightly corrects it. Decisive over exhaustive.',
     structure: 'judge', arbiter: 'most-capable',
     prompts: {
       judge: `Evaluate these {n} independent answers to the question:\n\n"{prompt}"\n\n{answers}\n\nIdentify the single strongest, most correct answer. Return that answer, lightly corrected for any clear errors or omissions — but do NOT blend the others in. Prioritize accuracy and decisiveness over completeness. Output only the final answer.`,
@@ -358,7 +358,7 @@ function fallbackConsensus(ctx, preferredText) {
   if (ctx.provenanceEnabled && typeof ctx.provenance === 'function') {
     const prov = provenanceFromLocal(computeLocalAgreement(results, text, ctx.labelOf));
     if (prov) {
-      prov.fallbackNote = 'The chosen arbiter could not run (often an exhausted or invalid API key), so this is the most representative response plus a measured agreement map — not a synthesized answer. Pick a different Arbiter model in Settings to restore full synthesis.';
+      prov.fallbackNote = 'The model chosen to write the final answer could not run (often an exhausted or invalid API key), so this is the most representative response plus a measured agreement map — not a synthesized answer. Pick a different model to write the final answer in Settings to restore full synthesis.';
       ctx.provenance(prov);
     }
   }

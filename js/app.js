@@ -1435,7 +1435,7 @@ function consensusSourcesEl(arbiterSel) {
     const label = selectionLabel(s);
     return `<button class="cs-chip${isArb ? ' cs-arbiter' : ''}" data-tab="${escapeHtml(s.id)}" ` +
       `style="--c:${PROVIDERS[s.provider].color}" ` +
-      `title="${isArb ? 'Final arbiter — wrote this consensus. ' : ''}Open ${escapeHtml(label)}'s full answer">` +
+      `title="${isArb ? 'Wrote the final answer. ' : ''}Open ${escapeHtml(label)}'s full answer">` +
       `<span class="cs-dot"></span>${escapeHtml(label)}${isArb ? ' ' + ARB_ICON : ''}</button>`;
   }).join('');
   const allMs = order.filter(id => responseTimes[id]).map(id => responseTimes[id]);
@@ -2703,7 +2703,7 @@ function renderSelList() {
       `<select class="field-input sel-model"></select>` +
       (vision ? `<span class="sel-vision" title="Reads images">${EYE_SVG_SM}</span>` : '') +
       (ready ? readyBadge : `<button type="button" class="sel-warn sel-addkey" title="Add your ${escapeHtml(p.name)} key">Add key</button>`) +
-      `<button class="sel-arb${isArbiter ? ' arb-on' : ''}" title="${isArbiter ? 'Remove arbiter role (revert to auto)' : 'Set as arbiter — synthesizes the consensus'}" aria-pressed="${isArbiter}">Arbiter</button>` +
+      `<button class="sel-arb${isArbiter ? ' arb-on' : ''}" title="${isArbiter ? 'Writes the final answer — click to switch back to auto' : 'Set this model to write the final answer'}" aria-pressed="${isArbiter}">Final answer</button>` +
       `<button class="sel-x" title="Remove" aria-label="Remove ${escapeHtml(p.short)}">&#215;</button>`;
     const select = row.querySelector('.sel-model');
     select.innerHTML = modelOptionsHtml(sel.provider, sel.model);
@@ -2935,11 +2935,11 @@ function renderArbitration() {
         `<div class="welcome-flow cs-flow">` +
           answerers.map(s => { const p = PROVIDERS[s.provider]; return p ? `<span class="wm-pill" style="--c:${p.color}">${escapeHtml(p.short)}</span>` : ''; }).join('') +
           `<span class="wm-arrow">&rarr;</span>` +
-          `<span class="wm-pill wm-consensus">${escapeHtml(arbSel ? selectionLabel(arbSel) : 'Auto arbiter')}${arbSel && arbSel.arbiterOnly ? '<span class="wm-syn-tag"> \xb7 synthesis only</span>' : ''}</span>` +
+          `<span class="wm-pill wm-consensus">${escapeHtml(arbSel ? selectionLabel(arbSel) : 'Auto pick')}${arbSel && arbSel.arbiterOnly ? '<span class="wm-syn-tag"> \xb7 synthesis only</span>' : ''}</span>` +
           `<span class="wm-arrow">&rarr;</span>` +
           `<span class="wm-pill wm-consensus">Consensus</span>` +
         `</div>` +
-        `<div class="cs-flow-text">Your ${n} model${n === 1 ? '' : 's'} answer${n === 1 ? 's' : ''} in parallel, then ${arbSel ? escapeHtml(selectionLabel(arbSel)) : 'the strategy auto-picks an arbiter to'} merge${arbSel ? 's' : ''} them into one answer. <button class="cfg-link" id="csFlowModelsLink" type="button">Manage models &rarr;</button></div>` +
+        `<div class="cs-flow-text">Your ${n} model${n === 1 ? '' : 's'} answer${n === 1 ? 's' : ''} in parallel, then ${arbSel ? escapeHtml(selectionLabel(arbSel)) : 'the strategy auto-picks one to'} merge${arbSel ? 's' : ''} them into one answer. <button class="cfg-link" id="csFlowModelsLink" type="button">Manage models &rarr;</button></div>` +
       `</div>`
     : `<div class="cs-flow-wrap"><div class="cs-flow-text muted-hint">No models are set to answer yet — <button class="cfg-link" id="csFlowModelsLink" type="button">add or enable one in Models &rarr;</button></div></div>`;
 
@@ -2952,7 +2952,7 @@ function renderArbitration() {
       `<div class="arb-desc">${escapeHtml(strat.description || '')}</div>` +
       `<label class="switch-row"><span><b>Agreement map</b><br><span class="switch-sub">After each answer, show how much the models agreed and what each contributed</span></span>` +
         `<span class="switch ${provOn ? 'on' : ''}" id="provSwitch" role="switch" aria-checked="${provOn}" tabindex="0"><span class="knob"></span></span></label>` +
-      `<label class="mini-label">Arbiter model <span class="mini-note">synthesizes the final answer — defaults to the strategy's recommendation</span></label><select class="field-input" id="arbiterSelect">${arbiterOpts}</select>` +
+      `<label class="mini-label">Final answer written by <span class="mini-note">combines every model's answer into one — defaults to the strategy's pick</span></label><select class="field-input" id="arbiterSelect">${arbiterOpts}</select>` +
       (arbSel ? `<label class="sel-arb-only-label cs-arb-only-row"><input type="checkbox" id="csArbOnlyCb"${arbSel.arbiterOnly ? ' checked' : ''}>` +
         `<span>Synthesis only</span><span class="mini-note"> \xb7 ${escapeHtml(selectionLabel(arbSel))} won't answer, just synthesizes from the others</span></label>` : '') +
       `<details class="arb-prompts"${editable ? ' open' : ''}><summary>Prompt template${Object.keys(strat.prompts || {}).length > 1 ? 's' : ''}</summary>${promptFields}` +
