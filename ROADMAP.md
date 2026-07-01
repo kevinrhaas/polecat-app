@@ -33,9 +33,21 @@ Work these in order, one shippable step per run:
    for the current arbiter row, so there was no way to even see or undo it). `setArbiter()`
    now clears `arbiterOnly` on the outgoing arbiter and refreshes the composer chips, so
    "who answers" is always visibly accurate — the actual precondition for any further
-   badge/jargon unification work. NEXT: consider whether the two tabs should be more
-   tightly unified (e.g. surfacing arbiter-only badges consistently, or further reducing
-   "arbiter/strategy" jargon) per the full backlog item below.
+   badge/jargon unification work. STEP 3 DONE (shipped 2026-07-01): unified the
+   "synthesis only" (arbiter-only) badge/control across both tabs. Previously the
+   toggle lived ONLY on the Models tab's arbiter row, so the Consensus tab's arbiter
+   dropdown ("Claude · Opus 4.1 (synthesis only)") and its pill-flow arbiter chip had
+   no way to reflect a change until Settings was reopened (both tabs render once on
+   open; switching tabs is pure CSS show/hide, so stale state could sit unnoticed).
+   Now: (1) the Models tab's checkbox also calls `renderArbitration()` so the
+   Consensus tab never goes stale while Settings is open; (2) the Consensus tab
+   gained its own reciprocal "Synthesis only" checkbox right under the arbiter
+   picker, wired to the same `sel.arbiterOnly` field and refreshing both tabs; (3)
+   the pill-flow's arbiter chip now appends a small " · synthesis only" tag when
+   set, so the mode is visible in the flow itself, not just in a dropdown label.
+   Verified in a real headless-Chromium session: toggling either checkbox instantly
+   updates the other tab and the flow pill, zero console errors. NEXT: broader
+   "arbiter/strategy" jargon reduction remains open per the full backlog item below.
 
 These are one theme — lead with them. They span several runs, so on any run where
 you can't advance them safely, pick up the next **operator-requested** item below
@@ -409,7 +421,12 @@ pass, never a jarring rewrite, never regress:**
 - [ ] **Rethink the Models + Consensus screens so model ROLES + the consensus flow are obvious
   (operator-requested 2026-06-30).** PARTIALLY DONE (2026-07-01): the Consensus tab now opens with
   a pill flow ([answering models] → [arbiter] → [Consensus]) + a plain-language sentence, and both
-  tabs cross-link to each other. Still open: unifying arbiter-only badges/jargon reduction below.
+  tabs cross-link to each other. The "synthesis only" (arbiter-only) badge/control is now unified
+  across both tabs too (2026-07-01) — a matching checkbox lives on the Consensus tab next to the
+  arbiter picker, the flow pill tags the arbiter chip " · synthesis only" when set, and toggling
+  either tab's checkbox live-updates the other (previously the Models tab's toggle didn't refresh
+  the Consensus tab, so its dropdown/flow could show stale state until Settings was reopened).
+  Still open: broader "arbiter/strategy" jargon reduction below.
   Right now the config is split confusingly across two tabs and
   neither shows the whole picture: the **Models** tab lists selected models but not who arbitrates;
   the **Consensus** tab shows the strategy + arbiter model but gives NO indication of which models

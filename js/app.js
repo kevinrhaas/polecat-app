@@ -2717,7 +2717,7 @@ function renderSelList() {
         `</label>`;
       onlyRow.querySelector('.sel-arb-only-cb').onchange = (e) => {
         sel.arbiterOnly = e.target.checked;
-        persist(); buildChips(); renderSelList();
+        persist(); buildChips(); renderSelList(); renderArbitration();
       };
       itemWrap.appendChild(onlyRow);
     }
@@ -2923,7 +2923,7 @@ function renderArbitration() {
         `<div class="welcome-flow cs-flow">` +
           answerers.map(s => { const p = PROVIDERS[s.provider]; return p ? `<span class="wm-pill" style="--c:${p.color}">${escapeHtml(p.short)}</span>` : ''; }).join('') +
           `<span class="wm-arrow">&rarr;</span>` +
-          `<span class="wm-pill wm-consensus">${escapeHtml(arbSel ? selectionLabel(arbSel) : 'Auto arbiter')}</span>` +
+          `<span class="wm-pill wm-consensus">${escapeHtml(arbSel ? selectionLabel(arbSel) : 'Auto arbiter')}${arbSel && arbSel.arbiterOnly ? '<span class="wm-syn-tag"> \xb7 synthesis only</span>' : ''}</span>` +
           `<span class="wm-arrow">&rarr;</span>` +
           `<span class="wm-pill wm-consensus">Consensus</span>` +
         `</div>` +
@@ -2941,6 +2941,8 @@ function renderArbitration() {
       `<label class="switch-row"><span><b>Agreement map</b><br><span class="switch-sub">After each answer, show how much the models agreed and what each contributed</span></span>` +
         `<span class="switch ${provOn ? 'on' : ''}" id="provSwitch" role="switch" aria-checked="${provOn}" tabindex="0"><span class="knob"></span></span></label>` +
       `<label class="mini-label">Arbiter model <span class="mini-note">synthesizes the final answer — defaults to the strategy's recommendation</span></label><select class="field-input" id="arbiterSelect">${arbiterOpts}</select>` +
+      (arbSel ? `<label class="sel-arb-only-label cs-arb-only-row"><input type="checkbox" id="csArbOnlyCb"${arbSel.arbiterOnly ? ' checked' : ''}>` +
+        `<span>Synthesis only</span><span class="mini-note"> \xb7 ${escapeHtml(selectionLabel(arbSel))} won't answer, just synthesizes from the others</span></label>` : '') +
       `<details class="arb-prompts"${editable ? ' open' : ''}><summary>Prompt template${Object.keys(strat.prompts || {}).length > 1 ? 's' : ''}</summary>${promptFields}` +
         (editable ? `<label class="arb-plabel">name</label><input class="field-input" id="arbName" value="${escapeHtml(strat.name)}">` : '') +
       `</details>` +
@@ -2963,6 +2965,10 @@ function renderArbitration() {
   $('provSwitch').onkeydown = (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); provToggle(); } };
   $('arbSelect').onchange = (e) => { cfg.arbitration.activeId = e.target.value; persist(); renderArbitration(); };
   $('arbiterSelect').onchange = (e) => { setArbiter(e.target.value); };
+  $('csArbOnlyCb') && ($('csArbOnlyCb').onchange = (e) => {
+    if (arbSel) arbSel.arbiterOnly = e.target.checked;
+    persist(); buildChips(); renderArbitration(); renderModels();
+  });
   $('arbDup') && ($('arbDup').onclick = () => duplicateStrategy(strat));
   $('arbSave') && ($('arbSave').onclick = () => saveStrategyEdits(strat.id));
   $('arbDelete') && ($('arbDelete').onclick = () => deleteStrategy(strat.id));

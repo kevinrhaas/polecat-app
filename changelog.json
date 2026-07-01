@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-01 06:29 CT",
+  "updated": "2026-07-01 08:23 CT",
   "entries": [
+    {
+      "date": "2026-07-01",
+      "time": "08:23 CT",
+      "title": "Synthesis-only badge now stays in sync across Models and Consensus tabs",
+      "items": [
+        "When an arbiter is set to synthesis-only (it merges the other models' answers but doesn't answer itself), that state only appeared as a checkbox on the Models tab -- the Consensus tab's arbiter dropdown and flow diagram could show stale info until Settings was reopened",
+        "The Consensus tab now has its own matching 'Synthesis only' checkbox next to the arbiter picker, and the small [answering models] -> [arbiter] -> [Consensus] flow now tags the arbiter chip with 'synthesis only' when set",
+        "Toggling the checkbox on either tab instantly updates the other -- verified in a real browser session with zero console errors"
+      ]
+    },
     {
       "date": "2026-07-01",
       "time": "06:29 CT",
