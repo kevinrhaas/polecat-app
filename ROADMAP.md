@@ -503,6 +503,12 @@ pass, never a jarring rewrite, never regress:**
   content order, consensus on/off + strategy + "Final answer" (Models-tab button) + synthesis-only
   all still work and stay in sync, zero console errors, no mobile overflow. This closes out the
   theme — see the step-by-step history below for the cross-linking/jargon work that preceded it.
+  FOLLOW-UP (2026-07-02): a periodic best-practice pass driving the merged tab in a real
+  headless-Chromium session (light + dark + mobile) found the phrase "how the combined answer is
+  formed" appeared twice on the same screen — once in the tab subtitle, once as the section
+  heading above the strategy/arbiter controls, a copy-paste leftover from the merge. Retitled the
+  section heading to "Combining into one answer" so the two labels read as complementary instead
+  of duplicated.
   PARTIALLY DONE (2026-07-01): the Consensus tab now opens with
   a pill flow ([answering models] → [arbiter] → [Consensus]) + a plain-language sentence, and both
   tabs cross-link to each other. The "synthesis only" (arbiter-only) badge/control is now unified

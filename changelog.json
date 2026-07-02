@@ -1,6 +1,15 @@
 {
-  "updated": "2026-07-01 22:43 CT",
+  "updated": "2026-07-02 02:35 CT",
   "entries": [
+    {
+      "date": "2026-07-02",
+      "time": "02:35 CT",
+      "title": "Tidied up the merged Models & Consensus tab",
+      "items": [
+        "The new combined tab had the same phrase \"how the combined answer is formed\" showing twice on one screen -- once in the tab subtitle, once as a section heading right below the model list",
+        "The section heading is now \"Combining into one answer\", so the two labels no longer repeat each other while scrolling down the tab"
+      ]
+    },
     {
       "date": "2026-07-01",
       "time": "22:43 CT",
