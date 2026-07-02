@@ -4,6 +4,161 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 98,
+    title: "Bigger tap targets on small icon buttons",
+    ts: "2026-07-02T17:01:00.000Z",
+    items: [
+      "The tiny copy/share/expand icon buttons (on each answer, and on the \"Responses at a glance\" cards) were well under the recommended mobile tap-target size",
+      "Their clickable area is now noticeably larger without shifting any layout, making them easier to hit on a phone",
+      "Also fixed the welcome tour's final CTA saying \"Try it free now\" while the empty-state button says \"Try it free\" -- both now match",
+    ],
+  },
+  {
+    v: 97,
+    title: "Accessibility pass on the Copy button",
+    ts: "2026-07-02T16:02:00.000Z",
+    items: [
+      "The Copy button next to a model's answer only had a title tooltip, unlike its Share and Copy-as-markdown neighbors -- screen readers announced it inconsistently across browsers",
+      "It now has a proper aria-label, matching every other icon button in the same row",
+      "Also removed a handful of leftover CSS rules from earlier redesigns that no longer matched anything in the app",
+    ],
+  },
+  {
+    v: 96,
+    title: "Tidied up a stray icon in the welcome tour",
+    ts: "2026-07-02T14:00:00.000Z",
+    items: [
+      "The \"Yours, on your device\" welcome slide referenced the history menu with a plain text symbol (☰) instead of the app's actual icon",
+      "It now shows the real hamburger-menu SVG, matching the icon language used everywhere else in the app",
+    ],
+  },
+  {
+    v: 95,
+    title: "iPhone/iPad: a nudge to install Polecat before Safari clears your data",
+    ts: "2026-07-02T13:00:00.000Z",
+    items: [
+      "iOS Safari can silently evict a site's saved data (your API keys and chats) after about a week of inactivity -- installing Polecat to the Home Screen avoids that",
+      "The sidebar now shows a one-time, dismissible hint on iOS devices once you have keys or chats worth keeping, with a quick \"How?\" pointing at Share -> Add to Home Screen",
+      "Never shown on desktop, Android, or once Polecat is already installed; dismiss it and it won't come back",
+    ],
+  },
+  {
+    v: 94,
+    title: "Small accessibility fixes",
+    ts: "2026-07-02T11:16:00.000Z",
+    items: [
+      "Pressing Escape now closes the Settings panel, matching every other overlay in the app (shortcuts cheatsheet, share, lightbox)",
+      "The sidebar's delete-conversation button now has a proper screen-reader label -- it used to announce as \"times\" (the visible x symbol) instead of \"Delete conversation\"",
+    ],
+  },
+  {
+    v: 93,
+    title: "Friendlier error message when a model can't be reached",
+    ts: "2026-07-02T09:34:00.000Z",
+    items: [
+      "If a model's request fails because of a network hiccup or an ad blocker/privacy extension, the response tab used to show a raw browser error: \"Error: Failed to fetch\"",
+      "It now says something a beginner can act on -- \"Couldn't reach <model> -- check your internet connection, or an ad blocker/privacy extension may be blocking the request.\"",
+      "Provider-specific errors (like a bad API key) are unchanged -- they already had useful, specific messages",
+    ],
+  },
+  {
+    v: 92,
+    title: "Tidied up the merged Models & Consensus tab",
+    ts: "2026-07-02T07:35:00.000Z",
+    items: [
+      "The new combined tab had the same phrase \"how the combined answer is formed\" showing twice on one screen -- once in the tab subtitle, once as a section heading right below the model list",
+      "The section heading is now \"Combining into one answer\", so the two labels no longer repeat each other while scrolling down the tab",
+    ],
+  },
+  {
+    v: 91,
+    title: "Models and Consensus are now one tab in Settings",
+    ts: "2026-07-02T03:43:00.000Z",
+    items: [
+      "The separate \"Models\" and \"Consensus\" tabs in Settings are now merged into a single \"Models & Consensus\" tab -- who answers and how the combined answer is formed, top to bottom, in one place",
+      "No more flipping tabs to see the whole picture: the model list, the flow pills, the strategy picker, and \"Final answer written by\" all live together now",
+      "Settings has 3 tabs instead of 4: Models & Consensus, Keys, Support",
+    ],
+  },
+  {
+    v: 90,
+    title: "Consensus tab now warns up front if the final-answer model can't run",
+    ts: "2026-07-02T01:45:00.000Z",
+    items: [
+      "If the model set to write the final answer has no API key, or its key is known-bad, a one-line amber warning now shows right under \"Final answer written by\" -- before you run anything, not just after synthesis silently falls back",
+      "A live consensus run's failed arbiter call is now itself remembered, so a real failure also arms this warning for next time",
+      "Fixed a staleness gap along the way: adding/removing/reordering models or fixing a key no longer needs a Settings close-reopen to show up on the Consensus tab",
+    ],
+  },
+  {
+    v: 89,
+    title: "Models tab now explains the flow in plain language too",
+    ts: "2026-07-01T23:56:00.000Z",
+    items: [
+      "The Models tab's [answering models] -> [final answer] -> Consensus pill flow now also shows the plain-language sentence the Consensus tab already had -- e.g. \"Your 3 models answer in parallel, then Claude Opus merges them into one answer\"",
+      "Same wording on both tabs, powered by one shared helper, so the two screens can never drift out of sync",
+    ],
+  },
+  {
+    v: 88,
+    title: "See who answers and who writes the final answer, right on the Models tab",
+    ts: "2026-07-01T22:52:00.000Z",
+    items: [
+      "The Consensus tab's at-a-glance flow -- [answering models] -> [final-answer model] -> Consensus -- now also shows at the top of the Models tab",
+      "No more flipping tabs just to check who's arbitrating: reorder, add, remove, or toggle 'Final answer' / 'Synthesis only' and the flow updates instantly, on both tabs, in sync",
+    ],
+  },
+  {
+    v: 87,
+    title: "The response-speed race bar now explains itself",
+    ts: "2026-07-01T21:57:00.000Z",
+    items: [
+      "The row of colored dots under a consensus answer ('Blended from N models') plots how fast each model responded, but had no label and its info was hover-only -- invisible on mobile",
+      "Added a small 'Response speed / fastest -> slowest' caption above it, and each dot now shows its model, time, and finish rank on tap as well as hover -- e.g. 'Claude Opus 4.8: 3.3s (1st, fastest)'",
+      "Also gave screen readers a full ranked summary instead of skipping the whole thing",
+    ],
+  },
+  {
+    v: 86,
+    title: "Plainer language for 'arbiter' across Settings",
+    ts: "2026-07-01T20:02:00.000Z",
+    items: [
+      "Continued the plain-language cleanup: the Consensus tab's 'Arbiter model' picker is now 'Final answer written by', and the Models tab's per-model 'Arbiter' toggle is now 'Final answer'",
+      "Related copy updated to match -- tooltips, the flow diagram's 'Auto arbiter' placeholder (now 'Auto pick'), two strategy descriptions, and the welcome tour's example",
+      "Wording only -- how consensus and the final-answer model are chosen is unchanged",
+    ],
+  },
+  {
+    v: 85,
+    title: "One-tap backup nudge",
+    ts: "2026-07-01T18:06:00.000Z",
+    items: [
+      "The sidebar now shows a quiet 'Backed up 3d ago' (or 'Never backed up') note next to Export/Import, so you always know where you stand",
+      "If you've been using Polecat for a couple of weeks with no recent backup, a small dismissible reminder appears -- 'Back up your chats & keys before you lose them?' -- with one-tap Export or 'Not now'",
+      "It only shows up when there's actually something to lose (a saved chat or a key), never for brand-new users, and never more than once every few weeks -- low-friction, no nagging",
+    ],
+  },
+  {
+    v: 84,
+    title: "Plain-language strategy names in Consensus settings",
+    ts: "2026-07-01T16:12:00.000Z",
+    items: [
+      "Renamed the consensus strategy options from technical labels to plain language: 'Sequential Refinement' -> 'Refine Together', 'Single Judge - Comprehensive' -> 'Merge Everything', 'Single Judge - Best Answer' -> 'Best Answer', 'Validated Synthesis' -> 'Fact-Checked Merge', 'Debate & Synthesize' -> 'Debate & Merge'",
+      "These names show up in the Strategy dropdown and in the consensus answer's source footer ('Blended from N models...') -- a beginner can now tell what each option does without decoding arbitration jargon",
+      "No behavior change -- only display names; strategy IDs, prompts, and saved settings are untouched",
+    ],
+  },
+  {
+    v: 83,
+    title: "Plainer language on the \"Building consensus\" screen",
+    ts: "2026-07-01T15:21:00.000Z",
+    items: [
+      "While models are answering, the progress screen used to show the technical strategy name plus jargon like 'Sequential Refinement - arbiter: auto (strategy default)'",
+      "It now reads in plain language, matching the wording already used on the Consensus settings tab -- e.g. '3 models answering in parallel, then Claude Opus 4.1 merges them into one answer'",
+      "The technical strategy name is still there for anyone curious -- it's just a hover tooltip now instead of the headline text every user sees on every run",
+    ],
+  },
+  {
     v: 82,
     title: "Synthesis-only badge now stays in sync across Models and Consensus tabs",
     ts: "2026-07-01T13:23:00.000Z",
