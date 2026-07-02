@@ -426,6 +426,17 @@ body.processing .send-btn { display: none; }
 }
 [data-theme="dark"] .consensus-fallback-note { color: #f0c069; }
 
+/* Proactive arbiter-health warning — same amber language, shown in the
+   Consensus tab under "Final answer written by" when that model has no key
+   or a known-bad one, instead of only explaining it after a run falls back. */
+.arb-health-warn {
+  font-size: 12px; line-height: 1.5;
+  padding: 7px 10px; margin: 6px 0 0;
+  color: #9a6a00; background: rgba(240, 168, 48, .12);
+  border: 1px solid rgba(240, 168, 48, .35); border-radius: 7px;
+}
+[data-theme="dark"] .arb-health-warn { color: #f0c069; }
+
 /* ── Modal ───────────────────────────────────────────────── */
 /* The blur lives on a ::before layer (not the modal's ancestor) so the panel
    itself never renders blurred on open. */

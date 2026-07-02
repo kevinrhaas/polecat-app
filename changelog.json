@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-01 18:56 CT",
+  "updated": "2026-07-01 20:45 CT",
   "entries": [
+    {
+      "date": "2026-07-01",
+      "time": "20:45 CT",
+      "title": "Consensus tab now warns up front if the final-answer model can't run",
+      "items": [
+        "If the model set to write the final answer has no API key, or its key is known-bad, a one-line amber warning now shows right under \"Final answer written by\" -- before you run anything, not just after synthesis silently falls back",
+        "A live consensus run's failed arbiter call is now itself remembered, so a real failure also arms this warning for next time",
+        "Fixed a staleness gap along the way: adding/removing/reordering models or fixing a key no longer needs a Settings close-reopen to show up on the Consensus tab"
+      ]
+    },
     {
       "date": "2026-07-01",
       "time": "18:56 CT",

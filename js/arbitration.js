@@ -367,7 +367,10 @@ function fallbackConsensus(ctx, preferredText) {
 // ── Engine ───────────────────────────────────────────────────────────────
 // ctx = { prompt, results:[{selection,text}], labelOf(sel)->str,
 //         silent(sel,msgs)->Promise<str>, stream(sel,msgs)->Promise<str>,
-//         status(text), step(label), showStatic(text), fail(text) }
+//         status(text), step(label), showStatic(text), fail(text),
+//         arbiterFailed?(selection,error) — optional, called when the model
+//         writing the final answer throws (bad/exhausted key, network) so the
+//         host app can cache the failure and warn proactively next time }
 export async function runArbitration(strategy, ctx) {
   const { results } = ctx;
   if (!results.length) { ctx.fail('All models failed to respond — no consensus available.'); return; }
@@ -401,7 +404,7 @@ async function runChain(strategy, ctx) {
     } else {
       ctx.status('Finalizing consensus…');
       let finalText = null;
-      try { finalText = await ctx.stream(r.selection, msgs); } catch {}
+      try { finalText = await ctx.stream(r.selection, msgs); } catch (e) { ctx.arbiterFailed?.(r.selection, e); }
       if (finalText) await maybeProvenance(ctx, r.selection, finalText);
       else fallbackConsensus(ctx, draft);
     }
@@ -417,7 +420,7 @@ async function runJudge(strategy, ctx) {
   ctx.step(`${ctx.labelOf(arbiter)} judging`);
   let finalText = null;
   try { finalText = await ctx.stream(arbiter, [{ role: 'user', content: judgePrompt }]); }
-  catch {}
+  catch (e) { ctx.arbiterFailed?.(arbiter, e); }
   if (finalText) await maybeProvenance(ctx, arbiter, finalText);
   else fallbackConsensus(ctx);
 }
@@ -440,7 +443,7 @@ async function runDebate(strategy, ctx) {
   ];
   let finalText = null;
   try { finalText = await ctx.stream(arbiter, msgs); }
-  catch {}
+  catch (e) { ctx.arbiterFailed?.(arbiter, e); }
   if (finalText) await maybeProvenance(ctx, arbiter, finalText);
   else fallbackConsensus(ctx);
 }

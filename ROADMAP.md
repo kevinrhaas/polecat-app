@@ -324,9 +324,28 @@ pass, never a jarring rewrite, never regress:**
     (idempotent — it no-ops if the strip already exists from the live provenance path,
     and needs no provenance data since the stance/contribution badges on each card are
     already optional/graceful when missing).
-  - [ ] **Proactive arbiter-health warning.** Before/at synthesis, if the chosen arbiter's
-    provider has no key or a known-bad key (e.g. last call returned 401/credit error),
-    surface a one-line warning in the Consensus tab up front rather than only after it fails.
+  - [x] **Proactive arbiter-health warning (shipped 2026-07-02).** The Consensus tab now
+    shows a one-line amber warning right under "Final answer written by" the moment an
+    explicit (non-auto) final-answer model has no key or a known-bad one — instead of only
+    finding out after synthesis silently falls back. Two signal sources feed it, both reusing
+    the existing `modelStatus` cache (`js/app.js` `statusOf`/`providerKey` — no new network
+    probe added just to render Settings): (1) a manual Models/Keys-tab test, same as before;
+    (2) NEW — a live consensus run's actual arbiter call failing is itself now recorded as a
+    probe result (`js/arbitration.js` `runChain`/`runJudge`/`runDebate` catch blocks now call
+    an optional `ctx.arbiterFailed(selection, error)`, wired in `js/app.js` to
+    `recordArbiterHealthFailure()`), so a real failed run also arms the warning for next time,
+    not just a manual test. While fixing this, found and closed the staleness gap it would
+    otherwise have had: the warning (and the arbiter `<select>`'s own option list) previously
+    only refreshed on a full Settings close/reopen, so fixing a key on the Keys tab or
+    adding/removing/reordering a model on the Models tab left the Consensus tab showing stale
+    info until reopened. `renderModels()` and `refreshModelBadges()` now also call
+    `renderArbitration()` (guarded, cheap re-render of a hidden panel), and `scheduleKeyProbe()`
+    calls it at each status transition, so everything stays in sync live within one session —
+    the same "never goes stale while Settings is open" bar set by the earlier synthesis-only
+    badge fix. Verified in real headless-Chromium sessions: no-key warning appears/disappears
+    live as a model is added/removed/picked as arbiter, key-probe failure updates the warning
+    without reopening Settings, reorder/add/remove via Models tab keeps the Consensus tab's
+    arbiter dropdown in sync, zero console errors throughout.
 
 - [x] Onboarding/demo polish: rotating clickable example questions (done), demo starts
   with two fast free models + light consensus (done), subtle first-time callout below

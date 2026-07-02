@@ -1638,6 +1638,7 @@ async function runConsensus() {
     fail: (t) => showConsensusStatic(t, true),
     provenanceEnabled: cfg.arbitration.provenance !== false,
     provenance: (data) => onProvenance(data),
+    arbiterFailed: (sel, err) => recordArbiterHealthFailure(sel, err),
   });
   // "Responses at a glance" only needs the model answers, not the arbiter's
   // provenance analysis — always show it, even with the agreement map off.
@@ -2250,6 +2251,7 @@ async function rerunConsensusWith(capturedOrdered, capturedPrompt, strategyId, s
       fail: t => showConsensusStatic(t, true),
       provenanceEnabled: cfg.arbitration.provenance !== false,
       provenance: data => onProvenance(data),
+      arbiterFailed: (sel, err) => recordArbiterHealthFailure(sel, err),
     });
     // Always show the per-model snapshot strip, independent of the agreement
     // map setting — must run before the `finally` restores the live globals.
@@ -2514,7 +2516,10 @@ function getModelPerfSummary(provider, model) {
 //  MODEL TESTING (Hybrid: auto on add/select + "Test all" button; cached)
 // ════════════════════════════════════════════════════════════════════════════
 function refreshModelBadges() {
-  if ($('configModal').classList.contains('open')) renderSelList();   // don't nuke the add-row/browse panel
+  // A model's tested status can also be the arbiter's health — keep the
+  // Consensus tab's proactive warning fresh even while the user stays on the
+  // Models/Keys tab, so it's never stale by the time they switch over.
+  if ($('configModal').classList.contains('open')) { renderSelList(); renderArbitration(); }   // don't nuke the add-row/browse panel
   buildChips();
 }
 async function testOne(provider, model) {
@@ -2589,8 +2594,13 @@ function scheduleKeyProbe(id, field) {
   // changed, so any cached result now describes a DIFFERENT key. Drop it so
   // the badge never shows a stale "Connected"/"Not connected" for new text.
   if (k) delete cfg.modelStatus[k];
+  // Deleting the cache above can flip the Consensus tab's proactive arbiter-
+  // health warning (e.g. a bad key just got cleared, or key text changed) —
+  // keep it in sync the same way the key badge itself does.
+  renderArbitration();
   if (!val || (id === 'claude' && CLAUDE_OAUTH_RE.test(val))) { renderKeyStatusField(field, id); return; }
   renderKeyStatusField(field, id);   // neutral "Key added" while the debounce waits
+  renderArbitration();
   _keyProbeTimers[id] = setTimeout(async () => {
     if (!model || providerKey(cfg, id) !== val) return;   // key changed again before the debounce fired
     cfg.modelStatus[k] = { testing: true };
@@ -2600,12 +2610,39 @@ function scheduleKeyProbe(id, field) {
     cfg.modelStatus[k] = { ok: res.ok, error: res.error || '', ts: Date.now() };
     persist();
     renderKeyStatusField(field, id);
+    renderArbitration();
   }, 600);
 }
 // A probe timeout on a SLOW self-hosted provider (Polecat MS) means the model is
 // warming up / slow on CPU — not broken. Show a neutral "slow" mark, not a ✗.
 function isSlowWarming(provider, st) {
   return !!(PROVIDERS[provider]?.slow && st && st.ok === false && /tim(e|ed)\s*out|abort/i.test(st.error || ''));
+}
+// A real consensus run's arbiter call is itself a live probe — if it fails,
+// cache that in the same modelStatus store the Keys/Models tabs read, so the
+// NEXT time Settings opens, arbiterHealthWarning() already knows, instead of
+// the user only finding out after the fact via the fallback note.
+function recordArbiterHealthFailure(sel, err) {
+  if (!sel || !sel.provider || !sel.model) return;
+  cfg.modelStatus[statusKey(sel.provider, sel.model)] = { ok: false, error: (err && err.message) || 'Arbiter call failed', ts: Date.now() };
+  persist();
+}
+// Proactive arbiter-health check (Backlog: "surface a one-line warning in the
+// Consensus tab up front rather than only after it fails"). Reads ONLY the
+// existing modelStatus cache / provider-key presence — never triggers a new
+// network probe just from rendering Settings. Only determinate for an
+// explicit (non-"auto") final-answer pick, since "auto" isn't resolved to a
+// specific model until answers actually arrive.
+function arbiterHealthWarning(arbSel) {
+  if (!arbSel || arbSel.provider === 'demo') return null;
+  if (!providerKey(cfg, arbSel.provider)) {
+    return `No API key for ${PROVIDERS[arbSel.provider]?.name || arbSel.provider} yet — ${selectionLabel(arbSel)} can't write the final answer until one's added in Keys.`;
+  }
+  const st = statusOf(arbSel.provider, arbSel.model);
+  if (st && st.ok === false && !isSlowWarming(arbSel.provider, st)) {
+    return `${selectionLabel(arbSel)}'s key looks invalid (${st.error || 'last check failed'}) — pick a different final-answer model or fix it in Keys.`;
+  }
+  return null;
 }
 function statusGlyph(provider, model) {
   const st = statusOf(provider, model);
@@ -2698,7 +2735,10 @@ function statusBadge(provider, model) {
   if (isSlowWarming(provider, st)) return `<span class="sel-status slow" title="Slow to respond (self-hosted, CPU) — it may still work; give it a few seconds, or re-test">◴</span>`;
   return `<span class="sel-status bad" title="${escapeHtml(st.error || 'Unavailable')}">✗</span>`;
 }
-function renderModels() { renderModelsFlow(); renderSelList(); renderAddRow(); }
+// Also refreshes the Consensus tab (arbiter picker options + the proactive
+// health warning both depend on the current selections list) so reordering,
+// adding, or removing a model never leaves it stale within the same session.
+function renderModels() { renderModelsFlow(); renderSelList(); renderAddRow(); renderArbitration(); }
 function renderSelList() {
   const list = $('selList'); if (!list) return;
   list.innerHTML = '';
@@ -2840,7 +2880,7 @@ function addModel(provider, model, viaAddBtn) {
   if ((cfg.selections || []).length >= MAX_SELECTIONS) { toast(`Max ${MAX_SELECTIONS} models`); return; }
   (cfg.selections = cfg.selections || []).push(mkSelection(provider, model));
   persist(); buildChips();
-  if (viaAddBtn) renderModels(); else { renderSelList(); renderModelsFlow(); }   // browse: keep the panel open
+  if (viaAddBtn) renderModels(); else { renderSelList(); renderModelsFlow(); renderArbitration(); }   // browse: keep the panel open
   if (providerKey(cfg, provider)) testOne(provider, model);   // auto-test on add
   else toast(`Added — add a ${PROVIDERS[provider].name} key to use it`);
 }
@@ -2962,6 +3002,7 @@ function renderModelsFlow() {
 // ── Arbitration tab ───────────────────────────────────────────────────────
 function renderArbitration() {
   const wrap = $('arbControls');
+  if (!wrap) return;
   const strat = activeStrategy(cfg);
   const on = cfg.consensus !== false;
   const provOn = cfg.arbitration.provenance !== false;
@@ -2981,6 +3022,7 @@ function renderArbitration() {
   // run is obvious at a glance, without switching to the Models tab.
   const answerers = answeringSelections(cfg);
   const arbSel = cfg.arbitration.arbiter !== 'auto' ? (cfg.selections || []).find(s => s.id === cfg.arbitration.arbiter) : null;
+  const healthWarn = arbiterHealthWarning(arbSel);
   const n = answerers.length;
   const flowHtml = n
     ? `<div class="cs-flow-wrap">` +
@@ -2999,6 +3041,7 @@ function renderArbitration() {
       `<label class="switch-row"><span><b>Agreement map</b><br><span class="switch-sub">After each answer, show how much the models agreed and what each contributed</span></span>` +
         `<span class="switch ${provOn ? 'on' : ''}" id="provSwitch" role="switch" aria-checked="${provOn}" tabindex="0"><span class="knob"></span></span></label>` +
       `<label class="mini-label">Final answer written by <span class="mini-note">combines every model's answer into one — defaults to the strategy's pick</span></label><select class="field-input" id="arbiterSelect">${arbiterOpts}</select>` +
+      (healthWarn ? `<div class="arb-health-warn">${escapeHtml(healthWarn)}</div>` : '') +
       (arbSel ? `<label class="sel-arb-only-label cs-arb-only-row"><input type="checkbox" id="csArbOnlyCb"${arbSel.arbiterOnly ? ' checked' : ''}>` +
         `<span>Synthesis only</span><span class="mini-note"> \xb7 ${escapeHtml(selectionLabel(arbSel))} won't answer, just synthesizes from the others</span></label>` : '') +
       `<details class="arb-prompts"${editable ? ' open' : ''}><summary>Prompt template${Object.keys(strat.prompts || {}).length > 1 ? 's' : ''}</summary>${promptFields}` +
