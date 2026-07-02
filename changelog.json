@@ -1,6 +1,15 @@
 {
-  "updated": "2026-07-02 04:34 CT",
+  "updated": "2026-07-02 06:16 CT",
   "entries": [
+    {
+      "date": "2026-07-02",
+      "time": "06:16 CT",
+      "title": "Small accessibility fixes",
+      "items": [
+        "Pressing Escape now closes the Settings panel, matching every other overlay in the app (shortcuts cheatsheet, share, lightbox)",
+        "The sidebar's delete-conversation button now has a proper screen-reader label -- it used to announce as \"times\" (the visible x symbol) instead of \"Delete conversation\""
+      ]
+    },
     {
       "date": "2026-07-02",
       "time": "04:34 CT",

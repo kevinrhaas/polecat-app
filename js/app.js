@@ -3237,7 +3237,7 @@ function renderHistoryList() {
     `<div class="sb-item-actions">` +
     `<button class="sb-act sb-pin${t.pinned ? ' on' : ''}" title="${t.pinned ? 'Unpin' : 'Pin to top'}" data-id="${escapeHtml(t.id)}">${PIN_SVG}</button>` +
     `<button class="sb-act sb-rename" title="Rename" data-id="${escapeHtml(t.id)}">${EDIT_SVG}</button>` +
-    `<button class="sb-act sb-del" title="Delete" data-id="${escapeHtml(t.id)}">×</button>` +
+    `<button class="sb-act sb-del" title="Delete" aria-label="Delete conversation" data-id="${escapeHtml(t.id)}">×</button>` +
     `</div></div>`;
   };
   let html = '';
@@ -3486,6 +3486,7 @@ function init() {
   $('closeConfig').onclick = closeConfig;
   $('doneConfig').onclick  = closeConfig;
   $('configModal').onclick = (e) => { if (e.target === $('configModal')) closeConfig(); };
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('configModal').classList.contains('open')) closeConfig(); });
   $('tourBtn').onclick = () => { closeConfig(); setTimeout(showWelcome, 200); };
 
   $('clearKeys').onclick = () => {
