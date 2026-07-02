@@ -166,15 +166,28 @@ jobs:
                differentiator, clarity, polish, mobile, and a link/CTA to the app
                (app.polecat.live) and the free demo. Do not break it. Tick the
                ROADMAP item if you complete it.
-            3. Add or update a changelog on the site (a CHANGELOG / "what's new" section or
-               file) with a one-line summary, stamped with the REAL current Central time
-               (never future/invented): use `TZ='America/Chicago' date '+%Y-%m-%d %H:%M CT'`.
-               Put the same "last updated <YYYY-MM-DD HH:MM CT>" stamp in the footer so it
-               matches the app's header convention.
-            4. Commit and push (one commit) to its default branch — ONLY after the
-               site's own validator passes (it rejects smart quotes in HTML attributes):
+            3. Add or update a changelog on the site by PREPENDING a new entry to
+               CHANGELOG.md (it is the source of truth). Match the existing header shape
+               EXACTLY so the generator can parse it — bump the version number:
+                 ## <YYYY-MM-DD> <HH:MM> CT (<next version>)
+                 - **Lead in bold** — one-line summary of what shipped.
+               Stamp it with the REAL current Central time (never future/invented):
+               use `TZ='America/Chicago' date '+%Y-%m-%d %H:%M CT'`. Put the same
+               "last updated <YYYY-MM-DD HH:MM CT>" stamp in the footer so it matches
+               the app's header convention.
+            4. Regenerate the published relay-style changelog module from CHANGELOG.md:
+                 cd site && node scripts/gen-changelog.mjs   # writes js/changelog.js
+               `js/changelog.js` is AUTO-GENERATED — never hand-edit it; only edit
+               CHANGELOG.md and re-run the generator. It publishes the changelog at
+               polecat.live/js/changelog.js (the same /js/changelog.js convention the
+               other Polecat properties use, e.g. relay.polecat.live). Run it in the
+               SAME commit as the CHANGELOG.md change so the two never drift.
+            5. Commit and push (one commit) to its default branch — ONLY after the
+               site's own validator passes (rejects smart quotes in HTML attributes AND
+               ES-module-parses js/*.js, so a broken generated module can't ship):
                  cd site
-                 node scripts/validate.mjs   # must exit 0 — if it fails, fix the file:line and re-run
+                 node scripts/gen-changelog.mjs   # keep js/changelog.js in sync
+                 node scripts/validate.mjs        # must exit 0 — if it fails, fix and re-run
                  git add -A
                  git -c user.name="polecat-bot" -c user.email="bot@polecat.live" commit -m "<message>"
                  git push origin HEAD
