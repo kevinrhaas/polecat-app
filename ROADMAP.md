@@ -310,6 +310,20 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **Periodic audit pass (2026-07-02, 11:02 CT): all epics/backlog still fully checked
+  off, so ran a fresh code-based accessibility/dead-code sweep.** Found and fixed: (1) three
+  `copy-btn` templates (`js/app.js` ~875, ~1591, ~3391) had a `title` tooltip but no
+  `aria-label`, unlike their Share/Copy-as-markdown siblings in the same row — added
+  `aria-label="Copy"` to all three; (2) four confirmed-dead CSS rules left over from earlier
+  redesigns (`css/styles.css` `.cfg-link`, `.cs-flow-wrap`, `.key-vendor`, `.arb-meta` — verified
+  zero references anywhere in `index.html`/`js/*.js`) removed. Also shipped a small website pass
+  (Part 2): added Twitter Card meta tags + a canonical link to polecat.live's `<head>` for proper
+  link previews on X/Slack/Discord (previously only Open Graph tags existed). Flagging for the
+  next run: still open from this pass but intentionally deferred — small tap targets on
+  `.copy-btn`/`.ms-copy-btn`/`.ms-expand-btn` (well under the 44px mobile guideline; needs a
+  wider audit of hover/hit-area padding across call sites to fix safely) and a one-word CTA
+  copy mismatch ("Try it free — no key needed" vs "Try it free now — no key needed",
+  `index.html` composer greeting vs welcome carousel).
 - [x] **Periodic audit pass (2026-07-02): every DO THIS NEXT item, all 3 epics, and the
   entire backlog were fully checked off with no unchecked steps remaining.** Ran a
   code-based icon/emoji/copy audit in lieu of a specific next step (found and fixed one
