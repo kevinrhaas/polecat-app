@@ -621,8 +621,20 @@ addressed below.)
   `apple-mobile-web-app-title` and `mobile-web-app-capable` meta tags + the manifest `<link>`
   in `index.html`'s head. Reuses existing favicon assets; no service worker, no new tracking.
   This is the durable fix for **iOS Safari**, which evicts localStorage after ~7 days of not
-  visiting a non-installed site. FOLLOW-UP (left for a future run): an optional, dismissible
-  "Add to Home Screen to keep your data" hint on iOS Safari.
+  visiting a non-installed site.
+- [x] **iOS "Add to Home Screen" hint (shipped 2026-07-02).** The sidebar now shows a quiet,
+  dismissible banner ("Add Polecat to your Home Screen so iOS doesn't clear your keys & chats")
+  reusing the same visual pattern as the backup nudge. Shown only when: the device is iOS
+  (`isIosDevice()` — iPhone/iPod/iPad UA, or iPadOS's Mac-like UA detected via
+  `maxTouchPoints > 1`), the app isn't already installed (`isStandaloneApp()` checks
+  `navigator.standalone` and `matchMedia('(display-mode: standalone)')`), there's real data at
+  risk (`hasBackupWorthyData()`, reused from the backup nudge), and it hasn't been dismissed
+  before (`polecat_ios_install_dismissed`, permanent — installing is a one-time action, unlike
+  the recurring backup reminder). "How?" points the user at Share -> Add to Home Screen via a
+  toast and dismisses the banner; "Not now" dismisses without instructions. To avoid stacking
+  two sidebar nudges, the backup nudge now skips its own turn whenever the iOS hint is visible
+  (`js/app.js` `maybeShowIosInstallHint`, `maybeShowBackupNudge`, `#sbIosInstallHint` in
+  `index.html`). No new tracking, no server calls.
 - [x] **One-tap backup nudge (shipped 2026-07-01).** Sidebar now shows a quiet "Backed up Nd
   ago" / "Never backed up" note under Export/Import (`js/app.js` `renderBackupStatus`), plus
   a rare, dismissible reminder card ("Back up your chats & keys before you lose them?" with

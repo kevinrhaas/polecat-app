@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-02 06:16 CT",
+  "updated": "2026-07-02 08:00 CT",
   "entries": [
+    {
+      "date": "2026-07-02",
+      "time": "08:00 CT",
+      "title": "iPhone/iPad: a nudge to install Polecat before Safari clears your data",
+      "items": [
+        "iOS Safari can silently evict a site's saved data (your API keys and chats) after about a week of inactivity -- installing Polecat to the Home Screen avoids that",
+        "The sidebar now shows a one-time, dismissible hint on iOS devices once you have keys or chats worth keeping, with a quick \"How?\" pointing at Share -> Add to Home Screen",
+        "Never shown on desktop, Android, or once Polecat is already installed; dismiss it and it won't come back"
+      ]
+    },
     {
       "date": "2026-07-02",
       "time": "06:16 CT",

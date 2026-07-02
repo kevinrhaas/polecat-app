@@ -24,6 +24,7 @@ const BACKUP_NUDGE_KEY = 'polecat_backup_nudge_at'; // ms timestamp the backup n
 const FIRST_USE_KEY = 'polecat_first_use';        // ms timestamp of this browser's first visit
 const BACKUP_STALE_MS = 14 * 86400000;            // consider a backup "due" after 2 weeks
 const BACKUP_NUDGE_QUIET_MS = 21 * 86400000;      // never nudge again within 3 weeks of the last nudge
+const IOS_INSTALL_DISMISS_KEY = 'polecat_ios_install_dismissed'; // set once the user dismisses the Home Screen hint
 const COPY_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 // EPIC 1 · P4 — layers icon for the inline attribution toggle
 const ATTR_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`;
@@ -3159,7 +3160,7 @@ function openImport() {
 // ════════════════════════════════════════════════════════════════════════════
 //  SIDEBAR + CONVERSATION HISTORY
 // ════════════════════════════════════════════════════════════════════════════
-function openSidebar() { renderHistoryList(); renderBackupStatus(); maybeShowBackupNudge(); $('sidebar').classList.add('open'); $('sidebarBackdrop').classList.add('open'); }
+function openSidebar() { renderHistoryList(); renderBackupStatus(); maybeShowIosInstallHint(); maybeShowBackupNudge(); $('sidebar').classList.add('open'); $('sidebarBackdrop').classList.add('open'); }
 function closeSidebar() { $('sidebar').classList.remove('open'); $('sidebarBackdrop').classList.remove('open'); }
 function toggleSidebar() { $('sidebar').classList.contains('open') ? closeSidebar() : openSidebar(); }
 
@@ -3175,7 +3176,7 @@ function renderBackupStatus() {
 }
 function maybeShowBackupNudge() {
   const banner = $('sbBackupNudge'); if (!banner) return;
-  if (!hasBackupWorthyData()) { banner.hidden = true; return; }
+  if (!hasBackupWorthyData() || !$('sbIosInstallHint')?.hidden) { banner.hidden = true; return; }
   const now = Date.now();
   const firstUse = Number(localStorage.getItem(FIRST_USE_KEY)) || now;
   const lastBackup = Number(localStorage.getItem(BACKUP_KEY)) || 0;
@@ -3188,6 +3189,23 @@ function maybeShowBackupNudge() {
   } else {
     banner.hidden = true;
   }
+}
+
+// iOS Home Screen install hint: iOS Safari evicts localStorage (keys/chats) after
+// ~7 days of not visiting a non-installed site. Installing as a PWA is the durable
+// fix (see manifest.webmanifest + apple-mobile-web-app-* meta tags). Nudge once,
+// only on iOS, only when not already installed, only once there's real data to lose.
+function isIosDevice() {
+  const ua = navigator.userAgent || '';
+  return /iPad|iPhone|iPod/.test(ua) || (ua.includes('Macintosh') && navigator.maxTouchPoints > 1);
+}
+function isStandaloneApp() {
+  return window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+}
+function maybeShowIosInstallHint() {
+  const banner = $('sbIosInstallHint'); if (!banner) return;
+  const show = isIosDevice() && !isStandaloneApp() && hasBackupWorthyData() && !localStorage.getItem(IOS_INSTALL_DISMISS_KEY);
+  banner.hidden = !show;
 }
 
 function timeAgo(ts) {
@@ -3613,6 +3631,12 @@ function init() {
   $('sbWhatsNew') && ($('sbWhatsNew').onclick = openWhatsNew);
   $('sbBackupNudgeGo') && ($('sbBackupNudgeGo').onclick = () => { $('sbBackupNudge').hidden = true; openExport(); });
   $('sbBackupNudgeLater') && ($('sbBackupNudgeLater').onclick = () => { $('sbBackupNudge').hidden = true; });
+  $('sbIosInstallGo') && ($('sbIosInstallGo').onclick = () => {
+    localStorage.setItem(IOS_INSTALL_DISMISS_KEY, '1');
+    $('sbIosInstallHint').hidden = true;
+    toast('Tap the Share icon, then "Add to Home Screen"', 6000);
+  });
+  $('sbIosInstallLater') && ($('sbIosInstallLater').onclick = () => { localStorage.setItem(IOS_INSTALL_DISMISS_KEY, '1'); $('sbIosInstallHint').hidden = true; });
   loadChangelog();
   if (!localStorage.getItem(FIRST_USE_KEY)) localStorage.setItem(FIRST_USE_KEY, String(Date.now()));
   renderBackupStatus();
