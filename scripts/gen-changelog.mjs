@@ -1,16 +1,17 @@
 // Generate js/changelog.js (the published, relay-style ES module) from the
 // app's working source, changelog.json. This keeps a machine-readable changelog
-// at /js/changelog.js — matching the convention used across the other Polecat
-// properties (e.g. relay.polecat.live/js/changelog.js) — always in sync with the
-// in-app "What's new" panel, with zero hand-maintenance.
+// at /js/changelog.js — matching the convention every project in the Polecat
+// fleet publishes (relay.polecat.live, manager.polecat.live, ...) so the manager
+// app can sync it — always in sync with the in-app "What's new" panel, with zero
+// hand-maintenance.
 //
 // Run it after editing changelog.json (the hourly self-improve loop does this):
 //   node scripts/gen-changelog.mjs
 //
 // Output shape (newest first):
 //   export const CHANGELOG = [ { v, title, ts, items }, ... ]
-// where `ts` is an ISO-8601 UTC string derived from each entry's Central time,
-// so any consumer can format it to the reader's local zone.
+// Strings are SINGLE-quoted JS literals (the fleet convention the manager's sync
+// parses); `ts` is an ISO-8601 UTC string derived from each entry's Central time.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -51,13 +52,25 @@ const out = entries.map((e, i) => ({
   items: Array.isArray(e.items) ? e.items.map(String) : [],
 }));
 
+// Serialize as a SINGLE-quoted JS string literal — the fleet convention the
+// Polecat manager's changelog sync parses. Double quotes are left literal; only
+// backslashes, apostrophes and newlines are escaped. (JSON.stringify's
+// double-quoted output looked valid but the manager only reads single-quoted.)
+function jsStr(s) {
+  return "'" + String(s)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\r/g, '')
+    .replace(/\n/g, '\\n') + "'";
+}
+
 const body = out.map(e =>
   '  {\n' +
   `    v: ${e.v},\n` +
-  `    title: ${JSON.stringify(e.title)},\n` +
-  `    ts: ${JSON.stringify(e.ts)},\n` +
+  `    title: ${jsStr(e.title)},\n` +
+  `    ts: ${jsStr(e.ts)},\n` +
   '    items: [\n' +
-  e.items.map(it => `      ${JSON.stringify(it)},\n`).join('') +
+  e.items.map(it => `      ${jsStr(it)},\n`).join('') +
   '    ],\n' +
   '  },'
 ).join('\n');
@@ -65,7 +78,7 @@ const body = out.map(e =>
 const header =
   '// AUTO-GENERATED — do not edit by hand. Source: changelog.json.\n' +
   '// Regenerate with:  node scripts/gen-changelog.mjs\n' +
-  '// Published relay-style changelog for consumers at /js/changelog.js.\n' +
+  '// Published changelog for the Polecat fleet manager at /js/changelog.js.\n' +
   '// Entries are newest-first; `ts` is an ISO-8601 UTC string.\n';
 
 writeFileSync(join(root, 'js', 'changelog.js'), `${header}export const CHANGELOG = [\n${body}\n];\n`);
