@@ -1,6 +1,15 @@
 {
-  "updated": "2026-07-02 08:00 CT",
+  "updated": "2026-07-02 09:00 CT",
   "entries": [
+    {
+      "date": "2026-07-02",
+      "time": "09:00 CT",
+      "title": "Tidied up a stray icon in the welcome tour",
+      "items": [
+        "The \"Yours, on your device\" welcome slide referenced the history menu with a plain text symbol (☰) instead of the app's actual icon",
+        "It now shows the real hamburger-menu SVG, matching the icon language used everywhere else in the app"
+      ]
+    },
     {
       "date": "2026-07-02",
       "time": "08:00 CT",

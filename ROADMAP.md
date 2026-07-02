@@ -310,6 +310,13 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **Periodic audit pass (2026-07-02): every DO THIS NEXT item, all 3 epics, and the
+  entire backlog were fully checked off with no unchecked steps remaining.** Ran a
+  code-based icon/emoji/copy audit in lieu of a specific next step (found and fixed one
+  stray non-SVG glyph — see changelog "Tidied up a stray icon in the welcome tour"). No
+  other emoji/inconsistent-icon or missing-aria-label issues found on this pass. Flagging
+  here so the next run knows the roadmap is caught up and should either open a new epic
+  or do another best-practice audit.
 - [x] **Consensus never goes blank on arbiter failure** (operator-reported 2026-06-30):
   when the chosen arbiter can't stream a synthesis (dead/exhausted/invalid key, network),
   all strategies now fall back to the most representative answer + local agreement
