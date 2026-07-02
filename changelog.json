@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-02 11:02 CT",
+  "updated": "2026-07-02 12:01 CT",
   "entries": [
+    {
+      "date": "2026-07-02",
+      "time": "12:01 CT",
+      "title": "Bigger tap targets on small icon buttons",
+      "items": [
+        "The tiny copy/share/expand icon buttons (on each answer, and on the \"Responses at a glance\" cards) were well under the recommended mobile tap-target size",
+        "Their clickable area is now noticeably larger without shifting any layout, making them easier to hit on a phone",
+        "Also fixed the welcome tour's final CTA saying \"Try it free now\" while the empty-state button says \"Try it free\" -- both now match"
+      ]
+    },
     {
       "date": "2026-07-02",
       "time": "11:02 CT",

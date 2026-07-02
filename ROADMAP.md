@@ -324,6 +324,15 @@ pass, never a jarring rewrite, never regress:**
   wider audit of hover/hit-area padding across call sites to fix safely) and a one-word CTA
   copy mismatch ("Try it free — no key needed" vs "Try it free now — no key needed",
   `index.html` composer greeting vs welcome carousel).
+- [x] **Both deferred items above fixed (2026-07-02, 12:01 CT).** `.copy-btn`, `.ms-copy-btn`,
+  and `.ms-expand-btn` now use `padding: 6px; margin: -4px` (was `padding: 2px`), which grows
+  the clickable padding-box from ~17px to ~25px while a matching negative margin keeps the
+  visual layout footprint unchanged (no shift, no reflow) — verified via a real headless-
+  Chromium session that adjacent buttons in both the `.msg-head` row (8px gap) and the tighter
+  `.ms-card-head` row (6px gap) don't meaningfully overlap (worst case ~2px at the shared edge
+  in the tightest row), and that the welcome carousel's slide-5 CTA now reads "Try it free — no
+  key needed", matching the empty-state button exactly. Zero console errors, screenshots
+  confirmed at desktop and 390px mobile, light and dark.
 - [x] **Periodic audit pass (2026-07-02): every DO THIS NEXT item, all 3 epics, and the
   entire backlog were fully checked off with no unchecked steps remaining.** Ran a
   code-based icon/emoji/copy audit in lieu of a specific next step (found and fixed one
