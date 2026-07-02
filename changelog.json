@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-02 09:00 CT",
+  "updated": "2026-07-02 11:02 CT",
   "entries": [
+    {
+      "date": "2026-07-02",
+      "time": "11:02 CT",
+      "title": "Accessibility pass on the Copy button",
+      "items": [
+        "The Copy button next to a model's answer only had a title tooltip, unlike its Share and Copy-as-markdown neighbors -- screen readers announced it inconsistently across browsers",
+        "It now has a proper aria-label, matching every other icon button in the same row",
+        "Also removed a handful of leftover CSS rules from earlier redesigns that no longer matched anything in the app"
+      ]
+    },
     {
       "date": "2026-07-02",
       "time": "09:00 CT",

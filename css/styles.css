@@ -548,9 +548,6 @@ button.sel-addkey:hover { background: rgba(240,168,48,.22); border-color: rgba(2
 @media (prefers-reduced-motion: reduce) { .key-field-flash { animation: none; } }
 .sel-vision { display: inline-flex; align-items: center; flex-shrink: 0; cursor: default; }
 .cfg-legend { font-size: 11px; color: var(--text-3); display: flex; align-items: center; gap: 5px; }
-.cfg-link { background: none; border: none; padding: 0; margin: 0; cursor: pointer; color: var(--brand-b); font-size: inherit; font-family: inherit; text-decoration: underline; text-underline-offset: 2px; }
-.cfg-link:hover { opacity: .85; }
-.cs-flow-wrap { margin-bottom: 16px; }
 #modelsFlow:empty { display: none; }
 .cs-flow { justify-content: flex-start; margin-top: 0; }
 .cs-flow-text { font-size: 12px; color: var(--text-3); line-height: 1.5; margin-top: 8px; }
@@ -576,7 +573,6 @@ button.sel-addkey:hover { background: rgba(240,168,48,.22); border-color: rgba(2
 .key-head { display: flex; align-items: center; gap: 7px; font-size: 12px; }
 .svc-dot { width: 9px; height: 9px; border-radius: 50%; }
 .key-name { font-weight: 700; }
-.key-vendor { color: var(--text-3); font-size: 11px; }
 .key-status { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; color: var(--text-3); }
 .key-status svg { flex: none; }
 .key-status.on { color: #34d399; }
@@ -596,7 +592,6 @@ button.sel-addkey:hover { background: rgba(240,168,48,.22); border-color: rgba(2
 /* consensus tab */
 #arbControls { display: flex; flex-direction: column; gap: 10px; }
 .arb-desc { font-size: 12px; color: var(--text-2); line-height: 1.5; }
-.arb-meta { font-size: 11px; color: var(--text-3); }
 .arb-prompts { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; background: var(--surface-2); }
 .arb-prompts summary { font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text-2); }
 .arb-plabel { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .4px; color: var(--text-3); margin: 10px 0 3px; font-weight: 700; }

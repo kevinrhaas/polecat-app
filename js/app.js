@@ -872,7 +872,7 @@ function assistantPair(label, userContent, images) {
     userMsgHtml(userContent, images) +
     `<div class="msg assistant"><div class="msg-head"><span class="msg-label">${escapeHtml(label)}</span>` +
     `<span class="msg-time" hidden></span>` +
-    `<button class="copy-btn" title="Copy" hidden>${COPY_SVG}</button></div>` +
+    `<button class="copy-btn" title="Copy" aria-label="Copy" hidden>${COPY_SVG}</button></div>` +
     `<div class="msg-bubble"><div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></div>`;
   return pair;
 }
@@ -1588,7 +1588,7 @@ function showConsensusStatic(text, isError = false) {
   pair.innerHTML =
     userMsgHtml(lastPrompt) +
     `<div class="msg assistant"><div class="msg-head"><span class="msg-label">Consensus</span>` +
-    (isError ? '' : `<button class="copy-btn" title="Copy">${COPY_SVG}</button><button class="copy-btn share-btn" title="Share this consensus" aria-label="Share this consensus">${SHARE_SVG}</button><button class="copy-btn copy-md-btn" title="Copy thread as markdown" aria-label="Copy thread as markdown">${COPY_MD_SVG}</button>`) + `</div>` +
+    (isError ? '' : `<button class="copy-btn" title="Copy" aria-label="Copy">${COPY_SVG}</button><button class="copy-btn share-btn" title="Share this consensus" aria-label="Share this consensus">${SHARE_SVG}</button><button class="copy-btn copy-md-btn" title="Copy thread as markdown" aria-label="Copy thread as markdown">${COPY_MD_SVG}</button>`) + `</div>` +
     `<div class="msg-bubble">${isError ? `<span class="msg-error">${escapeHtml(text)}</span>` : renderMarkdown(text)}</div></div>`;
   conv.appendChild(pair); scrollBottom(conv);
   if (!isError) {
@@ -3388,7 +3388,7 @@ function renderStaticPair(selId, label, userContent, answerText, attachments) {
   pair.innerHTML =
     userMsgHtml(userContent, attachments) +
     `<div class="msg assistant"><div class="msg-head"><span class="msg-label">${escapeHtml(label)}</span>` +
-    (answerText == null ? '' : `<button class="copy-btn" title="Copy">${COPY_SVG}</button>`) + `</div>` +
+    (answerText == null ? '' : `<button class="copy-btn" title="Copy" aria-label="Copy">${COPY_SVG}</button>`) + `</div>` +
     `<div class="msg-bubble">${answerText == null ? '<span class="msg-error">No response recorded</span>' : renderMarkdown(answerText)}</div></div>`;
   conv.appendChild(pair); scrollBottom(conv);
   if (answerText != null) { highlightBubble(pair); const b = pair.querySelector('.copy-btn'); if (b) b.onclick = () => copyText(answerText, b); }
