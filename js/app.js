@@ -896,6 +896,18 @@ function cleanModelText(s) {
     .replace(/<\/?s>/g, '')         // <s>  </s>
     .trim();
 }
+// Turn opaque browser fetch errors (network down, an ad blocker/privacy
+// extension killing the request, DNS hiccups) into a plain-language message.
+// Provider-specific errors (bad key, rate limit, HTTP status) already carry
+// their own useful text from providers.js and pass through unchanged.
+function friendlyErrorMessage(err, sel) {
+  const raw = err?.message || 'error';
+  if (/failed to fetch|networkerror when attempting to fetch|load failed/i.test(raw)) {
+    const label = sel ? selectionLabel(sel) : 'this model';
+    return `Couldn't reach ${label} — check your internet connection, or an ad blocker/privacy extension may be blocking the request.`;
+  }
+  return raw;
+}
 function finishBubble(pair, full) {
   const bubble = pair.querySelector('.msg.assistant .msg-bubble');
   const copyBtn = pair.querySelector('.copy-btn');
@@ -978,7 +990,7 @@ async function streamTo(sel, userContent, images, displayAtts, nativePdfs = null
       markRun(sel.id, 'done');
       return null;
     }
-    const msg = err?.name === 'AbortError' ? 'Request timed out' : err.message;
+    const msg = err?.name === 'AbortError' ? 'Request timed out' : friendlyErrorMessage(err, sel);
     bubble.innerHTML = `<span class="msg-error">Error: ${escapeHtml(msg)}</span>`;
     co.pop();
     markRun(sel.id, 'error');
@@ -1053,7 +1065,7 @@ async function regenModel(sel, pair) {
     if (cfg.consensus && full) toast('Response regenerated — ask a follow-up to refresh the consensus');
     return full;
   } catch (err) {
-    const msg = err?.name === 'AbortError' ? 'Request timed out' : err.message;
+    const msg = err?.name === 'AbortError' ? 'Request timed out' : friendlyErrorMessage(err, sel);
     bubble.innerHTML = `<span class="msg-error">Error: ${escapeHtml(msg)}</span>`;
     co.push({ role: 'assistant', content: '' });
     markRun(sel.id, 'error');

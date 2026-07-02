@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-02 02:35 CT",
+  "updated": "2026-07-02 04:34 CT",
   "entries": [
+    {
+      "date": "2026-07-02",
+      "time": "04:34 CT",
+      "title": "Friendlier error message when a model can't be reached",
+      "items": [
+        "If a model's request fails because of a network hiccup or an ad blocker/privacy extension, the response tab used to show a raw browser error: \"Error: Failed to fetch\"",
+        "It now says something a beginner can act on -- \"Couldn't reach <model> -- check your internet connection, or an ad blocker/privacy extension may be blocking the request.\"",
+        "Provider-specific errors (like a bad API key) are unchanged -- they already had useful, specific messages"
+      ]
+    },
     {
       "date": "2026-07-02",
       "time": "02:35 CT",
