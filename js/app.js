@@ -2997,7 +2997,10 @@ function consensusFlowPills(answerers, arbSel) {
 // places (only the trailing link differs per tab and is added by the caller).
 function consensusFlowSentence(answerers, arbSel) {
   const n = answerers.length;
-  return `Your ${n} model${n === 1 ? '' : 's'} answer${n === 1 ? 's' : ''} in parallel, then ${arbSel ? escapeHtml(selectionLabel(arbSel)) : 'the strategy auto-picks one to'} merge${arbSel ? 's' : ''} them into one answer.`;
+  if (n === 1) {
+    return `Your 1 model answers, then ${arbSel ? escapeHtml(selectionLabel(arbSel)) : 'the strategy'} turns it into the final answer.`;
+  }
+  return `Your ${n} models answer in parallel, then ${arbSel ? escapeHtml(selectionLabel(arbSel)) : 'the strategy auto-picks one to'} merge${arbSel ? 's' : ''} them into one answer.`;
 }
 // Renders the same flow pills + plain-language sentence at the top of the
 // Models tab (read-only summary) so a user managing the model list can see

@@ -4,6 +4,15 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 99,
+    title: "Consensus flow polish: grammar fix + keyboard focus rings",
+    ts: "2026-07-02T19:53:00.000Z",
+    items: [
+      "Fixed a grammar bug in the \"Your N models answer...\" explainer sentence on the Models & Consensus tab -- with exactly 1 answering model it used to read \"Your 1 model answers in parallel... merges them\", now reads correctly as \"Your 1 model answers, then X turns it into the final answer\"",
+      "Added visible keyboard-focus rings to the Consensus/Agreement-map/Private toggle switches and to the provenance panel's model-name links and \"Ask about this\" buttons, so keyboard users can see what's focused before pressing Enter",
+    ],
+  },
+  {
     v: 98,
     title: "Bigger tap targets on small icon buttons",
     ts: "2026-07-02T17:01:00.000Z",

@@ -483,6 +483,7 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; }
 .switch-sub { font-size: 11px; color: var(--text-3); font-weight: 400; }
 .switch { width: 40px; height: 23px; border-radius: 100px; background: var(--surface-3); border: 1px solid var(--border); position: relative; cursor: pointer; flex-shrink: 0; transition: background .18s; }
+.switch:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-b) 35%, transparent); }
 .switch .knob { position: absolute; top: 2px; left: 2px; width: 17px; height: 17px; border-radius: 50%; background: var(--text-2); transition: transform .18s, background .18s; }
 .switch.on { background: var(--brand-b); border-color: var(--brand-b); }
 .switch.on .knob { transform: translateX(17px); background: #fff; }
@@ -1022,7 +1023,7 @@ button.sel-addkey:hover { background: rgba(240,168,48,.22); border-color: rgba(2
 .prov-dis-pos li { color: var(--text-2); padding-left: 8px; position: relative; }
 .prov-dis-pos li::before { content: '·'; position: absolute; left: 0; color: var(--text-3); }
 .prov-model-link { background: none; border: none; padding: 0; cursor: pointer; font-weight: 700; color: var(--text); font-size: inherit; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 2px; font-family: inherit; }
-.prov-model-link:hover { color: var(--brand-b); }
+.prov-model-link:hover, .prov-model-link:focus-visible { color: var(--brand-b); }
 .prov-ask-btn {
   display: inline-block; background: none;
   border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -1031,7 +1032,7 @@ button.sel-addkey:hover { background: rgba(240,168,48,.22); border-color: rgba(2
   transition: background .12s, color .12s, border-color .12s;
   margin: 2px 0 6px; line-height: 1.6; letter-spacing: .1px;
 }
-.prov-ask-btn:hover { background: var(--surface-3); color: var(--text-2); border-color: var(--text-3); }
+.prov-ask-btn:hover, .prov-ask-btn:focus-visible { background: var(--surface-3); color: var(--text-2); border-color: var(--text-3); }
 .prov-notable-item { font-size: 12px; }
 .prov-notable-claim { font-weight: 600; color: var(--text); display: block; }
 .prov-notable-note { color: var(--text-3); font-size: 11px; }

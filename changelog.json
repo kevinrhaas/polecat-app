@@ -1,6 +1,15 @@
 {
-  "updated": "2026-07-02 12:01 CT",
+  "updated": "2026-07-02 14:53 CT",
   "entries": [
+    {
+      "date": "2026-07-02",
+      "time": "14:53 CT",
+      "title": "Consensus flow polish: grammar fix + keyboard focus rings",
+      "items": [
+        "Fixed a grammar bug in the \"Your N models answer...\" explainer sentence on the Models & Consensus tab -- with exactly 1 answering model it used to read \"Your 1 model answers in parallel... merges them\", now reads correctly as \"Your 1 model answers, then X turns it into the final answer\"",
+        "Added visible keyboard-focus rings to the Consensus/Agreement-map/Private toggle switches and to the provenance panel's model-name links and \"Ask about this\" buttons, so keyboard users can see what's focused before pressing Enter"
+      ]
+    },
     {
       "date": "2026-07-02",
       "time": "12:01 CT",

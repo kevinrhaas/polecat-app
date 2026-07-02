@@ -340,6 +340,23 @@ pass, never a jarring rewrite, never regress:**
   other emoji/inconsistent-icon or missing-aria-label issues found on this pass. Flagging
   here so the next run knows the roadmap is caught up and should either open a new epic
   or do another best-practice audit.
+- [x] **Polish pass (2026-07-02, 14:53 CT): consensus flow explainer grammar bug +
+  keyboard focus rings.** With the roadmap still fully checked off, ran a targeted
+  exploration of the Models & Consensus tab and provenance panel. Found and fixed: (1)
+  `consensusFlowSentence()` (`js/app.js`) produced broken grammar when exactly 1 model
+  answers ("Your 1 model answers in parallel, then X merges them into one answer") —
+  reachable via the "Synthesis only" checkbox leaving just one answerer; now reads "Your
+  1 model answers, then X turns it into the final answer" for n=1, unchanged for n>1; (2)
+  the three most important toggles in the app (`#consensusSwitch`, `#provSwitch`,
+  `#privateSwitch` — gating the multi-model differentiator itself) plus the provenance
+  panel's model-name links and "Ask about this" buttons had no `:focus-visible` styling,
+  unlike sibling custom controls (`.ms-card`, `.ms-copy-btn`) — added a brand-colored
+  focus ring to `.switch` and hover-matching focus states to `.prov-model-link`/
+  `.prov-ask-btn` (`css/styles.css`). Both are small, isolated, and on the first-impression
+  consensus-explainer path. Flagging for a future run: `startFreeDemo()`'s
+  `DEMO_STARTER_MODELS` (`js/app.js`) is hardcoded against `PROVIDERS.demo.models`
+  (`js/providers.js`) with no assertion tying them together — currently in sync, but a
+  future catalog edit could silently desync them; low priority, not a live bug.
 - [x] **Consensus never goes blank on arbiter failure** (operator-reported 2026-06-30):
   when the chosen arbiter can't stream a synthesis (dead/exhausted/invalid key, network),
   all strategies now fall back to the most representative answer + local agreement
