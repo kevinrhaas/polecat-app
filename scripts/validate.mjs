@@ -58,7 +58,14 @@ function scanSmartQuotesHtmlAttrs(file) {
   });
 }
 
-for (const f of jsFiles()) { checkEsmParse(f); scanSmartQuotesJs(f); }
+// Auto-generated data modules: every string is JSON.stringify'd (properly
+// double-quoted), so a smart quote can only ever be string *content*, never a
+// delimiter — harmless, and the changelog copy legitimately contains curly
+// quotes. Still ES-module-parsed below; only the raw smart-quote line scan skips
+// them (the parse is what actually guards against a broken module).
+const GENERATED = new Set(['js/changelog.js']);
+
+for (const f of jsFiles()) { checkEsmParse(f); if (!GENERATED.has(f)) scanSmartQuotesJs(f); }
 scanSmartQuotesHtmlAttrs('index.html');
 
 if (problems.length) {

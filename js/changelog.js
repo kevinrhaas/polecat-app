@@ -1,0 +1,858 @@
+// AUTO-GENERATED — do not edit by hand. Source: changelog.json.
+// Regenerate with:  node scripts/gen-changelog.mjs
+// Published relay-style changelog for consumers at /js/changelog.js.
+// Entries are newest-first; `ts` is an ISO-8601 UTC string.
+export const CHANGELOG = [
+  {
+    v: 82,
+    title: "Synthesis-only badge now stays in sync across Models and Consensus tabs",
+    ts: "2026-07-01T13:23:00.000Z",
+    items: [
+      "When an arbiter is set to synthesis-only (it merges the other models' answers but doesn't answer itself), that state only appeared as a checkbox on the Models tab -- the Consensus tab's arbiter dropdown and flow diagram could show stale info until Settings was reopened",
+      "The Consensus tab now has its own matching 'Synthesis only' checkbox next to the arbiter picker, and the small [answering models] -> [arbiter] -> [Consensus] flow now tags the arbiter chip with 'synthesis only' when set",
+      "Toggling the checkbox on either tab instantly updates the other -- verified in a real browser session with zero console errors",
+    ],
+  },
+  {
+    v: 81,
+    title: "\"Responses at a glance\" now always shows up after a consensus",
+    ts: "2026-07-01T11:29:00.000Z",
+    items: [
+      "The per-model preview strip below each consensus answer used to only appear when the Agreement map setting was on, since it was rendered as a side effect of that feature -- turning the map off silently hid it too",
+      "It now always appears after a consensus, since it only needs each model's answer, not the arbiter's agreement analysis",
+      "The Agreement map setting still controls the deeper 'How this was formed' breakdown and contribution/stance badges on each card -- just not whether the strip itself shows up",
+    ],
+  },
+  {
+    v: 80,
+    title: "Reopened chats now restore the full source-highlighting toggle",
+    ts: "2026-07-01T09:34:00.000Z",
+    items: [
+      "Reopening a past multi-model chat from history already brought back the consensus answer and its 'How this was formed' agreement map -- but the inline highlight toggle (which colors each paragraph by the model that shaped it) didn't come back with it",
+      "That toggle now reappears on restored consensus answers too, working exactly like it does right after a live answer",
+      "Verified in a real browser session: reopened a saved chat, confirmed the highlight button, per-paragraph coloring, and toggle all work with zero console errors",
+    ],
+  },
+  {
+    v: 79,
+    title: "Keys tab now shows a real, verified connection status",
+    ts: "2026-07-01T07:56:00.000Z",
+    items: [
+      "Settings -> Keys used to show 'connected' the moment you typed anything, even a wrong or wrong-type key -- it never actually checked. It now probes the provider automatically ~600ms after you stop typing and shows the real result: No key, Checking..., Connected, or Not connected with the provider's error",
+      "Pasting a Claude Code OAuth token (sk-ant-oat01-...) into the Claude field is caught instantly with a clear hint to use a real API key from console.anthropic.com instead",
+      "Every status pairs a small icon with a text label -- never color alone -- and reuses the same probe cache the Models tab already relies on, so it stays fast and doesn't spam any provider's API",
+    ],
+  },
+  {
+    v: 78,
+    title: "No more raw chat-template tokens leaking into answers",
+    ts: "2026-07-01T04:15:00.000Z",
+    items: [
+      "Some models (often via the free demo) occasionally leak internal chat-template markers (raw start/end/eot control tokens) into their reply — these are now stripped from every answer, the consensus, saved history, and copied text",
+      "When a model returns nothing usable, the response now reads a clear 'No usable answer came back — use regenerate to try again' instead of a bare '(no response)', and a regenerate button is always offered",
+      "Because those junk tokens are removed before consensus, a model that only emitted a control token no longer gets mislabeled as an 'outlier'",
+    ],
+  },
+  {
+    v: 77,
+    title: "A graceful 'synthesizing' moment before the consensus answer",
+    ts: "2026-07-01T04:11:00.000Z",
+    items: [
+      "The Consensus tab no longer flashes an awkward empty box while it waits for the arbiter to start — it now shows a subtle animated 'Synthesizing consensus…' indicator",
+      "When the answer begins, it fades in smoothly instead of popping in",
+      "Respects reduced-motion preferences",
+    ],
+  },
+  {
+    v: 76,
+    title: "One-tap 'Add key' from any model that needs one",
+    ts: "2026-07-01T04:05:00.000Z",
+    items: [
+      "A model row that is missing its key now shows a clickable 'Add key' badge (instead of a dead 'no key' label)",
+      "Clicking it jumps straight to Settings -> Keys, scrolls to that exact provider's key box, and focuses it with a brief highlight so you know where to type",
+    ],
+  },
+  {
+    v: 75,
+    title: "Fixed a stale \"synthesis only\" bug when switching arbiters",
+    ts: "2026-07-01T03:37:00.000Z",
+    items: [
+      "If a model was set to Arbiter + \"Synthesis only\" and you later picked a different arbiter, the old one silently stayed excluded from answering forever, with nothing in the UI showing why — now that flag clears automatically the moment a model stops being the arbiter",
+      "Also fixed the model chips above the send box going stale after changing the arbiter (from either the Models or Consensus tab), so the displayed answering set always matches who actually answers",
+      "Fixed opening Settings from the sidebar menu sometimes leaving the sidebar's dark overlay stuck on top of the modal, silently eating your first click",
+    ],
+  },
+  {
+    v: 74,
+    title: "See the consensus flow at a glance in Settings",
+    ts: "2026-07-01T01:35:00.000Z",
+    items: [
+      "The Consensus tab now opens with a small visual flow — your answering models, then the arbiter, then Consensus — plus a plain-language sentence like \"Your 3 models answer in parallel, then Claude merges them into one answer\"",
+      "Added a \"Manage models →\" link from Consensus to Models, and a matching link back from Models to Consensus, so the two screens are easy to hop between",
+      "Shows a friendly hint instead of a blank flow when no models are set to answer yet",
+    ],
+  },
+  {
+    v: 73,
+    title: "Polecat is now installable",
+    ts: "2026-06-30T20:57:00.000Z",
+    items: [
+      "Add Polecat to your phone or desktop Home Screen / app dock — it now ships a proper web app manifest with icons, so Chrome/Edge/Android show an Install option and iOS Safari supports Add to Home Screen",
+      "This matters for keeping your data: iOS Safari quietly clears site storage after about a week of not visiting in the browser tab, which is the main way people lose saved keys and chats — an installed app is exempt from that eviction",
+      "No account, no server, nothing new tracked — just a manifest and a few meta tags",
+    ],
+  },
+  {
+    v: 72,
+    title: "Tell same-provider models apart in the contribution bar",
+    ts: "2026-06-30T20:40:00.000Z",
+    items: [
+      "When two models share a color (e.g. two OpenRouter models), the contribution bar and legend now add a texture — stripes, then dots — to each repeat, so you can tell them apart at a glance even in the small bar",
+      "The bar segment and its legend swatch always use the same texture, so they stay matched",
+    ],
+  },
+  {
+    v: 71,
+    title: "Consensus no longer goes blank when the arbiter can't run",
+    ts: "2026-06-30T20:25:00.000Z",
+    items: [
+      "If your chosen Arbiter model fails mid-synthesis (most often an exhausted or invalid API key), Polecat now falls back to the most representative model answer and still shows the full agreement map and 'Responses at a glance' — instead of an empty bubble with no comparison",
+      "A clear amber note explains what happened and points you to change the Arbiter in Settings to restore full synthesis",
+      "Applies to all strategies — Single Judge, Debate, and Chain",
+    ],
+  },
+  {
+    v: 70,
+    title: "Model roles: reorder, set Arbiter, and synthesis-only mode",
+    ts: "2026-06-30T17:09:00.000Z",
+    items: [
+      "Settings → Models now shows up/down arrows on every row so you can reorder your models — tab order, chip order, and response order all follow",
+      "Each model row now has an Arbiter button: click it to set that model as the one that synthesizes the final consensus answer. The Arbiter is shown in both the Models and Consensus tabs, kept in sync",
+      "New “Synthesis only” toggle on the Arbiter row: when checked, that model skips the answering round entirely and only synthesizes from the others — great for using a powerful model just to combine free-tier answers without paying for its own response",
+      "The progress screen no longer shows two conflicting 'X of Y responded' counts — the agreement signal now just shows the agreement level without a second counter",
+    ],
+  },
+  {
+    v: 69,
+    title: "Saved chats keep their consensus analysis",
+    ts: "2026-06-30T15:49:00.000Z",
+    items: [
+      "Reopening a conversation from history now restores the full 'How this was formed' panel — the contribution bars, agreement map, where models differed, and notable claims — not just the answer text",
+      "The agreement analysis is saved with each consensus turn, so a restored chat looks identical to the live one",
+      "Older chats saved before this update simply show without the panel (no errors) — new chats keep everything",
+    ],
+  },
+  {
+    v: 68,
+    title: "Model race bar, inline expand scroll fix, and compare shortcut",
+    ts: "2026-06-30T13:09:00.000Z",
+    items: [
+      "The consensus 'blended from' footer now shows a compact horizontal race bar — colored dots at relative positions reveal which model finished first and how far ahead it was, making the parallel-execution advantage instantly visible",
+      "Expanding a model response card inline in 'Responses at a glance' now smoothly scrolls the expanded panel into view automatically, so you no longer have to scroll down to find it",
+      "Press 'c' anywhere in the app (outside a text field) to instantly open the side-by-side compare modal — see all model responses at once without reaching for the grid button",
+      "Keyboard shortcut 'c' is now documented in the shortcuts panel (press ?)",
+    ],
+  },
+  {
+    v: 67,
+    title: "Number key shortcuts to jump between model tabs",
+    ts: "2026-06-30T09:31:00.000Z",
+    items: [
+      "Press 1, 2, 3 (and so on) anywhere in the app to jump straight to model tab 1, 2, 3 — no need to focus the tab bar first",
+      "Press 0 to jump directly to the Consensus tab",
+      "Left/Right arrow keys already worked for stepping between tabs when the tab bar was focused — the new number shortcuts work from anywhere, making multi-model comparison much faster to navigate",
+      "Keyboard shortcuts panel (press ?) now shows a Navigation section documenting all tab shortcuts",
+      "Accessibility: tabs now correctly link to their panels via aria-controls, and panels are keyboard-focusable per the ARIA tabpanel spec",
+    ],
+  },
+  {
+    v: 66,
+    title: "Stacked contribution bar in consensus panel",
+    ts: "2026-06-30T05:43:00.000Z",
+    items: [
+      "The 'How this was formed' panel now shows a single horizontal bar split into colored segments — one per model — so you can see each model's share of the consensus at a glance",
+      "Segment widths are normalized to fill 100% of the bar even when the arbiter's percentages don't add up exactly; the original approximate values are still shown in the legend below",
+      "Hovering a segment shows a tooltip with the model name and contribution %; percentage labels appear inline for segments wide enough to hold them",
+      "A compact legend below the bar pairs each model's color swatch with its name, percentage, and stance label so the bar is never color-only",
+    ],
+  },
+  {
+    v: 65,
+    title: "Draft auto-save: never lose a half-typed prompt again",
+    ts: "2026-06-30T01:27:00.000Z",
+    items: [
+      "Polecat now quietly saves whatever you are typing in the composer to your browser's local storage — if you accidentally close or refresh the tab, your prompt is waiting for you when you come back",
+      "A brief 'Draft restored' message appears when a saved draft is loaded, so you always know it happened",
+      "The draft is cleared the moment you send, so stale text never shows up after a fresh chat",
+    ],
+  },
+  {
+    v: 64,
+    title: "Edit prompt button on your messages",
+    ts: "2026-06-29T21:00:00.000Z",
+    items: [
+      "Hover over any message you sent and a small pencil icon appears — click it to copy that prompt back to the composer so you can tweak it and resend without retyping",
+      "Works in every tab: individual model responses and the consensus view all show the edit button on hover",
+      "On touch screens the button stays gently visible so it is always easy to find",
+    ],
+  },
+  {
+    v: 63,
+    title: "Stop generation mid-response",
+    ts: "2026-06-29T17:22:00.000Z",
+    items: [
+      "A red Stop button now appears while models are streaming — click it (or press Esc) to cancel all in-flight requests immediately",
+      "Any text that already arrived is kept: partial responses stay visible with a subtle '(stopped)' label rather than disappearing",
+      "Consensus synthesis is skipped when you stop, so you jump straight back to a ready composer — handy when you spot a typo in your prompt or the answer is already clear",
+    ],
+  },
+  {
+    v: 62,
+    title: "Prompt history recall with arrow keys",
+    ts: "2026-06-29T13:54:00.000Z",
+    items: [
+      "Press the up arrow key when the composer is empty to load your last prompt — press it again to go further back through your recent prompts (up to 50 stored)",
+      "Press the down arrow key to move forward through history, or back to a blank input",
+      "Typing anything immediately exits history mode so you can edit freely — your original draft is preserved if you press up and then change your mind",
+    ],
+  },
+  {
+    v: 61,
+    title: "Model track record in Settings",
+    ts: "2026-06-29T09:59:00.000Z",
+    items: [
+      "After each consensus session, Polecat now quietly tracks how each model contributed — whether it usually aligns with the group, takes a distinct angle, or shows mixed patterns",
+      "Open Settings → Models and you'll see a subtle note under each model after 3+ consensus sessions: 'Usually aligns with consensus' (green), 'Often takes a distinct angle' (amber), or 'Mixed agreement patterns'",
+      "Hover the note for the full breakdown: exact session count and average contribution percentage — no extra API calls, all computed from provenance data already in the page",
+    ],
+  },
+  {
+    v: 60,
+    title: "Expand any model's full response inline",
+    ts: "2026-06-29T06:00:00.000Z",
+    items: [
+      "Each model card in 'Responses at a glance' now has an expand button (the down-arrow icon) — click it to read that model's complete response right below the strip, without leaving the consensus view",
+      "The expanded panel shows the full markdown-rendered answer with syntax-highlighted code, and an 'Open full tab' button for when you want to go deeper",
+      "Clicking a different card's expand button swaps the panel to that model; clicking again collapses it — no more tab-switching just to peek at one model's full reply",
+    ],
+  },
+  {
+    v: 59,
+    title: "Clearer status for the slow Polecat Model Server",
+    ts: "2026-06-29T01:45:00.000Z",
+    items: [
+      "A self-hosted Polecat model that's just warming up (CPU, slow first response) now shows a neutral amber 'slow' mark instead of a red ✗ that looked broken",
+      "These models still work — they're just slower than cloud APIs; re-test from Settings once they've warmed up",
+    ],
+  },
+  {
+    v: 58,
+    title: "Ask about this — targeted follow-ups from the agreement map",
+    ts: "2026-06-29T01:34:00.000Z",
+    items: [
+      "Each disagreement point in the 'How this was formed' panel now has an 'Ask about this →' button that pre-fills a rich follow-up question — including each model's exact stated position — so you can dig into any specific difference in one click",
+      "The pre-filled prompt names what each model said and asks them to explain which view is better supported and where the other perspective has merit, making it easy to resolve any contested point without typing from scratch",
+    ],
+  },
+  {
+    v: 57,
+    title: "Polecat Model Server: reliable connections",
+    ts: "2026-06-29T01:33:00.000Z",
+    items: [
+      "Fixed Polecat Model Server connections failing or showing a red ✗ — the self-hosted models are CPU-served and can be slow to warm up, but the app's timeouts were too short",
+      "Much longer probe and request timeouts for this provider so a cold model load no longer looks like a failure",
+      "The model list now leads with the fastest small models (Qwen2.5 0.5B first) instead of the slow 32B, so adding the provider just works",
+    ],
+  },
+  {
+    v: 56,
+    title: "Response speed bars in Responses at a glance",
+    ts: "2026-06-28T23:49:00.000Z",
+    items: [
+      "Each model card in 'Responses at a glance' now shows a thin colored speed bar — the wider the bar, the slower the model responded, making the response-time comparison immediately visual",
+      "The consensus sources footer now shows the model response time range (e.g. 2.1s–8.9s) right next to the strategy name, making the parallel execution advantage tangible at a glance",
+      "Speed bars use each model's brand color and animate in smoothly; they only appear when 2+ models responded, and respect reduced-motion preference",
+    ],
+  },
+  {
+    v: 55,
+    title: "Live streaming previews in the consensus progress box",
+    ts: "2026-06-28T22:46:00.000Z",
+    items: [
+      "While models are streaming, the consensus progress box now shows a live one-line preview of each model's opening response — so you can read what each AI is saying before synthesis even begins",
+      "Previews update in real time as tokens arrive and lock in when a model finishes, letting you compare all models' opening lines while the last few are still streaming",
+      "Works across all model counts; the preview is stripped of markdown for clean, readable text in the compact progress card",
+    ],
+  },
+  {
+    v: 54,
+    title: "Format quick-actions on consensus answers",
+    ts: "2026-06-28T21:48:00.000Z",
+    items: [
+      "New 'Format' row in the re-synthesis strip lets you instantly reformat any consensus answer — Shorter, Bullet points, More detail, or Simplify — without re-querying the AI models",
+      "Works with any synthesis strategy: the format instruction is appended to the active strategy's prompts so the arbiter re-synthesizes from the same model responses in your preferred style",
+      "Strategy pills now show under a clear 'Strategy' label, and the new format chips appear in a separate 'Format' sub-row, making the two controls visually distinct",
+    ],
+  },
+  {
+    v: 53,
+    title: "Clickable model names + targeted debate chips",
+    ts: "2026-06-29T04:30:00.000Z",
+    items: [
+      "Model names in the 'Where they differed' section of the provenance panel are now clickable — tap a model's name to jump straight to its full response tab without hunting through the model list",
+      "When models disagreed with named positions, a new 'Debate:' follow-up chip appears that pre-fills a rich prompt including each model's actual stated position — asking them to engage with each other's reasoning directly",
+      "The debate chip has a distinct visual style (brand-colored border) so it stands out from generic follow-up suggestions",
+    ],
+  },
+  {
+    v: 52,
+    title: "Contribution % in Responses at a glance",
+    ts: "2026-06-29T04:00:00.000Z",
+    items: [
+      "Each model card in 'Responses at a glance' now shows ~N% — the estimated share of the consensus that model shaped — as a colored pill in the metadata row",
+      "The percentage uses the model's brand color so it's visually tied to the model identity, and sits alongside the existing stance badge and word count",
+      "No extra API calls — derived from the same provenance data already computed after every consensus; gracefully hidden when provenance is unavailable",
+    ],
+  },
+  {
+    v: 51,
+    title: "Model stance badges in tabs",
+    ts: "2026-06-29T03:00:00.000Z",
+    items: [
+      "After consensus runs, each model's tab now shows a small badge — 'aligned', 'partial', or 'outlier' — so you can see at a glance which models agreed and which diverged, without opening the details panel",
+      "Green for aligned (model agreed with the consensus), amber for partial, orange for outlier (notably different take)",
+      "Badges animate in after the agreement map is computed, clear on New Chat, and respect reduced-motion preference",
+    ],
+  },
+  {
+    v: 50,
+    title: "Mobile UX polish + reading-flow improvements",
+    ts: "2026-06-28T23:00:00.000Z",
+    items: [
+      "On mobile, 'Responses at a glance' now starts collapsed by default — saves scrolling past cards to reach follow-up questions; tap once to expand",
+      "Follow-up question chips now scroll horizontally on mobile instead of wrapping to multiple lines, keeping them compact and scannable",
+      "The agreement summary (e.g. 'All 3 models were in strong agreement') now appears immediately after the answer text — before the technical attribution bar — so you see the most important signal first",
+      "Send button now shows 'Send' (not 'Send to 1') when only one model is selected",
+    ],
+  },
+  {
+    v: 49,
+    title: "Snapshot cards polish: copy button + smarter layout",
+    ts: "2026-06-28T19:00:00.000Z",
+    items: [
+      "Each model's 'Responses at a glance' card now has a quick copy button — hover a card (or touch on mobile) to copy that model's full response without switching to its tab",
+      "Follow-up question chips and the 'Try another synthesis' strip now appear before the 'How this was formed' panel, so the most actionable options are immediately visible after reading the consensus",
+      "When the 'Responses at a glance' strip is collapsed, small colored model dots appear in the toggle so you can see at a glance which models responded without expanding the section",
+    ],
+  },
+  {
+    v: 48,
+    title: "Accessibility & icon polish pass",
+    ts: "2026-06-28T15:00:00.000Z",
+    items: [
+      "Model response tabs now support keyboard navigation — press ← / → arrow keys while a tab is focused to switch between models instantly, without reaching for the mouse",
+      "The tab bar now has proper ARIA roles (tablist, tab, tabpanel, aria-selected) so screen readers announce which model is active and how many tabs exist",
+      "Replaced remaining unicode glyphs with SVG icons: the consensus sources label (\"Blended from N models\") now uses a layers icon, the provenance agreements checkmarks are now proper SVGs, and the initial tab empty states use chat-bubble and asterisk SVGs instead of ◎ and ✦",
+      "Welcome modal step icons (✓, ✦, →, ⇄) replaced with matching SVGs throughout all slides — the icon system is now fully consistent with no unicode shortcuts in the UI",
+    ],
+  },
+  {
+    v: 47,
+    title: "Consensus insight + icon refresh",
+    ts: "2026-06-29T03:00:00.000Z",
+    items: [
+      "Every consensus answer now shows a brief, plain-language verdict right below the sources — e.g. 'All 3 models were in strong agreement' or '2 of 3 models agreed; GPT-4o had a contrasting perspective' — so the multi-model story is immediately legible without expanding any panels",
+      "The insight is derived from the same provenance data already computed, so it adds zero latency and zero extra API calls",
+      "Replaced unicode symbols (✦, ◎) in the consensus and model empty states with proper SVG icons, consistent with the rest of the icon set",
+    ],
+  },
+  {
+    v: 46,
+    title: "Snapshot cards now show each model's distinct take",
+    ts: "2026-06-29T11:00:00.000Z",
+    items: [
+      "When the arbiter detects a point of disagreement, each model's 'Responses at a glance' card now shows a brief 'Distinct take' snippet — so you can see at a glance exactly what made that model's answer different, without switching tabs",
+      "Cards are now fully clickable (not just the small 'Full reply →' label) and respond to keyboard Enter/Space — easier to open any model's full reply on desktop and mobile",
+      "The 'Distinct take' snippet is pulled directly from the consensus arbiter's disagreement analysis, so it's pinpointed and honest — only shown when a real difference was found",
+    ],
+  },
+  {
+    v: 45,
+    title: "Restored conversations now feel as rich as live ones",
+    ts: "2026-06-29T07:00:00.000Z",
+    items: [
+      "When you resume a conversation from history, the model snapshot cards and 'Try another synthesis' strip now appear on the most recent consensus — so you can instantly see what each model said and explore alternative synthesis strategies without re-asking",
+      "Follow-up chips also appear on restored conversations, making it natural to continue from exactly where you left off",
+      "This closes a gap where live conversations had more features than restored ones — the experience is now consistent regardless of how you arrive at a chat",
+    ],
+  },
+  {
+    v: 44,
+    title: "Try another synthesis — re-synthesize without re-asking",
+    ts: "2026-06-29T05:00:00.000Z",
+    items: [
+      "After any consensus answer, a new 'Try another synthesis' strip lets you instantly re-synthesize the same model responses with a different approach — Comprehensive, Best Answer, Validated, or Debate — with no extra model calls",
+      "Each re-synthesis produces a new consensus entry in the tab, so you can compare 'Best Answer' vs 'Debate' side by side on the exact same underlying responses",
+      "This is uniquely Polecat: because we collect all model responses upfront, you can explore different synthesis strategies without re-asking anyone anything — a capability no single-model chat can offer",
+    ],
+  },
+  {
+    v: 43,
+    title: "Smarter history sidebar: date groups + model indicators",
+    ts: "2026-06-29T03:00:00.000Z",
+    items: [
+      "Conversation history is now grouped by Today, Yesterday, This week, This month, and Older — so a long list is instantly scannable instead of one big undifferentiated stream",
+      "Each conversation shows tiny colored dots indicating which AI providers were used — glance at the sidebar and immediately see which chats were Claude+GPT, which were Gemini+Claude, etc.",
+      "The dots are hidden when searching (flat results are clearer) and omitted for single-model chats (only shown when you actually compared models)",
+    ],
+  },
+  {
+    v: 42,
+    title: "Tab notifications: see live model progress while you work elsewhere",
+    ts: "2026-06-29T01:00:00.000Z",
+    items: [
+      "The browser tab title now shows live progress when you switch away while models are responding — '(2/3 answered) Polecat' counts up as each model finishes",
+      "Uniquely suited to Polecat: because you're waiting for several models at once, you can go do something else and glance at the tab to see when they're all done",
+      "After all models respond, the title shows '(synthesizing…) Polecat' while the consensus is being formed, then resets to normal the moment you come back",
+      "Zero UI clutter — the notification only appears when the tab is in the background and resets automatically on focus",
+    ],
+  },
+  {
+    v: 41,
+    title: "Live agreement signal while models respond",
+    ts: "2026-06-28T23:00:00.000Z",
+    items: [
+      "As each model finishes responding, a live indicator now appears in the Consensus tab showing whether the models are agreeing or diverging — before the full synthesis even starts",
+      "Updates in real time: 'strong agreement', 'mixed views', or 'divergent views' with a pulsing color dot — green, amber, or grey",
+      "Built from the same text-overlap analysis used for the provenance panel; zero extra model calls, zero added latency",
+      "Conversation titles in the history sidebar are now smarter — common question preambles ('What is', 'How do', 'Tell me about') are stripped so the title gets right to the point",
+    ],
+  },
+  {
+    v: 40,
+    title: "Compare all model responses side by side",
+    ts: "2026-06-28T21:00:00.000Z",
+    items: [
+      "New 'Compare' button (grid icon) appears on every consensus answer — click it to see all model responses laid out side by side in one view",
+      "Each column shows the model's name, brand color, response time, and full formatted answer — independently scrollable on desktop, stacked on mobile",
+      "Makes Polecat's multi-model advantage instantly visible: you can scan all perspectives at once without clicking through tabs one by one",
+      "Keyboard shortcut: Escape to close",
+    ],
+  },
+  {
+    v: 39,
+    title: "Responses at a glance: stance badges + word counts",
+    ts: "2026-06-28T19:00:00.000Z",
+    items: [
+      "Each model's preview card in the 'Responses at a glance' strip now shows its stance vs. the consensus — 'aligned', 'partial', or 'outlier' — so you can see at a glance which model disagreed without opening the full provenance panel",
+      "Every model card also shows an approximate word count (~150w) so you can instantly tell which model gave a brief take vs. a detailed one before clicking through",
+      "When one model took a clearly different position, the suggested follow-up chips now name that specific model — 'What's strongest about Claude's different take?' instead of a generic prompt",
+    ],
+  },
+  {
+    v: 38,
+    title: "Agreement badge + smarter provenance + icon polish",
+    ts: "2026-06-28T17:00:00.000Z",
+    items: [
+      "The Consensus tab now shows a tiny colored badge after each synthesis — \"strong\", \"mixed\", or \"diverse\" — so you can see model agreement at a glance without opening the provenance panel",
+      "When models had truly diverse views, the \"How this was formed\" panel now opens automatically so the disagreements are immediately visible, not buried under a click",
+      "Replaced the last emoji in the sidebar history (📌 pin, ✎ rename) with clean SVG icons — the UI is now fully emoji-free, using a consistent monochrome stroke icon set throughout",
+    ],
+  },
+  {
+    v: 37,
+    title: "Polish: send button shows model count + accessibility improvements",
+    ts: "2026-06-27T23:00:00.000Z",
+    items: [
+      "The Send button now shows exactly how many models will receive your prompt — \"Send to 3\" instead of the vague \"Send to all\", making the multi-model nature concrete at a glance",
+      "Toast notifications (copy confirmations, error messages, etc.) are now announced to screen readers via an ARIA live region",
+      "Three new example questions added to the rotating suggestion chips — AI & the future of work, remote vs. office productivity, and overrated tech — great for seeing where models disagree",
+    ],
+  },
+  {
+    v: 36,
+    title: "Responses at a glance — scan every model without tab-switching",
+    ts: "2026-06-27T22:15:00.000Z",
+    items: [
+      "After each consensus, a new strip shows each model's opening take as a compact card — no need to click through tabs to compare",
+      "Each card shows the model's name, brand color, response time, and a plain-text snippet of its first paragraph",
+      "Tap or click 'Full reply →' on any card to jump straight to that model's complete response",
+      "The strip is collapsible — click the header to tuck it away if you want a cleaner view",
+      "Works with any number of models; only appears when two or more responded",
+    ],
+  },
+  {
+    v: 35,
+    title: "UI polish: SVG icons replace emoji in the consensus view",
+    ts: "2026-06-27T21:30:00.000Z",
+    items: [
+      "The live model status indicators in the consensus progress screen now use animated SVG spinners instead of emoji — a spinning ring for 'waiting' and 'streaming', a check for done, an X for errors",
+      "The 'How this was formed' provenance toggle now uses a proper chevron SVG (▶/▼ replaced with consistent stroke icons)",
+      "Image attachment chips in the chat transcript now use an image SVG icon instead of the 🖼 emoji",
+      "History thread titles no longer use 🖼 / 📄 emoji prefixes for attachment-only conversations",
+    ],
+  },
+  {
+    v: 34,
+    title: "Image context for text-only models",
+    ts: "2026-06-27T20:42:00.000Z",
+    items: [
+      "When you attach an image and a model can't view it, it now receives a short note explaining an image was attached — so it can say \"I can't see that image, can you describe it?\" rather than giving a confused non-answer",
+      "Applies to all text-only models across all providers (Free demo, OpenRouter, Groq, Hugging Face, Polecat Model Server)",
+      "Vision-capable models (Claude, Gemini, GPT-4o, etc.) are unaffected — they still receive the image directly",
+      "Timestamps in What's new now show Central Time (CT) so you always know when changes landed",
+    ],
+  },
+  {
+    v: 33,
+    title: "New provider: Polecat Model Server",
+    ts: "2026-06-27T17:00:00.000Z",
+    items: [
+      "Polecat now has its own free, first-party model server you can add as a provider — open-source models (Qwen, Llama, DeepSeek, Mistral, Phi, Gemma) served by us",
+      "Bring a free sk-ms- key and mix these models into your consensus line-up alongside Claude, Gemini, GPT and the rest",
+      "Runs fully in your browser like every other provider — your key stays on your device",
+      "Please be kind to it — it's a small community server with per-key rate limits so it stays up for everyone",
+    ],
+  },
+  {
+    v: 32,
+    title: "Custom system prompt",
+    ts: "2026-06-27T17:00:00.000Z",
+    items: [
+      "Set a system prompt in Settings → Models that applies to all selected models at once",
+      "Works natively with each provider: Claude's system field, Gemini's systemInstruction, and OpenAI's system role",
+      "Leave it blank for default behavior — or try \"Reply in Spanish\" or \"You are a senior Python engineer\"",
+      "Saved to your browser just like your API keys — persists across sessions",
+    ],
+  },
+  {
+    v: 31,
+    title: "Smart follow-up suggestions after every consensus",
+    ts: "2026-06-27T17:00:00.000Z",
+    items: [
+      "After each consensus answer, 2–3 clickable follow-up question chips appear below the answer",
+      "Chips are derived from the agreement map: if models disagreed on a point, a chip invites you to settle it; notable claims get a 'Tell me more' chip",
+      "When provenance isn't available, universal follow-ups appear (counterarguments, real-world examples, simpler explanation)",
+      "Clicking a chip fills the prompt input instantly — one tap to keep the conversation going",
+    ],
+  },
+  {
+    v: 30,
+    title: "Keyboard shortcuts cheatsheet",
+    ts: "2026-06-27T17:00:00.000Z",
+    items: [
+      "Press ? (when not typing) to open a compact cheatsheet of all keyboard shortcuts",
+      "New shortcut: ⌘, / Ctrl+, opens Settings from anywhere",
+      "Shortcuts button added to the sidebar footer for easy discovery",
+    ],
+  },
+  {
+    v: 29,
+    title: "Per-model regenerate",
+    ts: "2026-06-27T17:00:00.000Z",
+    items: [
+      "Each model response now has a ↺ button — click it to ask that one model to try again without re-running all the others",
+      "The regenerated response streams in live, just like the original, and the conversation history stays intact",
+      "After regenerating, a gentle nudge suggests sending a follow-up to refresh the consensus with the updated answer",
+    ],
+  },
+  {
+    v: 28,
+    title: "First-run Consensus tip + demo handoff polish",
+    ts: "2026-06-27T17:00:00.000Z",
+    items: [
+      "After your first synthesized answer, a small callout appears below the Consensus tab explaining you can tap any model tab to see its individual response — shown once, auto-dismisses",
+      "When you click 'Try it free', the example question chips now animate in with a staggered entrance to draw your eye to them",
+    ],
+  },
+  {
+    v: 27,
+    title: "Centered composer on the empty state",
+    ts: "2026-06-27T17:00:00.000Z",
+    items: [
+      "When there are no messages yet, the prompt box and greeting now sit together in the center of the screen — Gemini/ChatGPT style",
+      "As soon as you send your first message, the layout smoothly transitions: the transcript expands above and the composer docks to the bottom",
+      "The greeting border and background disappear in the empty state so nothing competes with the logo and suggestion chips",
+    ],
+  },
+  {
+    v: 26,
+    title: "Copy the full thread as markdown",
+    ts: "2026-06-27T17:00:00.000Z",
+    items: [
+      "New document icon on every Consensus answer — click it to copy the full exchange as clean markdown",
+      "The copied markdown includes your question, each model's response (with its label), and the consensus — ready to paste into Slack, Notion, docs, or email",
+      "Joins the existing per-response copy and share buttons, all in one tidy row on the consensus panel",
+    ],
+  },
+  {
+    v: 25,
+    title: "Share any consensus with a link",
+    ts: "2026-06-27T17:00:00.000Z",
+    items: [
+      "New Share button on every Consensus answer — click it to copy a shareable URL to your clipboard",
+      "Anyone who opens the link sees the original question, each model's response (collapsible), and the final consensus — no account or API key needed",
+      "The entire conversation is encoded in the URL itself: 100% private, no server, no storage",
+      "Opening a share link shows a clean read-only modal with a 'Try it free' call-to-action",
+    ],
+  },
+  {
+    v: 24,
+    title: "Warmer empty-state greeting with Polecat mascot",
+    ts: "2026-06-27T17:00:00.000Z",
+    items: [
+      "The welcome screen now features the Polecat mascot logo (gently animated) instead of the plain ✦ glyph — warmer and more app-like",
+      "Updated greeting subtitle to better explain the cross-model consensus differentiator",
+      "Sidebar 'New chat' button now uses a proper SVG plus icon instead of a Unicode character",
+      "Added README.md — the repo's GitHub front door with full feature and architecture overview",
+    ],
+  },
+  {
+    v: 23,
+    title: "Overlay polish — crisp dialogs on all browsers",
+    ts: "2026-06-27T17:00:00.000Z",
+    items: [
+      "Fixed a rendering bug where the welcome tour, export dialog, and image lightbox could appear blurred on open in Safari and some Chromium builds",
+      "All overlays now use an isolated backdrop layer so the dialog content is always pixel-sharp",
+    ],
+  },
+  {
+    v: 22,
+    title: "Settings IA cleanup — Arbitration tab renamed to Consensus",
+    ts: "2026-06-27T17:00:00.000Z",
+    items: [
+      "The 'Arbitration' settings tab is now labelled 'Consensus' — clearer and jargon-free for new users",
+      "Agreement map toggle moved above the Arbiter model picker so Polecat's signature feature is immediately visible",
+      "Removed technical 'structure / default arbiter' metadata line — it was jargon that added no value",
+      "'Final arbiter' renamed to 'Arbiter model' with a plain-language description",
+      "Strategy label and consensus toggle now have clearer helper text",
+      "Test-models button uses an SVG icon instead of the ⚡ emoji; donate copy cleaned up",
+    ],
+  },
+  {
+    v: 21,
+    title: "Consistent SVG icon set — no more emoji in the UI",
+    ts: "2026-06-27T17:00:00.000Z",
+    items: [
+      "All sidebar buttons (Settings, Theme, Export, Import, Clear history, What's new) now use clean monochrome SVG icons instead of emoji",
+      "Welcome tour slides now feature proper SVG illustrations (compass, layers, sliders, clock, key) instead of emoji glyphs",
+      "Vision indicators in model chips and the settings panel are now proper eye icons (eye / eye-off SVG), not emoji",
+      "Key and cost help sections use key and dollar-sign icons; the demo card uses a star icon",
+      "One coherent icon style throughout: 24×24 viewBox, currentColor stroke, accessible aria-hidden labels",
+    ],
+  },
+  {
+    v: 20,
+    title: "Attachment polish: privacy note, error feedback & mobile",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "When you attach a document, a clear note confirms files are read in your browser — nothing is ever uploaded to a server",
+      "If a file can't be read, the chip briefly turns red so you can see exactly which one failed — then clears itself",
+      "Attachment icons in the notes area are now clean SVG icons instead of emoji, matching the rest of the UI",
+      "Remove buttons on attachments are larger on mobile for easier tapping",
+      "Screen readers now announce attachment status changes via a live region",
+    ],
+  },
+  {
+    v: 19,
+    title: "Native PDF support for Claude and Gemini",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "PDFs attached to Claude or Gemini models are now sent as native document blocks — the model reads the actual PDF, not just extracted text",
+      "Higher-fidelity analysis: layout, tables, and formatting are preserved for capable models",
+      "Text extraction remains the universal fallback for other providers (OpenRouter, Groq, etc.) — no regressions",
+      "The attachment note now tells you exactly which models are receiving your PDF natively vs. as extracted text",
+      "When mixing Claude/Gemini with text-only providers, each model gets the best format it supports — automatically",
+    ],
+  },
+  {
+    v: 18,
+    title: "Smarter file context: budget cap + clearer labels",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "Attached files now share a 60k-character context budget — all models get the right amount without silently overflowing",
+      "When the total exceeds the budget, a clear toast tells you what was trimmed (nothing disappears quietly)",
+      "The vision note now shows exactly how many characters of extracted text will be sent and what percentage of the budget is used",
+      "File blocks sent to models now include a type label — \"PowerPoint presentation, 24 slides\", \"PDF document, 6 pages\", etc. — so every model understands what it's reading",
+      "Files work correctly with consensus and arbitration: each model receives the same labelled context, and the arbiter synthesizes from all model answers",
+    ],
+  },
+  {
+    v: 17,
+    title: "Office document support (PPTX, DOCX, XLSX)",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "Attach PowerPoint (.pptx), Word (.docx), and Excel (.xlsx/.xls) files — text is extracted in-browser and sent to all models",
+      "PPTX: slide text extracted slide-by-slide with [Slide N] markers; live progress shown while extracting",
+      "DOCX: full document text extracted via mammoth.js loaded on demand from CDN",
+      "XLSX/XLS: all sheet data extracted as CSV with [Sheet: name] headers via SheetJS",
+      "Libraries are lazy-loaded (only downloaded when you first attach that file type) so the app stays fast",
+      "Office docs get a 10 MB size limit; chips show slide count, sheet count, or file size at a glance",
+      "Nothing is uploaded — extraction happens entirely in-browser, matching Polecat's privacy promise",
+    ],
+  },
+  {
+    v: 16,
+    title: "PDF text extraction",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "You can now attach PDF files — text is extracted page-by-page in your browser and sent to all models",
+      "Page markers ([Page 1], [Page 2], …) help every model understand the document structure",
+      "A live progress percentage appears on the file chip while extraction runs; send stays disabled until complete",
+      "PDFs over 20 000 characters are trimmed with a visible truncation note",
+      "Nothing is uploaded — extraction happens entirely in-browser, matching Polecat's privacy promise",
+    ],
+  },
+  {
+    v: 15,
+    title: "Attach text files & docs",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "You can now attach text files — .txt, .md, .csv, .json, .py, .js, .ts, .sh, .log, .yaml, .sql, and many more",
+      "File content is injected into your message so every model receives it, fully in-browser — nothing is uploaded",
+      "A clear spinner shows while each file is being read; send is disabled until all files are ready",
+      "Images continue to work exactly as before, with vision indicators for models that can read them",
+      "File chips in the attach strip and message thread show the filename and size at a glance",
+    ],
+  },
+  {
+    v: 14,
+    title: "Agreement map polish",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "The provenance panel and source attribution now respect reduced-motion preferences — no animations if you prefer stillness",
+      "Improved light-theme contrast for the contribution bars and stance badges (aligned / partial / outlier are now legible in both themes)",
+      "Switching to a new chat now cleanly clears any open attribution tooltip",
+    ],
+  },
+  {
+    v: 13,
+    title: "Website: examples carousel polished",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "Fixed the homepage examples carousel — each card now has a proper card background and clean uniform layout",
+      "Removed the hardcoded 'Six real queries sent through Polecat.' line from the section header",
+    ],
+  },
+  {
+    v: 12,
+    title: "A friendlier free start",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "The welcome screen now shows rotating, clickable example questions — tap one to try it instantly",
+      "\"Try it free\" now starts with two fast free models and a consensus, so you immediately see the cross-model magic",
+    ],
+  },
+  {
+    v: 11,
+    title: "See which model wrote which part",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "✦ New \"Highlight source models\" button on every consensus answer — tap it to color each paragraph by which model it came from",
+      "Green highlights show where all models agreed; model-colored highlights show where one model's phrasing dominated",
+      "Hover or tap any highlighted paragraph to see a tooltip: \"Primarily from: Claude\" or \"Models agreed on this point\"",
+      "Zero extra cost — computed instantly from text overlap, no model calls",
+      "Toggle on/off per answer; off by default so the answer is always readable",
+    ],
+  },
+  {
+    v: 10,
+    title: "Crisper Settings",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "Settings now opens sharp instead of momentarily blurred — no more clicking to make it readable",
+    ],
+  },
+  {
+    v: 9,
+    title: "See how every consensus was built",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "✦ New \"How this was formed\" panel below each consensus — collapsible, mobile-friendly",
+      "Per-model contribution bars (%) with brand colors and alignment labels (aligned / partial / outlier)",
+      "Shows the overall agreement level (strong / moderate / diverse) at a glance",
+      "Expandable sections for where the models differed and any notable or contested claims",
+      "Contribution is approximate and labelled honestly; falls back gracefully to text-overlap measurement when the arbiter analysis is unavailable",
+    ],
+  },
+  {
+    v: 8,
+    title: "A measured agreement signal, no extra calls",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "✦ Polecat now measures how much each model's wording actually overlaps the consensus, straight from the text — free, no extra model call",
+      "Cross-checks the arbiter's contribution estimates against this measurement and flags where they disagree",
+      "Acts as a graceful fallback so the breakdown still appears even if the arbiter analysis is unavailable",
+    ],
+  },
+  {
+    v: 7,
+    title: "Groundwork for the agreement map",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "✦ After each consensus, Polecat now quietly asks the arbiter how much each model shaped the answer and where they agreed or disagreed",
+      "New Arbitration setting — \"Agreement map\" (on by default) — to turn this analysis on or off",
+      "Runs only after your answer streams, so it never slows down the response; the visible breakdown lands next",
+    ],
+  },
+  {
+    v: 6,
+    title: "Land on the consensus, watch the race live",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "✦ Hit send with consensus on and you now jump straight to the Consensus tab — watch every model check in (✓/✗) in real time, then see the blended answer form",
+      "Live and reopened chats now open in the same place, so the synthesis is always front and centre",
+    ],
+  },
+  {
+    v: 5,
+    title: "Easier to read answers as they stream",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "Your question now stays pinned to the top while the answer grows below it — no more jumping around while results come in",
+    ],
+  },
+  {
+    v: 4,
+    title: "See what went into every consensus",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "✦ Each consensus answer now shows the models it was blended from, with the arbiter marked ⚖️",
+      "Tap any contributing model to jump straight to its full, raw reply",
+      "Makes the cross-model synthesis transparent — verify the sources in one click",
+    ],
+  },
+  {
+    v: 3,
+    title: "See which model answered fastest",
+    ts: "2026-06-26T17:00:00.000Z",
+    items: [
+      "⏱ Each model's reply now shows how long it took — watch the multi-model race in real time",
+      "The consensus answer shows its own synthesis time too",
+    ],
+  },
+  {
+    v: 2,
+    title: "Free demo + a whole new chat experience",
+    ts: "2026-06-25T17:00:00.000Z",
+    items: [
+      "✨ Try it free — run a real model instantly, no key or signup",
+      "Attach, paste or drag-drop images; click any image to view it full-size",
+      "Gemini-style layout: the chat box is docked at the bottom, replies flow above",
+      "Press Enter to send (Shift+Enter for a new line) on desktop",
+      "A subtle animated background while the models are thinking",
+      "Clear 👁 markers showing which models can read images",
+    ],
+  },
+  {
+    v: 1,
+    title: "Conversations & history",
+    ts: "2026-06-15T17:00:00.000Z",
+    items: [
+      "Saved conversation history with search, rename and pin",
+      "Private mode for chats you don't want recorded",
+      "Export / import your whole setup between devices",
+      "A guided welcome tour",
+    ],
+  },
+];

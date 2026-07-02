@@ -125,8 +125,16 @@ jobs:
                have future/incorrect timestamps from earlier runs, still use the real
                current time; do not fabricate a later one to "stay on top". Keep items
                short and user-facing.
-            6. Commit and push to main (one commit) — ONLY after validate.mjs passes:
-                 node scripts/validate.mjs   # must exit 0
+            6. Regenerate the published relay-style changelog module from that JSON:
+                 node scripts/gen-changelog.mjs   # writes js/changelog.js
+               `js/changelog.js` is AUTO-GENERATED — never hand-edit it; only edit
+               changelog.json and re-run the generator. It publishes the changelog at
+               app.polecat.live/js/changelog.js (the same /js/changelog.js convention the
+               other Polecat properties use, e.g. relay.polecat.live). Always run this in
+               the SAME commit as the changelog.json change so the two never drift.
+            7. Commit and push to main (one commit) — ONLY after validate.mjs passes:
+                 node scripts/gen-changelog.mjs   # keep js/changelog.js in sync
+                 node scripts/validate.mjs        # must exit 0
                  git add -A
                  git commit -m "<clear, specific message>"
                  git push origin HEAD:main
