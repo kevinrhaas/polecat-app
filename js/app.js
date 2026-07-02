@@ -2654,9 +2654,9 @@ function statusGlyph(provider, model) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-//  SETTINGS MODAL  (tabs: Models · Keys · Consensus · Support)
+//  SETTINGS MODAL  (tabs: Models & Consensus · Keys · Support)
 // ════════════════════════════════════════════════════════════════════════════
-const VALID_TABS = new Set(['models', 'keys', 'consensus', 'support']);
+const VALID_TABS = new Set(['models', 'keys', 'support']);
 function setConfigTab(name) {
   cfg.ui.lastTab = name; persist();
   document.querySelectorAll('.cfg-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
@@ -3018,21 +3018,14 @@ function renderArbitration() {
   const promptFields = Object.entries(strat.prompts || {}).map(([k, v]) =>
     `<label class="arb-plabel">${escapeHtml(k)}</label><textarea class="field-input arb-ptext" data-key="${escapeHtml(k)}" rows="4"${editable ? '' : ' readonly'}>${escapeHtml(v)}</textarea>`).join('');
 
-  // Small "who answers -> who arbitrates -> consensus" flow so the shape of a
-  // run is obvious at a glance, without switching to the Models tab.
-  const answerers = answeringSelections(cfg);
+  // The "who answers -> who writes the final answer -> consensus" flow already
+  // renders once, above, via renderModelsFlow() — Models & Consensus share one
+  // tab now, so it isn't repeated here. Still compute the arbiter's health
+  // warning, since that's specific to this control block.
   const arbSel = cfg.arbitration.arbiter !== 'auto' ? (cfg.selections || []).find(s => s.id === cfg.arbitration.arbiter) : null;
   const healthWarn = arbiterHealthWarning(arbSel);
-  const n = answerers.length;
-  const flowHtml = n
-    ? `<div class="cs-flow-wrap">` +
-        consensusFlowPills(answerers, arbSel) +
-        `<div class="cs-flow-text">${consensusFlowSentence(answerers, arbSel)} <button class="cfg-link" id="csFlowModelsLink" type="button">Manage models &rarr;</button></div>` +
-      `</div>`
-    : `<div class="cs-flow-wrap"><div class="cs-flow-text muted-hint">No models are set to answer yet — <button class="cfg-link" id="csFlowModelsLink" type="button">add or enable one in Models &rarr;</button></div></div>`;
 
   wrap.innerHTML =
-    flowHtml +
     `<label class="switch-row"><span><b>Consensus answer</b><br><span class="switch-sub">Off = individual model tabs only, no combined answer</span></span>` +
       `<span class="switch ${on ? 'on' : ''}" id="consensusSwitch" role="switch" aria-checked="${on}" tabindex="0"><span class="knob"></span></span></label>` +
     `<div class="arb-body"${on ? '' : ' aria-disabled="true"'}>` +
@@ -3073,7 +3066,6 @@ function renderArbitration() {
   $('arbDup') && ($('arbDup').onclick = () => duplicateStrategy(strat));
   $('arbSave') && ($('arbSave').onclick = () => saveStrategyEdits(strat.id));
   $('arbDelete') && ($('arbDelete').onclick = () => deleteStrategy(strat.id));
-  $('csFlowModelsLink') && ($('csFlowModelsLink').onclick = () => setConfigTab('models'));
 }
 function duplicateStrategy(strat) {
   const copy = JSON.parse(JSON.stringify(strat));
@@ -3478,7 +3470,6 @@ function init() {
   if (note) setTimeout(() => toast(note, 4000), 700);
 
   document.querySelectorAll('.cfg-tab').forEach(b => b.onclick = () => setConfigTab(b.dataset.tab));
-  $('modelsToConsensusLink').onclick = () => setConfigTab('consensus');
   $('configBtn').onclick   = () => openConfig();
   $('closeConfig').onclick = closeConfig;
   $('doneConfig').onclick  = closeConfig;

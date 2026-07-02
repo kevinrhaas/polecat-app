@@ -90,8 +90,9 @@ Work these in order, one shippable step per run:
    identifiers (`cfg.arbitration.arbiter`, `arbiterOnly`, `setArbiter()`, CSS
    classes like `.sel-arb`/`.cs-arbiter`) are untouched — display copy only, no
    data migration needed. This closes out the DO THIS NEXT jargon-reduction
-   theme; the remaining open item is the Models+Consensus IA rethink tracked
-   in the Backlog section below.
+   theme. The Models+Consensus IA rethink tracked in the Backlog section below
+   is ALSO now done (2026-07-02): the two tabs were merged into one "Models &
+   Consensus" tab. With that, every step of this DO THIS NEXT theme is complete.
 
 These are one theme — lead with them. They span several runs, so on any run where
 you can't advance them safely, pick up the next **operator-requested** item below
@@ -481,8 +482,28 @@ pass, never a jarring rewrite, never regress:**
      where the arbiter is pulled from `ctx.results`). Guard: need ≥1 answering model; if every
      selected model is arbiter-only, warn. Default behavior unchanged (arbiter = auto, all models
      answer). Accessible, mobile, light/dark, persisted, no regression to existing consensus.
-- [ ] **Rethink the Models + Consensus screens so model ROLES + the consensus flow are obvious
-  (operator-requested 2026-06-30).** PARTIALLY DONE (2026-07-01): the Consensus tab now opens with
+- [x] **Rethink the Models + Consensus screens so model ROLES + the consensus flow are obvious
+  (operator-requested 2026-06-30).** STRUCTURAL PASS DONE (2026-07-02): the Settings modal's
+  separate "Models" and "Consensus" tabs are now ONE tab, "Models & Consensus". The Consensus
+  tab's controls (`#arbControls`: strategy, agreement-map switch, "Final answer written by"
+  picker, synthesis-only checkbox, prompt templates) now live directly inside the Models tab,
+  right below the model list, under a plain "How the combined answer is formed" divider/heading
+  (`index.html` `#sec-models`, `js/app.js` `renderArbitration`). This was the last open piece of
+  the theme: by this point both tabs already showed an identical flow-pills + plain-language
+  sentence (from earlier steps below) and cross-linked to each other, which made having them as
+  two separate tabs feel redundant rather than helpful — a user had to flip tabs to see one
+  unified story. Now it's one screen, top to bottom: who answers (model list) -> how the answer
+  is combined (strategy/arbiter controls) -> nothing left to cross-link. Removed the now-dead
+  cross-tab links ("...is set in the Consensus tab ->", "Manage models ->") and the duplicate
+  flow-pills render that used to repeat inside `renderArbitration()` (the single copy at the top
+  of the merged tab, from `renderModelsFlow()`, now covers both). `VALID_TABS` dropped
+  `'consensus'`; a stale saved `cfg.ui.lastTab: 'consensus'` from before this change harmlessly
+  falls back to the Models tab. Settings now has 3 tabs total: Models & Consensus, Keys, Support.
+  Verified in a real headless-Chromium session (desktop + 390px mobile): exactly 3 tabs, correct
+  content order, consensus on/off + strategy + "Final answer" (Models-tab button) + synthesis-only
+  all still work and stay in sync, zero console errors, no mobile overflow. This closes out the
+  theme — see the step-by-step history below for the cross-linking/jargon work that preceded it.
+  PARTIALLY DONE (2026-07-01): the Consensus tab now opens with
   a pill flow ([answering models] → [arbiter] → [Consensus]) + a plain-language sentence, and both
   tabs cross-link to each other. The "synthesis only" (arbiter-only) badge/control is now unified
   across both tabs too (2026-07-01) — a matching checkbox lives on the Consensus tab next to the
@@ -512,15 +533,15 @@ pass, never a jarring rewrite, never regress:**
   what happens) without needing the Consensus tab's wording to differ or duplicate logic. Verified
   in a real headless-Chromium session (dark + light, 3-model + empty states): identical wording on
   both tabs, correct model names/counts, empty state unchanged (no stray blank line), zero console
-  errors. Still open: a deeper structural pass (e.g. whether Models + Consensus should be more
-  tightly unified than cross-linked) — left for a future run per the direction below.
-  Right now the config is split confusingly across two tabs and
-  neither shows the whole picture: the **Models** tab lists selected models but not who arbitrates;
-  the **Consensus** tab shows the strategy + arbiter model but gives NO indication of which models
-  actually answer. A user can't see, in one place, the core story: "these N models answer in
-  parallel → this arbiter (+ strategy) synthesizes → one consensus answer." This is the signature
-  differentiator, so it must be effortless to understand. Do a holistic IA pass (per the North Star
-  — reorganise/rename/move freely). Direction (use judgement):
+  errors. (At the time this was written, a deeper structural pass — unifying the two tabs outright
+  — was still left for a future run; that pass is now done, see above.)
+  Original problem statement, kept for context: the config used to be split confusingly across two
+  tabs and neither showed the whole picture: the **Models** tab listed selected models but not who
+  arbitrates; the **Consensus** tab showed the strategy + arbiter model but gave NO indication of
+  which models actually answer. A user couldn't see, in one place, the core story: "these N models
+  answer in parallel → this arbiter (+ strategy) synthesizes → one consensus answer." This is the
+  signature differentiator, so it had to be effortless to understand. Direction that guided the
+  work above (use judgement):
     - Make the multi-model → consensus flow legible at a glance, ideally a small visual flow:
       [answering models] → [arbiter model + strategy] → [consensus answer] (echo the website hero).
     - On the Consensus tab, SHOW the answering set (not just the arbiter) — e.g. "Your 6 models

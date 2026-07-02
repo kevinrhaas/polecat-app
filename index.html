@@ -155,29 +155,25 @@
     <div class="cfg-tabs" id="cfgTabs">
       <button class="cfg-tab" data-tab="models">Models</button>
       <button class="cfg-tab" data-tab="keys">Keys</button>
-      <button class="cfg-tab" data-tab="consensus">Consensus</button>
       <button class="cfg-tab" data-tab="support">Support</button>
     </div>
     <div class="modal-body">
       <section class="cfg-section" data-tab="models" id="sec-models">
-        <h3 class="cfg-h">Models <span class="cfg-sub">run any mix — even two from one provider</span></h3>
+        <h3 class="cfg-h">Models &amp; Consensus <span class="cfg-sub">who answers, and how the combined answer is formed</span></h3>
         <div id="modelsFlow"></div>
         <div class="cfg-legend"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> = reads images (vision) · attach photos in the chat box and these models will see them</div>
-        <div class="cfg-legend"><button class="cfg-link" id="modelsToConsensusLink" type="button">Who writes the final answer, and how, is set in the Consensus tab &rarr;</button></div>
         <div id="selList" class="sel-list"></div>
         <div id="addModelArea"></div>
         <div id="sysPromptArea"></div>
+        <div class="cfg-divider"></div>
+        <h4 class="cfg-subhead">How the combined answer is formed</h4>
+        <div id="arbControls"></div>
       </section>
 
       <section class="cfg-section" data-tab="keys" id="sec-keys">
         <h3 class="cfg-h">API keys <span class="cfg-sub">stored only in this browser</span></h3>
         <div id="keyFields"></div>
         <div class="security-note"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:text-bottom" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Keys live in your browser's <strong>localStorage</strong> and are sent only to each provider (or a proxy you configure) — never to us.</div>
-      </section>
-
-      <section class="cfg-section" data-tab="consensus" id="sec-consensus">
-        <h3 class="cfg-h">Consensus <span class="cfg-sub">how the combined answer is formed</span></h3>
-        <div id="arbControls"></div>
       </section>
 
       <section class="cfg-section" data-tab="support" id="sec-support">

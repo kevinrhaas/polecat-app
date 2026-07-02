@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-01 20:45 CT",
+  "updated": "2026-07-01 22:43 CT",
   "entries": [
+    {
+      "date": "2026-07-01",
+      "time": "22:43 CT",
+      "title": "Models and Consensus are now one tab in Settings",
+      "items": [
+        "The separate \"Models\" and \"Consensus\" tabs in Settings are now merged into a single \"Models & Consensus\" tab -- who answers and how the combined answer is formed, top to bottom, in one place",
+        "No more flipping tabs to see the whole picture: the model list, the flow pills, the strategy picker, and \"Final answer written by\" all live together now",
+        "Settings has 3 tabs instead of 4: Models & Consensus, Keys, Support"
+      ]
+    },
     {
       "date": "2026-07-01",
       "time": "20:45 CT",
