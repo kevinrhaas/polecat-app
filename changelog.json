@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-03 15:01 CT",
+  "updated": "2026-07-03 15:57 CT",
   "entries": [
+    {
+      "date": "2026-07-03",
+      "time": "15:57 CT",
+      "title": "Fixed shared consensus links silently failing to (re)open",
+      "items": [
+        "With the roadmap fully checked off, tested the shareable consensus link feature end-to-end (a core growth path: recipients click a '#share=...' link and see the exact question, per-model answers, and consensus that was shared) rather than another visual sweep",
+        "Found two real bugs: closing a shared view (the X button) threw a silent error and never actually cleared '#share=...' from the address bar, because 'history.replaceState' resolved to this file's own chat-history array (also named history) instead of the browser's window.history - so reloading, or the browser restoring the tab, would pop the same shared answer right back up",
+        "Second: opening a share link in a tab that already had Polecat loaded (an installed app window being reused, or a second shared link clicked in the same tab) never showed anything, because that kind of same-page hash change doesn't re-run the app's startup code - only a fresh page load did",
+        "Fixed both: the close button now correctly targets window.history, and a hashchange listener now handles share links that arrive without a full reload, making sure the shared answer always wins over the first-run welcome tour if both would otherwise land at once",
+        "Verified with real constructed share links across desktop, mobile, and light/dark: first-visit, repeat-visit, closing and opening a second link in the same tab, and the ordinary welcome-tour and Settings deep-link paths - all clean, zero console errors"
+      ]
+    },
     {
       "date": "2026-07-03",
       "time": "15:01 CT",

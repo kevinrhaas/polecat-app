@@ -238,7 +238,9 @@ function showShareModal(data) {
 function closeShareModal() {
   const modal = $('shareModal');
   if (modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
-  if (location.hash.startsWith('#share=')) history.replaceState(null, '', location.pathname);
+  // NB: must be window.history — a module-scoped `history` (the chat thread
+  // list, declared below) shadows the global of the same name in this file.
+  if (location.hash.startsWith('#share=')) window.history.replaceState(null, '', location.pathname);
 }
 function openKbd() {
   closeSidebar();   // same fix as openConfig(): the sidebar's own higher z-index
@@ -3745,15 +3747,32 @@ function init() {
   const hasKeys = configuredProviders(cfg).length > 0 || (cfg.selections || []).some(s => s.provider === 'demo');
   const seen = !!localStorage.getItem(WELCOME_KEY);
   if (location.hash.startsWith('#share=')) {
-    const data = decodeSharePayload(location.hash.slice(7));
-    if (data) setTimeout(() => showShareModal(data), 100);
+    setTimeout(tryShowShareFromHash, 100);
   } else if (location.hash === '#settings') {
     setTimeout(() => openConfig(), 200);   // deep-link to settings
   } else if (!hasKeys && !seen) {
-    setTimeout(showWelcome, 350);
+    // Guard against a share link arriving (via hashchange) in the gap before
+    // this fires — it must never pop the welcome tour over a shared answer.
+    setTimeout(() => { if (!location.hash.startsWith('#share=')) showWelcome(); }, 350);
   } else if (!hasKeys) {
-    setTimeout(() => openConfig('keys'), 400);
+    setTimeout(() => { if (!location.hash.startsWith('#share=')) openConfig('keys'); }, 400);
   }
+  // A same-document hash change (no reload) doesn't re-run init() — e.g. an
+  // installed PWA window reused for a new deep link, or a second share link
+  // opened in a tab that already has Polecat loaded. Handle #share= links
+  // that arrive this way too, so the recipient always sees the shared answer.
+  window.addEventListener('hashchange', tryShowShareFromHash);
+}
+function tryShowShareFromHash() {
+  if (!location.hash.startsWith('#share=')) return;
+  const data = decodeSharePayload(location.hash.slice(7));
+  if (!data) return;
+  // A shared link always wins over whatever else was about to greet the
+  // visitor (first-run welcome tour, the settings deep-link) — otherwise a
+  // higher-stacked overlay can hide the very thing they clicked through for.
+  $('welcomeOverlay')?.classList.remove('open');
+  closeConfig();
+  showShareModal(data);
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
