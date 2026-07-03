@@ -2398,22 +2398,14 @@ function renderArbiterFallbackNote(pair, note) {
 // EPIC 1 · P1 — receive the arbiter's machine-readable agreement map. Stamped
 // on the consensus pair and rendered as the provenance panel immediately after.
 // Also triggers P4: computes paragraph attribution and wires the toggle button.
-function onProvenance(data) {
-  lastConsensusProvenance = data || null;
-  const pair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
-  if (!pair) return;
-  pair._provenance = lastConsensusProvenance;
-
-  // Arbiter failed (dead/exhausted key, network) — explain why this looks like a
-  // single answer + agreement map rather than a synthesis, so the user can fix it.
-  if (lastConsensusProvenance?.fallbackNote) {
-    renderArbiterFallbackNote(pair, lastConsensusProvenance.fallbackNote);
-  }
-
-  // Update Consensus tab with an agreement signal badge — visible at a glance.
+// Tab-bar badges (Consensus tab's strong/mixed/diverse pill + each model tab's
+// aligned/partial/outlier stance) derived from provenance. Shared by the live
+// path (onProvenance) and restored-thread path (restoreThread) so reopened
+// chats show the same at-a-glance signal as a live run, not just blank tabs.
+function applyTabBadges(prov) {
   const _agreeBadge = $('consensus-agree-badge');
   if (_agreeBadge) {
-    const _sig = lastConsensusProvenance?.agreementSignal;
+    const _sig = prov?.agreementSignal;
     if (_sig != null) {
       const _agInfo = _sig >= 0.26 ? { label: 'strong', cls: 'tab-agree-high' }
                     : _sig >= 0.11 ? { label: 'mixed',  cls: 'tab-agree-mid'  }
@@ -2425,9 +2417,9 @@ function onProvenance(data) {
   }
 
   // Update per-model stance badges — show aligned/partial/outlier under each model's tab label.
-  if (lastConsensusProvenance?.perModel) {
+  if (prov?.perModel) {
     const stanceById = {}, stanceByLabel = {};
-    lastConsensusProvenance.perModel.forEach(m => {
+    prov.perModel.forEach(m => {
       if (m.id) stanceById[m.id] = m.stance;
       if (m.label) stanceByLabel[m.label] = m.stance;
     });
@@ -2440,6 +2432,21 @@ function onProvenance(data) {
       badge.hidden = false;
     });
   }
+}
+
+function onProvenance(data) {
+  lastConsensusProvenance = data || null;
+  const pair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
+  if (!pair) return;
+  pair._provenance = lastConsensusProvenance;
+
+  // Arbiter failed (dead/exhausted key, network) — explain why this looks like a
+  // single answer + agreement map rather than a synthesis, so the user can fix it.
+  if (lastConsensusProvenance?.fallbackNote) {
+    renderArbiterFallbackNote(pair, lastConsensusProvenance.fallbackNote);
+  }
+
+  applyTabBadges(lastConsensusProvenance);
 
   // Brief insight sentence — summarises agreement in plain language before the detail panels.
   renderConsensusInsight(pair, lastConsensusProvenance);
@@ -3390,6 +3397,7 @@ function restoreThread(id) {
       text: results[id],
     }));
     lastSynthesisPrompt = lastTurn.prompt;
+    applyTabBadges(lastConsensusProvenance);
     const lastConsPair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
     if (lastConsPair) {
       renderModelSnapshotsEl(lastConsPair);

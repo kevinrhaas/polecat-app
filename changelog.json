@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-03 10:10 CT",
+  "updated": "2026-07-03 11:19 CT",
   "entries": [
+    {
+      "date": "2026-07-03",
+      "time": "11:19 CT",
+      "title": "Reopened consensus chats now show their agreement badges again",
+      "items": [
+        "Each model tab's small \"aligned / partial / outlier\" badge and the Consensus tab's \"strong / mixed / diverse\" agreement pill stayed blank after reopening a saved chat from the sidebar, even though the data to show them was already saved",
+        "Found while replaying a saved multi-model consensus conversation end-to-end to check the full agreement-map experience survives a reopen",
+        "Both now reappear immediately on reopening a chat, matching what you saw live"
+      ]
+    },
     {
       "date": "2026-07-03",
       "time": "10:10 CT",

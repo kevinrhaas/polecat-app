@@ -4,6 +4,16 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 110,
+    title: 'Reopened consensus chats now show their agreement badges again',
+    ts: '2026-07-03T16:19:00.000Z',
+    items: [
+      'Each model tab\'s small "aligned / partial / outlier" badge and the Consensus tab\'s "strong / mixed / diverse" agreement pill stayed blank after reopening a saved chat from the sidebar, even though the data to show them was already saved',
+      'Found while replaying a saved multi-model consensus conversation end-to-end to check the full agreement-map experience survives a reopen',
+      'Both now reappear immediately on reopening a chat, matching what you saw live',
+    ],
+  },
+  {
     v: 109,
     title: 'Fixed the Models & Consensus flow pills showing duplicate labels',
     ts: '2026-07-03T15:10:00.000Z',

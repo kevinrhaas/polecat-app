@@ -310,6 +310,26 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 11:19 CT): reopening a saved consensus chat left the tab-bar
+  agreement badges blank.** With the roadmap still fully checked off, seeded a synthetic
+  3-model consensus thread (with a full provenance payload) straight into `polecat_history`
+  and drove it through a real headless-Chromium session (Playwright + system chromium) to
+  exercise the restore path without needing live API calls. The rich "How this was formed"
+  panel, snapshot cards, inline attribution toggle, and side-by-side compare modal all
+  restored correctly (prior runs already fixed those) — but the tab bar itself did not: each
+  model tab's small "aligned/partial/outlier" stance badge and the Consensus tab's own
+  "strong/mixed/diverse" agreement pill stayed hidden after reopening a chat from the
+  sidebar, even though the exact data needed to show them (`turn.provenance`) was right
+  there and the same-session live panel proved it parses fine. Root cause: that badge-setting
+  logic lived only inline inside the live-only `onProvenance()` handler (`js/app.js`); `restoreThread()`
+  never called it, and only replicated the OTHER provenance-driven renders (snapshot cards,
+  follow-up chips, re-synthesis strip, panel, inline attribution) — an omission of the same
+  shape as the two provenance-restore bugs fixed earlier (see the entries below), just for a
+  piece those fixes did not touch. Fixed by extracting the badge logic into a shared
+  `applyTabBadges(prov)` and calling it from both `onProvenance()` and `restoreThread()`
+  (right after `lastConsensusProvenance` is repopulated from `lastTurn.provenance`). Verified
+  in headless Chromium: badges are hidden on a fresh chat, appear correctly on restore
+  ("aligned" x3 + "strong"), and correctly clear again on "New chat" — zero console errors.
 - [x] **BUG (FIXED 2026-07-03, 10:10 CT): Models & Consensus flow pills showed duplicate,
   indistinguishable labels when 2+ selected models shared a provider.** With the roadmap
   still fully checked off, ran a fresh headless-Chromium session (Playwright + system
