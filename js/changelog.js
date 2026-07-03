@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 118,
+    title: 'Fixed a synthesis-only model being skipped with just one answering model',
+    ts: '2026-07-03T23:43:00.000Z',
+    items: [
+      'Right after the previous fix for the \'Refine Together\' strategy, checked whether the same bug class showed up anywhere else in the consensus engine - it did, one level up',
+      'If you set a model to \'Synthesis only\' and only ONE other model was answering (e.g. one fast/free model plus a high-quality model just for polishing), the synthesis-only model was never called at all - the raw single answer was shown as the consensus with no indication anything was skipped',
+      'Fixed so a synthesis-only model now always writes the final answer when configured, regardless of how many models actually answered',
+      'Verified with 6 scenarios covering every strategy type, plus the normal cases (auto-pick, multiple answering models) to confirm nothing else changed',
+    ],
+  },
+  {
     v: 117,
     title: 'Fixed a model set to write the final answer being silently skipped',
     ts: '2026-07-03T22:47:00.000Z',

@@ -310,6 +310,32 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 18:43 CT): a "Synthesis only" (arbiter-only) final-answer model was
+  silently skipped whenever only ONE model actually answered.** With the roadmap still fully
+  checked off, re-examined `js/arbitration.js` right after the previous run's `runChain()` fix for
+  the same class of bug (arbiter-only models being invisible to code paths that only look at
+  `ctx.results`, the list of models that actually answered), on the theory that the entry point
+  `runArbitration()` itself might have the same blind spot at a different boundary. Confirmed with
+  a standalone Node harness (imports the module directly, mock `ctx` callbacks, no network calls):
+  `runArbitration()` had an early-return fast path — `if (results.length === 1) { ctx.showStatic(
+  results[0].text); return; }` — that fires BEFORE the strategy dispatch (`chain`/`judge`/`debate`),
+  so it ran even when the configured "final answer" model was a valid arbiter-only model waiting to
+  synthesize. This hits a realistic, encouraged config: the operator's own documented arbiter-only
+  use case ("set up FREE models as answerers and use Claude as an arbiter-only synthesizer") applies
+  just as much with exactly one fast/free answering model plus one high-quality arbiter-only
+  polisher/fact-checker as it does with several answerers — but with one answerer, the arbiter-only
+  model was never called at all, and the raw unsynthesized single answer was shown as "the
+  consensus" with no error or indication anything was skipped. Fixed by computing whether the
+  configured final-answer id resolves to a real selection that is NOT among `results` but IS among
+  `ctx.allSelections` (i.e., a genuine external/arbiter-only finisher) and skipping the single-model
+  shortcut in that case only, falling through to the normal strategy dispatch — each of which
+  (`runChain`, `runJudge`, `runDebate`) already resolves an arbiter-only finisher correctly via
+  `ctx.allSelections`/`resolveArbiter`. Verified with 6 scenarios in the Node harness: arbiter-only
+  finisher with 1 answerer under all three structures (chain/judge/debate) now correctly invokes the
+  finisher and streams its answer; the three no-regression cases — auto arbiter with 1 answerer,
+  an explicit final-answer model that IS the sole answerer, and the normal 2-answerer path — all
+  keep their exact prior behavior (instant shortcut / no wasted extra call). `node scripts/
+  validate.mjs` passes. No UI/HTML changes needed.
 - [x] **BUG (FIXED 2026-07-03, 17:47 CT): an arbiter-only ("Synthesis only") model set as the
   "Final answer" writer was silently ignored under the default "Refine Together" strategy.**
   With the roadmap still fully checked off, read through `js/arbitration.js`'s `runChain()`

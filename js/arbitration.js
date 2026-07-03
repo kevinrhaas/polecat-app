@@ -374,7 +374,14 @@ function fallbackConsensus(ctx, preferredText) {
 export async function runArbitration(strategy, ctx) {
   const { results } = ctx;
   if (!results.length) { ctx.fail('All models failed to respond — no consensus available.'); return; }
-  if (results.length === 1) { ctx.showStatic(results[0].text); return; }
+  // A model chosen to write the final answer might not be among `results` because
+  // it's arbiter-only (excluded from answering by design — see resolveArbiter/runChain).
+  // With only 1 answering result that's still a real synthesis job, not a no-op, so
+  // don't take the single-model shortcut in that case.
+  const finisherId = ctx.arbiterId && ctx.arbiterId !== 'auto' ? ctx.arbiterId : null;
+  const hasExternalFinisher = !!finisherId && !results.some(r => r.selection.id === finisherId) &&
+    (ctx.allSelections || []).some(s => s.id === finisherId);
+  if (results.length === 1 && !hasExternalFinisher) { ctx.showStatic(results[0].text); return; }
 
   if (strategy.structure === 'chain')  return runChain(strategy, ctx);
   if (strategy.structure === 'debate') return runDebate(strategy, ctx);
