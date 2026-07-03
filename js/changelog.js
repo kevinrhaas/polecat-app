@@ -4,6 +4,16 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 106,
+    title: 'Fixed a misleading message when adding a free demo model',
+    ts: '2026-07-03T12:06:00.000Z',
+    items: [
+      'Adding a second (or third) Free demo model in Settings showed "Added -- add a Free demo key to use it", even though the whole point of the free demo is that it needs no key at all',
+      'Found while live-testing the Models & Consensus screen -- the app already knew the free demo is keyless everywhere else, this one spot just missed it',
+      'That toast no longer appears for the free demo; models you add there just work, as they should',
+    ],
+  },
+  {
     v: 105,
     title: 'Fixed a few UI pieces that could show when they shouldn\'t',
     ts: '2026-07-03T11:19:00.000Z',

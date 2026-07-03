@@ -2904,7 +2904,7 @@ function addModel(provider, model, viaAddBtn) {
   persist(); buildChips();
   if (viaAddBtn) renderModels(); else { renderSelList(); renderModelsFlow(); renderArbitration(); }   // browse: keep the panel open
   if (providerKey(cfg, provider)) testOne(provider, model);   // auto-test on add
-  else toast(`Added — add a ${PROVIDERS[provider].name} key to use it`);
+  else if (provider !== 'demo') toast(`Added — add a ${PROVIDERS[provider].name} key to use it`);   // demo needs no key
 }
 
 // Live model-list browse/search (OpenAI-compatible providers; OpenRouter is public)

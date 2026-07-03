@@ -310,6 +310,25 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 07:06 CT): adding a Free demo model showed a misleading
+  "add a key" toast.** With the roadmap still fully checked off, ran another real
+  headless-Chromium session (Playwright + system chromium) driving Settings -> Models &
+  Consensus: added the default Free demo model, then added a second Free demo model
+  (GPT-OSS 120B) via the provider/model pickers + Add button. Screenshot showed a toast
+  reading "Added -- add a Free demo key to use it" -- but the Free demo provider is
+  explicitly keyless (its key lives server-side in the Cloudflare proxy; `KEY_TIER.demo`
+  is literally `'Free · no key'`, and `js/config.js` already special-cases
+  `s.provider === 'demo' || providerKey(...)` when deciding which selections can answer).
+  Root cause: `addModel()` (`js/app.js` ~2900) only checked `providerKey(cfg, provider)` to
+  decide between auto-testing the model and showing the "add a key" toast -- it never
+  special-cased `demo` the way every other keyless-aware code path in the file already
+  does, so `providerKey(cfg, 'demo')` correctly returned falsy (no key is ever stored for
+  demo) and fell into the toast branch every time. Fixed with a one-line guard
+  (`else if (provider !== 'demo') toast(...)`), matching the existing special-case pattern
+  used elsewhere in the same file. Verified in headless Chromium: adding one or two Free
+  demo models now shows no toast at all (they just work, both rows green/"Final answer"),
+  zero console errors; non-demo providers without a key still show the original helpful
+  toast unchanged.
 - [x] **BUG (FIXED 2026-07-03, 06:19 CT): three more elements stuck in the same "hidden has no
   effect" bug class as the sidebar nudge two runs ago.** With the roadmap still fully checked
   off, ran another real headless-Chromium session (Playwright + system chromium) driving the
