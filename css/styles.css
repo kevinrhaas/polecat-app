@@ -130,6 +130,7 @@ header {
 
 /* attachment thumbnails */
 .attach-strip { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 12px 0; }
+.attach-strip[hidden] { display: none; }
 .attach-thumb { position: relative; width: 60px; height: 60px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); flex-shrink: 0; background: var(--surface-2); }
 .attach-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .attach-thumb .at-x { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; border: none; background: rgba(0,0,0,.62); color: #fff; cursor: pointer; font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center; padding: 0; }
@@ -505,7 +506,9 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 /* live model browse/search */
 .browse-bar { display: flex; }
 .browse-btn { width: 100%; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; justify-content: center; }
+.browse-btn[hidden] { display: none; }
 .browse-panel { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+.browse-panel[hidden] { display: none; }
 .browse-list { display: flex; flex-direction: column; gap: 4px; max-height: 240px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 .browse-list::-webkit-scrollbar { width: 5px; }
 .browse-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }

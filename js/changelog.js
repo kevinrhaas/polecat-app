@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 105,
+    title: 'Fixed a few UI pieces that could show when they shouldn\'t',
+    ts: '2026-07-03T11:19:00.000Z',
+    items: [
+      'In Settings, the live model search panel (under "Browse all models") was rendering open all the time, even before you clicked the button -- and the "Browse all models" button itself was showing for providers that don\'t support a live model list (like Claude), where clicking it just produced an error toast',
+      'A thin empty strip was also always sitting above the message box, left over from the attachment-preview area even with nothing attached',
+      'Root cause: same class of bug fixed for the sidebar backup nudge a few runs ago -- each element\'s own CSS set a permanent display value with no override for when it\'s meant to be hidden, so JS toggling it had no visual effect',
+      'All three now correctly hide and show only when they should',
+    ],
+  },
+  {
     v: 104,
     title: 'Fixed the composer\'s hint text getting cut off',
     ts: '2026-07-03T10:45:00.000Z',

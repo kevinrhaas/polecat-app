@@ -310,6 +310,51 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 06:19 CT): three more elements stuck in the same "hidden has no
+  effect" bug class as the sidebar nudge two runs ago.** With the roadmap still fully checked
+  off, ran another real headless-Chromium session (Playwright + system chromium) driving the
+  actual app instead of a code-only sweep -- walked the welcome carousel, empty state (desktop +
+  mobile touch), sidebar, light/dark theme, and Settings -> Models & Consensus with models
+  added/reordered/set as final-answer -- all clean, zero console errors, until adding a model
+  revealed the "Search models..." input rendering open, unprompted, directly under the "Browse
+  all models" button on first view of the tab (confirmed via a screenshot, then via
+  `getComputedStyle`: `#browsePanel` had `hidden: true` set correctly by JS but a computed
+  `display: flex`, with `offsetHeight: 59` -- i.e. actually visible on screen despite the
+  attribute). Root cause: identical bug class to the sidebar-nudge fix two runs ago (2026-07-03,
+  00:46 CT) -- `.browse-panel` (`css/styles.css`) declares its own `display: flex` with no
+  `[hidden]` override, and an author stylesheet's normal `display` always beats the browser's
+  built-in `[hidden] { display: none }` UA rule, so `element.hidden = true`
+  (`js/app.js` `openBrowse`/provider-change handler) had zero visual effect. That prompted a
+  targeted sweep (grep every CSS class with a `display:` declaration, cross-referenced against
+  every element toggled via `.hidden =` in `js/app.js`) rather than stopping at one instance, which
+  turned up two more real, currently-live instances: `#browseBtn` (`.browse-btn { display:
+  inline-flex; }`) -- `modelListSupported()` correctly set `hidden = true` for providers without a
+  live model catalog (e.g. Claude, Gemini, GPT -- only OpenRouter/Groq/HF/OpenAI-compatible
+  providers with a `baseUrl` support it), but the button rendered anyway, so clicking it on an
+  unsupported provider just produced a "No live list for this provider" toast instead of the
+  button correctly not being there; and `#attachStrip` (`.attach-strip { display: flex; padding:
+  12px 12px 0; }`) -- with zero attachments `renderAttachments()` sets `strip.hidden = true`, but
+  the empty flex box's top padding still rendered a permanent ~12px gap above the composer
+  (confirmed: `offsetHeight: 12` with `hiddenAttr: true`) on every screen, always, whether or not
+  any file was ever attached. The sweep also checked two elements that share the same `hidden`-
+  toggle + `display:` shape (`.msg-time`, `.copy-btn` in every model response's header) but
+  confirmed via `getBoundingClientRect()` they already collapse to a genuine 0x0 box before their
+  content is set (they're flex *items* inside `.msg-head`, which blockifies and shrinks empty
+  children to nothing) -- so despite the same latent CSS gap, there is no actual visible/clickable
+  regression there today; left alone rather than making a speculative change with no observed
+  failure to fix, per the standing "fix real, demonstrated bugs" bar. Fixed the three confirmed
+  ones with the same one-line-per-selector pattern as the earlier fix: `.browse-btn[hidden]`,
+  `.browse-panel[hidden]`, `.attach-strip[hidden] { display: none; }`. Verified in headless
+  Chromium: for the Free demo provider (which does support a live list), the browse panel now
+  starts closed and opens correctly on clicking "Browse all models" (showing a graceful "Couldn't
+  load: Failed to fetch" in this network-sandboxed test environment, not a crash); for Claude, the
+  "Browse all models" button no longer renders at all; the empty-attachments strip now measures
+  `display: none` / `offsetHeight: 0` on a fresh load. Zero console errors, zero regressions to
+  add-model/reorder/final-answer flows verified in the same session. Flagging for a future pass:
+  the `.msg-time`/`.copy-btn` latent gap noted above is safe today only because of the specific
+  flex-shrink layout it sits in -- if that layout ever changes (e.g. a fixed min-width or a
+  non-flex wrapper), it would silently become the same bug; worth adding the defensive
+  `[hidden]` override preemptively next time either of those rules is touched for something else.
 - [x] **Bug fix (2026-07-03, 05:45 CT): composer placeholder hint could be visually clipped.**
   With the roadmap still fully checked off, ran a real headless-Chromium session (Playwright +
   system chromium, a proper touch-emulated mobile context this time, not just a narrow desktop
