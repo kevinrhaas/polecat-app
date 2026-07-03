@@ -4,6 +4,18 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 117,
+    title: 'Fixed a model set to write the final answer being silently skipped',
+    ts: '2026-07-03T22:47:00.000Z',
+    items: [
+      'With the roadmap fully checked off, code-reviewed the consensus engine (js/arbitration.js) for correctness bugs and confirmed a real one with a standalone test harness (no live API calls)',
+      'If you set a model to \'Synthesis only\' (it doesn\'t answer, just writes the final answer) and used the default \'Refine Together\' strategy, that model was silently skipped - the last model in the answering order wrote the final answer instead, while Settings still showed your chosen model as the one doing it',
+      'This wasn\'t a rare edge case: \'Refine Together\' is the default strategy, so anyone using a synthesis-only model without switching to a different strategy hit this every time',
+      'Fixed so a synthesis-only model now genuinely writes the final answer after the other models finish refining their draft, matching what the UI already showed',
+      'Verified with 4 scenarios (synthesis-only model finishing normally, an answering model finishing, auto-pick, and a synthesis-only model that fails to respond) - all now behave correctly, and if it does fail to respond, the warning correctly points at that model instead of a different one',
+    ],
+  },
+  {
     v: 116,
     title: 'Fixed restored chats losing their per-model tabs and going blank',
     ts: '2026-07-03T21:53:00.000Z',

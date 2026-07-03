@@ -385,20 +385,27 @@ async function runChain(strategy, ctx) {
   const { prompt } = ctx;
   // Order results so a chosen arbiter (if any) produces the final, streamed answer.
   let seq = ctx.results;
+  let synthOnlyFinisher = null; // arbiter-only model: didn't answer, so it isn't in ctx.results —
+                                 // it joins after the chain to write the final answer instead.
   if (ctx.arbiterId && ctx.arbiterId !== 'auto') {
     const fin = ctx.results.find(r => r.selection.id === ctx.arbiterId);
     if (fin) seq = [...ctx.results.filter(r => r.selection.id !== ctx.arbiterId), fin];
+    else if (ctx.allSelections) {
+      const s = ctx.allSelections.find(x => x.id === ctx.arbiterId);
+      if (s) synthOnlyFinisher = s;
+    }
   }
   let draft = seq[0].text;
   for (let i = 1; i < seq.length; i++) {
     const r = seq[i];
+    const isFinal = i === seq.length - 1 && !synthOnlyFinisher;
     const msgs = [
       { role: 'user', content: prompt },
       { role: 'assistant', content: r.text },
       { role: 'user', content: fill(strategy.prompts.refine, { draft, prompt }) },
     ];
     ctx.step(`${ctx.labelOf(r.selection)} refining`);
-    if (i < seq.length - 1) {
+    if (!isFinal) {
       ctx.status(`Refining (${i}/${seq.length - 1})…`);
       try { draft = await ctx.silent(r.selection, msgs); } catch { /* keep draft */ }
     } else {
@@ -408,6 +415,15 @@ async function runChain(strategy, ctx) {
       if (finalText) await maybeProvenance(ctx, r.selection, finalText);
       else fallbackConsensus(ctx, draft);
     }
+  }
+  if (synthOnlyFinisher) {
+    const msgs = [{ role: 'user', content: `${prompt}\n\n${fill(strategy.prompts.refine, { draft, prompt })}` }];
+    ctx.step(`${ctx.labelOf(synthOnlyFinisher)} finalizing`);
+    ctx.status('Finalizing consensus…');
+    let finalText = null;
+    try { finalText = await ctx.stream(synthOnlyFinisher, msgs); } catch (e) { ctx.arbiterFailed?.(synthOnlyFinisher, e); }
+    if (finalText) await maybeProvenance(ctx, synthOnlyFinisher, finalText);
+    else fallbackConsensus(ctx, draft);
   }
 }
 

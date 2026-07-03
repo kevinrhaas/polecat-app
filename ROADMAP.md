@@ -310,6 +310,31 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 17:47 CT): an arbiter-only ("Synthesis only") model set as the
+  "Final answer" writer was silently ignored under the default "Refine Together" strategy.**
+  With the roadmap still fully checked off, read through `js/arbitration.js`'s `runChain()`
+  (used by the "chain"-structured strategies, including the default "Refine Together") looking
+  for correctness bugs, then confirmed the finding with a standalone Node harness that imports
+  the module directly and drives it with mock `ctx` callbacks (no network calls). Root cause:
+  `runChain()` only reorders `ctx.results` — the models that actually answered — so a chosen
+  arbiter (`ctx.arbiterId`) writes the final, streamed answer. An arbiter-only model never
+  answers (it's excluded from `results` by design, so it can synthesize without also being one
+  of the answering voices), so the lookup `ctx.results.find(r => r.selection.id === ctx.arbiterId)`
+  always failed for it, `seq` silently fell back to its original order, and the LAST model in
+  the natural answering order wrote the "final" answer instead — while the UI kept showing the
+  arbiter-only model as the one set to write it, with no error or indication anything was wrong.
+  This combination (arbiter-only + chain strategy) wasn't an edge case: "Refine Together" is the
+  default active strategy, so any user who set a "Synthesis only" model without also switching
+  to a judge-structured strategy ("Merge Everything", "Best Answer", etc.) hit this silently.
+  Fixed by having `runChain()` detect this case (arbiter id resolves in `ctx.allSelections` but
+  not in `ctx.results`) and, after the answering models finish refining the running draft as
+  normal, hand that draft to the arbiter-only model for one final streamed pass — so it
+  genuinely writes the final answer, matching what the UI already claimed. Failure handling
+  (`ctx.arbiterFailed`, fallback to the best available draft) now also correctly attributes a
+  failed final pass to the arbiter-only model instead of silently mislabeling a different one.
+  Verified with 4 scenarios in the Node harness (arbiter-only finisher happy path, an explicit
+  answering-model arbiter, `auto`, and an arbiter-only finisher whose call throws) — all behave
+  as intended; `node scripts/validate.mjs` passes. No UI/HTML changes needed.
 - [x] **BUG (FIXED 2026-07-03, 16:53 CT): reopening a saved chat could strand the user on a
   blank screen if the browser no longer had a key for a model in that thread.** With the
   roadmap still fully checked off, seeded a synthetic 3-model consensus thread straight into
