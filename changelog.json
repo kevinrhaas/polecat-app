@@ -1,6 +1,15 @@
 {
-  "updated": "2026-07-02 22:29 CT",
+  "updated": "2026-07-03 00:46 CT",
   "entries": [
+    {
+      "date": "2026-07-03",
+      "time": "00:46 CT",
+      "title": "Fixed sidebar nudges showing up for everyone, always",
+      "items": [
+        "The \"Back up your chats\" and \"Add to Home Screen\" sidebar banners were meant to appear rarely, only when relevant -- a missing CSS rule meant they actually rendered for every user on every visit, even a brand-new session with nothing to back up",
+        "They now correctly stay hidden unless there's real data at risk and it's actually their moment to show"
+      ]
+    },
     {
       "date": "2026-07-02",
       "time": "22:29 CT",

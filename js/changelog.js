@@ -4,6 +4,15 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 101,
+    title: 'Fixed sidebar nudges showing up for everyone, always',
+    ts: '2026-07-03T05:46:00.000Z',
+    items: [
+      'The "Back up your chats" and "Add to Home Screen" sidebar banners were meant to appear rarely, only when relevant -- a missing CSS rule meant they actually rendered for every user on every visit, even a brand-new session with nothing to back up',
+      'They now correctly stay hidden unless there\'s real data at risk and it\'s actually their moment to show',
+    ],
+  },
+  {
     v: 100,
     title: 'Fixed leftover template junk after regenerating a response',
     ts: '2026-07-03T03:29:00.000Z',

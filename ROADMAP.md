@@ -310,6 +310,27 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 00:46 CT): sidebar nudge banners were always visible to
+  everyone, not conditional at all.** With the roadmap still fully checked off, drove a
+  fresh headless-Chromium session (Playwright + system chromium) to visually audit the
+  empty state, sidebar, and settings — a check the previous audit passes had done via
+  code-reading only, not by actually rendering the page. Found: `#sbIosInstallHint` and
+  `#sbBackupNudge` (`css/styles.css` `.sb-backup-nudge`, shared by both) had `display: flex`
+  with no matching `.sb-backup-nudge[hidden] { display: none; }` override — every other
+  conditionally-shown element in the file (`.cg-try[hidden]`, `.cg-hint[hidden]`,
+  `.tab-agree-badge[hidden]`, `.tab-stance[hidden]`) has this pairing, but this one was
+  missing it. Since an author stylesheet's normal `display` declaration always beats the
+  browser's built-in `[hidden] { display: none }` UA rule regardless of selector
+  specificity, `element.hidden = true` had ZERO visual effect — both banners rendered on
+  every single sidebar open, for every user, on every device, from the moment the backup
+  nudge shipped (2026-07-01) and the iOS hint shipped (2026-07-02), regardless of platform,
+  data-at-risk, or dismissal state. Verified in headless Chromium: before the fix, a
+  brand-new non-iOS session with zero chats/keys showed both banners stacked in the
+  sidebar; after adding the one-line CSS override, the same fresh session shows neither,
+  while a seeded iOS UA + 20-day-old + configured-key session still correctly shows just
+  the iOS hint (and correctly suppresses the backup nudge to avoid stacking, per existing
+  logic). One-line CSS fix, zero JS/logic changes needed — the gating logic itself was
+  always correct.
 - [x] **Periodic audit pass (2026-07-02, 11:02 CT): all epics/backlog still fully checked
   off, so ran a fresh code-based accessibility/dead-code sweep.** Found and fixed: (1) three
   `copy-btn` templates (`js/app.js` ~875, ~1591, ~3391) had a `title` tooltip but no
