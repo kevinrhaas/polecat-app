@@ -310,6 +310,25 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **IA cleanup (FIXED 2026-07-03, 13:55 CT): "Clear all keys" showed on every Settings tab,
+  not just Keys.** With the roadmap still fully checked off, ran a fresh headless-Chromium
+  session (Playwright + system chromium) driving Settings across all three tabs (Models &
+  Consensus, Keys, Support) instead of another code-only sweep. Screenshotted each tab's footer:
+  the destructive "Clear all keys" button rendered in the shared `.modal-foot` (`index.html`),
+  so it appeared identically on the Models tab and the Support tab too — completely out of
+  context on both, and a beginner glancing at "Models & Consensus" would see an unrelated
+  destructive key-management action sitting in the footer for no visible reason. Root cause:
+  `#clearKeys` lived in the modal's global footer alongside "Tour" and "Done" (which genuinely
+  are global actions), rather than inside the Keys tab's own section content. Fixed by moving
+  the button into `#sec-keys`, directly below the existing "Keys live in your browser's
+  localStorage..." security note, sized with a new small `.btn-sm` helper class (extracted from
+  the footer-only `.foot-left .btn` rule so it's reusable) and `align-self:flex-start` so it
+  doesn't stretch to the full flex-column width of the tab section. No JS changes needed — the
+  `$('clearKeys').onclick` handler and its confirm-dialog logic (`js/app.js`) were untouched, only
+  the button's location moved. Verified in headless Chromium (desktop + 390px mobile, light +
+  dark): Models and Support tabs' footers now show only "Tour"/"Done"; the Keys tab shows "Clear
+  all keys" as a compact, left-aligned red link at the end of its content, functions identically
+  (confirm dialog fires, keys clear), zero console errors.
 - [x] **BUG (FIXED 2026-07-03, 12:56 CT): the Keyboard shortcuts panel rendered blurry when opened
   from the sidebar.** With the roadmap still fully checked off, ran a fresh headless-Chromium
   session (Playwright + system chromium) instead of another code-only sweep, opened the sidebar

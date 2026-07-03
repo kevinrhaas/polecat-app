@@ -4,6 +4,16 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 113,
+    title: 'Moved "Clear all keys" out of the global Settings footer',
+    ts: '2026-07-03T18:55:00.000Z',
+    items: [
+      'The destructive "Clear all keys" button used to sit in Settings\' shared footer, so it showed on every tab - Models & Consensus, Keys, and Support - even though it only makes sense on the Keys tab',
+      'Found while auditing Settings for clean information architecture with the roadmap fully checked off',
+      'It now lives at the bottom of the Keys tab itself, right where the keys are; the footer just keeps "Tour" and "Done", which are the only truly global actions',
+    ],
+  },
+  {
     v: 112,
     title: 'Fixed a blurry Keyboard shortcuts panel',
     ts: '2026-07-03T17:56:00.000Z',
