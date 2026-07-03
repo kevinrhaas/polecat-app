@@ -52,7 +52,11 @@ jobs:
           # (Don't also pass anthropic_api_key — when both are set the action
           # prefers the API key, which is the dead/credit-capped one.)
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: '--max-turns 80 --dangerously-skip-permissions'
+          # 80 turns was too tight: as the app + tasks grew, many runs hit the
+          # cap mid-task (before committing) and shipped nothing — the action
+          # reports that as is_error=true. A full read -> edit -> validate ->
+          # changelog -> gen -> commit cycle (app AND website) needs more room.
+          claude_args: '--max-turns 200 --dangerously-skip-permissions'
           prompt: |
             You are autonomously improving **Polecat** and shipping the results live.
             Operator focus for this run (may be empty): "${{ github.event.inputs.focus }}"
@@ -197,15 +201,23 @@ jobs:
 
             Keep each part to a single focused commit. Prefer quality over quantity.
 
-      # Surface agent-level failures (e.g. API out of credit / spend cap): the
-      # action reports the step "success" even when the model call errored, so
-      # check its result JSON and fail the job loudly if is_error is true.
+      # Surface agent-level failures: the action reports the step "success" even
+      # when the run errored, so inspect its result JSON and fail loudly — but
+      # report the ACTUAL reason (max-turns vs auth/credit) instead of guessing.
       - name: Fail if the agent errored
         if: always()
         run: |
           f=/home/runner/work/_temp/claude-execution-output.json
           if [ -f "$f" ] && grep -Eq '"is_error":[[:space:]]*true' "$f"; then
-            echo "::error::Claude agent returned is_error=true (likely API credit/spend-limit or auth). Check console.anthropic.com billing."
+            # Pull the human-readable error/result text if present.
+            reason="$(grep -oE '"(error|result)":[[:space:]]*"[^"]*"' "$f" | head -1)"
+            if echo "$reason" | grep -qiE 'maximum number of turns|max.?turns'; then
+              echo "::error::Agent hit the --max-turns cap before finishing (no commit this run). Raise --max-turns or narrow the task. Detail: $reason"
+            elif echo "$reason" | grep -qiE 'credit|billing|quota|rate|usage|401|403|unauthorized|token'; then
+              echo "::error::Agent errored on auth/credit/rate limits. Check the CLAUDE_CODE_OAUTH_TOKEN and console.anthropic.com. Detail: $reason"
+            else
+              echo "::error::Claude agent returned is_error=true. Detail: ${reason:-<no error text in result JSON>}"
+            fi
             exit 1
           fi
           echo "Agent result OK (no is_error)."
