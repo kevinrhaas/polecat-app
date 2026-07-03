@@ -106,6 +106,13 @@ const getConvo = (id) => (convos[id] ||= []);
 const statusKey = (provider, model) => provider + '|' + model;
 const statusOf  = (provider, model) => cfg.modelStatus[statusKey(provider, model)];
 
+// Fits the composer's height to its content (or, when empty, to its placeholder
+// hint) so the multi-line hint text is never clipped.
+function autoGrowComposer(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+}
+
 // ── Prompt history recall (↑/↓ in empty input) ──────────────────────────────
 function loadPromptHistory() {
   try { return JSON.parse(localStorage.getItem(PROMPT_HIST_KEY) || '[]'); } catch { return []; }
@@ -119,8 +126,7 @@ function addToPromptHistory(text) {
 }
 function applyPromptHistory(inp, hist, idx) {
   inp.value = idx < 0 ? _promptHistDraft : (hist[idx] || '');
-  inp.style.height = 'auto';
-  inp.style.height = Math.min(inp.scrollHeight, 200) + 'px';
+  autoGrowComposer(inp);
   inp.setSelectionRange(inp.value.length, inp.value.length);
   updateSendEnabled();
 }
@@ -147,8 +153,7 @@ function restoreComposerDraft() {
     const draft = localStorage.getItem(DRAFT_KEY);
     if (!draft || !draft.trim()) return;
     inp.value = draft;
-    inp.style.height = 'auto';
-    inp.style.height = Math.min(inp.scrollHeight, 200) + 'px';
+    autoGrowComposer(inp);
     updateSendEnabled();
     toast('Draft restored');
   } catch {}
@@ -1110,7 +1115,7 @@ function pickRandom(arr, n) {
 }
 function fillPrompt(q) {
   const t = $('promptInput'); if (!t) return;
-  t.value = q; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 200) + 'px';
+  t.value = q; autoGrowComposer(t);
   updateSendEnabled(); t.focus();
 }
 function renderSuggestions() {
@@ -1198,7 +1203,7 @@ async function sendAll() {
   addToPromptHistory(text);
   _promptHistIdx = -1; _promptHistDraft = '';
   clearDraft();
-  $('promptInput').value = ''; $('promptInput').style.height = 'auto';
+  $('promptInput').value = ''; autoGrowComposer($('promptInput'));
   clearAttachments();
   $('sendBtn').disabled = true;
   // Set up a fresh run controller so the Stop button can abort all streams.
@@ -3535,7 +3540,8 @@ function init() {
   $('promptInput').placeholder = isTouch
     ? 'Type your prompt — sent to all selected models at once\nTap ➤ to send · attach images or text files'
     : 'Type your prompt — sent to all selected models at once\nEnter to send · Shift+Enter for new line · paste or drop images / text files';
-  $('promptInput').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; updateSendEnabled(); saveDraft(this.value); });
+  autoGrowComposer($('promptInput')); // fit the placeholder hint so it isn't clipped on load
+  $('promptInput').addEventListener('input', function () { autoGrowComposer(this); updateSendEnabled(); saveDraft(this.value); });
   // Prompt history recall: ↑ (when empty or already browsing) loads previous prompts;
   // ↓ moves forward; any other edit key exits history mode.
   $('promptInput').addEventListener('keydown', e => {

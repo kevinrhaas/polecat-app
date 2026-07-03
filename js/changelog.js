@@ -4,6 +4,15 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 104,
+    title: 'Fixed the composer\'s hint text getting cut off',
+    ts: '2026-07-03T10:45:00.000Z',
+    items: [
+      'The empty prompt box\'s placeholder hint ("Tap to send...", "paste or drop images...") could get visually clipped on load and right after sending a message, especially on phones -- the box height wasn\'t being fit to the two-line hint the way it already was while typing',
+      'The composer now always sizes itself to fully show its hint, on every device and every theme',
+    ],
+  },
+  {
     v: 103,
     title: 'Tidied up the model reorder buttons',
     ts: '2026-07-03T09:39:00.000Z',

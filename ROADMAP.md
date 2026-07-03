@@ -310,6 +310,25 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **Bug fix (2026-07-03, 05:45 CT): composer placeholder hint could be visually clipped.**
+  With the roadmap still fully checked off, ran a real headless-Chromium session (Playwright +
+  system chromium, a proper touch-emulated mobile context this time, not just a narrow desktop
+  viewport) instead of another code-only sweep. Measured `#promptInput`'s `clientHeight` vs
+  `scrollHeight` on load: on a 390px touch device, `scrollHeight` (90px, driven by the two-line
+  placeholder hint) exceeded `clientHeight` (73px, the textarea's `min-height`), so the second
+  line of the hint ("Tap to send... attach images or text files") was cut off at the bottom
+  edge -- confirmed visually in a screenshot. Root cause: the auto-grow-to-content logic
+  (`el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 200) + 'px'`) was
+  duplicated across 5 call sites in `js/app.js`, but two of them -- app init (right after the
+  placeholder is set) and the post-send composer clear -- only did the `height = 'auto'` half
+  and never recomputed from `scrollHeight`, so the box stayed pinned at the bare CSS
+  `min-height` instead of fitting the placeholder. The three sites that already called both
+  lines (typing, prompt-history recall via arrow keys, draft restore) were never affected.
+  Extracted the duplicated two-liner into one `autoGrowComposer(el)` helper and used it at
+  all 5 sites, including the 2 that were missing the fix -- so the composer now always sizes
+  itself to its content or placeholder, consistently, from a single source of truth. Verified
+  in headless Chromium: mobile touch context now reports `clientHeight === scrollHeight` (90px,
+  hint fully visible) on load, after typing then clearing, and desktop/light theme unaffected.
 - [x] **Icon-consistency polish (2026-07-03, 04:39 CT): model reorder buttons used raw
   Unicode triangles instead of the app's SVG icon language.** With the roadmap still fully
   checked off, ran a fresh interactive headless-Chromium audit (desktop + 390px mobile,

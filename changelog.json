@@ -1,6 +1,15 @@
 {
-  "updated": "2026-07-03 04:39 CT",
+  "updated": "2026-07-03 05:45 CT",
   "entries": [
+    {
+      "date": "2026-07-03",
+      "time": "05:45 CT",
+      "title": "Fixed the composer's hint text getting cut off",
+      "items": [
+        "The empty prompt box's placeholder hint (\"Tap to send...\", \"paste or drop images...\") could get visually clipped on load and right after sending a message, especially on phones -- the box height wasn't being fit to the two-line hint the way it already was while typing",
+        "The composer now always sizes itself to fully show its hint, on every device and every theme"
+      ]
+    },
     {
       "date": "2026-07-03",
       "time": "04:39 CT",
