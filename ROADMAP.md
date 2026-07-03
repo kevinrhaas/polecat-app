@@ -310,6 +310,26 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **POLISH (FIXED 2026-07-03, 12:00 CT): low-contrast text in the empty-state hint and the
+  keyboard-shortcuts panel.** With the roadmap still fully checked off, ran a headless-Chromium
+  audit pass (Playwright + system chromium) across the empty state, sidebar, settings tabs, and
+  the keyboard-shortcuts cheatsheet (desktop, mobile, light + dark). The shortcuts modal in
+  particular looked visibly "washed out" next to every other modal. Root cause: `.cg-hint` (the
+  "Pick a question to try it — or type your own" line under the free-demo suggestion chips),
+  `.kbd-group-label` (the COMPOSING/NAVIGATION/ACTIONS section headers), and `.kbd-plus`/`.kbd-sep`
+  (the "+" between keys like Cmd+Enter) all used `var(--text-3)`, which computes to roughly a
+  2.2:1 contrast ratio against `--surface`/`--bg` in dark mode — well under WCAG AA's 4.5:1 floor
+  for normal-size text, and the reason the shortcuts panel read as hazy. Fixed by switching those
+  three rules to `var(--text-2)` (already ~5.5:1, the same color the adjacent suggestion chips and
+  kbd-row labels already use) — verified via computed-style checks and before/after screenshots.
+  **Not done (deliberately out of scope, flagged for a future dedicated pass):** `var(--text-3)`
+  itself is used for ~90 other rules across the stylesheet, many purely decorative (borders,
+  bullets, disabled icons) where the dim contrast is fine, but some — e.g. `.sb-section-label`
+  ("HISTORY" in the sidebar), `.prov-section-label` (agreement-map section headers), `.msg-label`
+  ("YOU" / model name above each message), `.arb-plabel` — are informational text with the same
+  ~2.2:1 problem. A full fix needs a token-level look (the dark palette leaves very little room
+  between "meets 4.5:1" and `--text-2` itself) plus per-screen visual verification, not a
+  single-run mechanical swap; tracked here so it isn't lost.
 - [x] **BUG (FIXED 2026-07-03, 11:19 CT): reopening a saved consensus chat left the tab-bar
   agreement badges blank.** With the roadmap still fully checked off, seeded a synthetic
   3-model consensus thread (with a full provenance payload) straight into `polecat_history`

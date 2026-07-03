@@ -4,6 +4,16 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 111,
+    title: 'Improved low-contrast text in a couple of spots',
+    ts: '2026-07-03T17:00:00.000Z',
+    items: [
+      'The empty-state hint ("Pick a question to try it - or type your own") and the keyboard-shortcuts panel\'s section labels and key-combo "+" separators used a very dim gray that was hard to read, especially in dark mode',
+      'Found while auditing the app for legibility with the roadmap fully checked off',
+      'All three now use the same readable secondary-text color already used for chip labels and hint rows elsewhere in the app',
+    ],
+  },
+  {
     v: 110,
     title: 'Reopened consensus chats now show their agreement badges again',
     ts: '2026-07-03T16:19:00.000Z',

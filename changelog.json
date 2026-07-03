@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-03 11:19 CT",
+  "updated": "2026-07-03 12:00 CT",
   "entries": [
+    {
+      "date": "2026-07-03",
+      "time": "12:00 CT",
+      "title": "Improved low-contrast text in a couple of spots",
+      "items": [
+        "The empty-state hint (\"Pick a question to try it - or type your own\") and the keyboard-shortcuts panel's section labels and key-combo \"+\" separators used a very dim gray that was hard to read, especially in dark mode",
+        "Found while auditing the app for legibility with the roadmap fully checked off",
+        "All three now use the same readable secondary-text color already used for chip labels and hint rows elsewhere in the app"
+      ]
+    },
     {
       "date": "2026-07-03",
       "time": "11:19 CT",
