@@ -1896,7 +1896,7 @@ function plainPreview(md, maxChars) {
     .replace(/!\[[^\]]*\]\([^)]+\)/g, '');   // images
   const lines = t.split(/\n+/);
   for (const raw of lines) {
-    const s = raw.trim().replace(/^[-*•>|\d.)]+\s*/, '').trim();
+    const s = raw.trim().replace(/^(?:[-*•>]\s+|\d+[.)]\s+)/, '').trim();
     if (s.length > 18) return s.length > maxChars ? s.slice(0, maxChars - 1) + '…' : s;
   }
   const plain = t.trim();

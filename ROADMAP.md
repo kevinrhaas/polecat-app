@@ -371,6 +371,31 @@ pass, never a jarring rewrite, never regress:**
   ~2.2:1 problem. A full fix needs a token-level look (the dark palette leaves very little room
   between "meets 4.5:1" and `--text-2` itself) plus per-screen visual verification, not a
   single-run mechanical swap; tracked here so it isn't lost.
+- [x] **POLISH (FIXED 2026-07-03, 15:01 CT): closed out the low-contrast follow-up flagged above.**
+  Switched the four named informational labels — `.msg-label` ("YOU"/model name), `.arb-plabel`
+  (arbiter prompt-editor field labels), `.sb-section-label` ("HISTORY"), and `.prov-section-label`
+  (agreement-map section headers, e.g. "CONTRIBUTION") — from `var(--text-3)` (~2.2:1 in dark mode)
+  to `var(--text-2)` (~5.5:1, passes WCAG AA). Also caught `.sb-date-group` (the "TODAY"/"YESTERDAY"
+  sidebar date dividers, sitting directly under `.sb-section-label` in the same list) since leaving
+  it dim next to a now-crisp "HISTORY" header would have read as an inconsistency, not a fix. The
+  other ~85 `var(--text-3)` uses (borders, placeholders, disabled icons, decorative bullets) were
+  deliberately left alone — still fine at low contrast, and the prior run's note about needing a
+  token-level look for a *full* sweep still stands if more informational-text cases turn up later.
+  Verified in a real headless-Chromium session: seeded a synthetic 3-model consensus thread with a
+  full provenance payload into `polecat_history`, opened the sidebar (HISTORY/date labels crisp),
+  and restored the thread (YOU/model-name labels and the CONTRIBUTION panel label crisp), dark mode,
+  zero console errors.
+  **Bonus bug found while seeding that same verification data:** the "Responses at a glance"
+  preview cards under a consensus answer mangled any model reply that opened with a plain number,
+  e.g. a reply starting "2001: A Space Odyssey..." rendered as ": A Space Odyssey...". Root cause:
+  `plainPreview()`'s (`js/app.js`) leading-marker-stripping regex `/^[-*•>|\d.)]+\s*/` was meant to
+  strip markdown list markers ("1. ", "- ", "> ") but its character class matched bare digits too,
+  so it ate "2001" even with no list-marker context. Same bug would hit "42 is the answer" (→ "is
+  the answer") or "3.14 is pi" (→ "is pi, roughly"). Fixed by requiring an actual marker shape —
+  `/^(?:[-*•>]\s+|\d+[.)]\s+)/` — which still strips real list items ("1. Point" → "Point", "1)
+  Point" → "Point") but leaves plain leading numbers untouched. Verified with unit-style checks on
+  7 cases (list markers still strip, plain numbers/decimals no longer do) and confirmed in the same
+  headless-Chromium session via the seeded consensus thread's preview card.
 - [x] **BUG (FIXED 2026-07-03, 11:19 CT): reopening a saved consensus chat left the tab-bar
   agreement badges blank.** With the roadmap still fully checked off, seeded a synthetic
   3-model consensus thread (with a full provenance payload) straight into `polecat_history`

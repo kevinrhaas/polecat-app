@@ -4,6 +4,16 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 114,
+    title: 'Fixed a garbled model preview and dim section labels',
+    ts: '2026-07-03T20:01:00.000Z',
+    items: [
+      '"Responses at a glance" (the per-model preview cards under a consensus answer) mangled any reply starting with a number not part of a list, e.g. "2001: A Space Odyssey..." showed up as ": A Space Odyssey..." - the text cleanup regex meant to strip list markers like "1. " was too greedy and ate plain leading digits too',
+      'Found by seeding a synthetic consensus reply and driving a real headless-Chromium session to verify the previous run\'s low-contrast fix - the mangled preview turned up as a side effect while checking the same screen',
+      'Also finished the low-contrast follow-up flagged by that earlier run: the sidebar\'s "HISTORY"/date-group headers, message labels ("YOU"/model name), the agreement-map\'s section labels, and the arbiter prompt-editor labels all used a very dim gray (~2.2:1 contrast in dark mode, below WCAG AA); switched them to the same readable gray already used for adjacent labels',
+    ],
+  },
+  {
     v: 113,
     title: 'Moved "Clear all keys" out of the global Settings footer',
     ts: '2026-07-03T18:55:00.000Z',
