@@ -4,6 +4,16 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 108,
+    title: 'Settings no longer re-pitches the free demo once it\'s already on',
+    ts: '2026-07-03T14:04:00.000Z',
+    items: [
+      'The Keys tab\'s "No key? Try it free" card kept inviting you to start the free demo even after you already had free demo models running',
+      'Found while testing the free-demo flow end-to-end and then opening Settings',
+      'It now shows "Free demo is active" with your model count and a "Manage models" shortcut instead of repeating the same pitch',
+    ],
+  },
+  {
     v: 107,
     title: 'Fixed toast messages overflowing off-screen on phones',
     ts: '2026-07-03T13:08:00.000Z',

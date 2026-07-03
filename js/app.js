@@ -2950,14 +2950,25 @@ function renderKeys() {
     `<li><b>In practice</b> — light daily use on paid models is often under <b>~$1–5/month</b>; free models stay $0. Set a hard spending cap in each provider's billing settings so there are no surprises.</li>` +
     `</ul></details>`;
   if (PROVIDERS.demo) {
+    const demoCount = (cfg.selections || []).filter(s => s.provider === 'demo').length;
     const card = el('div', 'demo-card');
-    card.innerHTML =
-      `<div class="demo-card-head"><span class="demo-spark">${STAR_SVG}</span><b>No key? Try it free.</b></div>` +
-      `<div class="demo-card-sub">Run a free model through Polecat right now — no signup, no key. ` +
-      `When you're ready, add your own free key below for unlimited use &amp; more models.</div>` +
-      `<button class="btn btn-solid demo-go" id="demoGoKeys">Try it free — no setup</button>`;
-    wrap.appendChild(card);
-    card.querySelector('#demoGoKeys').onclick = () => startFreeDemo();
+    if (demoCount > 0) {
+      card.innerHTML =
+        `<div class="demo-card-head"><span class="demo-spark">${CHECK_SM_SVG}</span><b>Free demo is active</b></div>` +
+        `<div class="demo-card-sub">You're already using ${demoCount} free demo model${demoCount === 1 ? '' : 's'} — no key needed. ` +
+        `Add your own free key below for unlimited use &amp; more models.</div>` +
+        `<button class="btn btn-solid demo-go" id="demoGoKeys">Manage models →</button>`;
+      wrap.appendChild(card);
+      card.querySelector('#demoGoKeys').onclick = () => setConfigTab('models');
+    } else {
+      card.innerHTML =
+        `<div class="demo-card-head"><span class="demo-spark">${STAR_SVG}</span><b>No key? Try it free.</b></div>` +
+        `<div class="demo-card-sub">Run a free model through Polecat right now — no signup, no key. ` +
+        `When you're ready, add your own free key below for unlimited use &amp; more models.</div>` +
+        `<button class="btn btn-solid demo-go" id="demoGoKeys">Try it free — no setup</button>`;
+      wrap.appendChild(card);
+      card.querySelector('#demoGoKeys').onclick = () => startFreeDemo();
+    }
   }
   PROVIDER_IDS.forEach(id => {
     const p = PROVIDERS[id];

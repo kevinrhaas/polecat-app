@@ -310,6 +310,31 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 09:04 CT): the Keys tab's "No key? Try it free." card kept
+  pitching the free demo even after it was already active.** With the roadmap still fully
+  checked off, ran a fresh headless-Chromium session (Playwright + system chromium, desktop
+  + mobile) driving the free-demo flow end-to-end instead of another code-only sweep: clicked
+  "Try it free" from the empty-state composer button (`#cgTry`), then opened Settings -> Keys.
+  Screenshot showed the exact same "No key? Try it free. Run a free model through Polecat right
+  now — no signup, no key." card and "Try it free — no setup" button as before starting the
+  demo, even though 2 free demo models were already selected and answering. Root cause:
+  `renderKeys()` (`js/app.js` ~2952) rendered this card unconditionally whenever
+  `PROVIDERS.demo` existed, unlike the composer's own `#cgTry` button a few hundred lines away
+  which already computes `demoActive = (cfg.selections||[]).some(s => s.provider === 'demo')`
+  and hides itself once true — the Keys-tab card just never got the same treatment. Beginner
+  impact: a first-timer who already tried the demo would see Settings telling them to do the
+  same thing again, with no acknowledgment they'd succeeded — confusing, not reassuring. Fixed
+  by computing the same `demoActive`-style check (`demoCount`) in `renderKeys()` and branching:
+  when 0 demo models are selected, the card is unchanged; when 1+ are active, it now reads
+  "Free demo is active" (with the existing `CHECK_SM_SVG` checkmark instead of the star), "You're
+  already using N free demo model(s) — no key needed. Add your own free key below for unlimited
+  use & more models.", and the button becomes "Manage models ->" which calls `setConfigTab('models')`
+  instead of `startFreeDemo()` (re-running `startFreeDemo()` while already active would have
+  redundantly closed Settings and re-shown the "Free demo ready" toast — confirmed the tab-switch
+  is the correct, non-redundant action instead). Verified in headless Chromium at both desktop and
+  390px mobile, light theme: card correctly shows the active state with the right count (2),
+  clicking "Manage models ->" switches to the Models & Consensus tab and shows both demo model
+  rows, zero console errors. The inactive (0 demo models) state was also re-verified unchanged.
 - [x] **BUG (FIXED 2026-07-03, 08:08 CT): toast messages could overflow off both edges
   of the screen on mobile.** With the roadmap still fully checked off, ran a fresh
   headless-Chromium session (Playwright + system chromium, touch-emulated 390px mobile

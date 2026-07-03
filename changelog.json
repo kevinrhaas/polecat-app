@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-03 08:08 CT",
+  "updated": "2026-07-03 09:04 CT",
   "entries": [
+    {
+      "date": "2026-07-03",
+      "time": "09:04 CT",
+      "title": "Settings no longer re-pitches the free demo once it's already on",
+      "items": [
+        "The Keys tab's \"No key? Try it free\" card kept inviting you to start the free demo even after you already had free demo models running",
+        "Found while testing the free-demo flow end-to-end and then opening Settings",
+        "It now shows \"Free demo is active\" with your model count and a \"Manage models\" shortcut instead of repeating the same pitch"
+      ]
+    },
     {
       "date": "2026-07-03",
       "time": "08:08 CT",
