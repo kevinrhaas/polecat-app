@@ -310,6 +310,33 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 16:53 CT): reopening a saved chat could strand the user on a
+  blank screen if the browser no longer had a key for a model in that thread.** With the
+  roadmap still fully checked off, seeded a synthetic 3-model consensus thread straight into
+  `polecat_history` and drove a real headless-Chromium session (Playwright + system chromium)
+  to exercise the restore path, since it's been the source of several real bugs in recent
+  passes (stale tab badges, provenance not repopulating, etc.). This time with a twist: the
+  session had zero API keys configured for the thread's providers (Claude/Gemini/ChatGPT) —
+  a realistic case (cleared keys, a new device, or a history import before re-adding keys are
+  all flows the app already supports elsewhere). Found: the "Responses at a glance" cards and
+  the full provenance/agreement-map panel restored perfectly (this data comes straight from the
+  saved turn), but the per-model tab bar showed ONLY "Consensus" — no Claude/Gemini/ChatGPT
+  tabs at all — and clicking a response card's "Full reply" link called `switchTab()` on a tab
+  that was never created, which deactivated the Consensus tab too and left a completely blank
+  panel with no visible way back except starting a new chat. Root cause: `restoreThread()`
+  (`js/app.js`) calls `ensureTabs()` with no arguments, which builds tabs from `sels()` —
+  `answeringSelections(cfg)` — the same currently-configured-key-gated list used to decide who
+  receives a *live* prompt. That gating is correct for sending, but restoring a *past* chat
+  should show what actually answered then, regardless of whether the browser has since lost
+  the key. Fixed by giving `ensureTabs()` an optional explicit selection-list parameter
+  (defaulting to `sels()` everywhere else, so live sending is untouched) and having
+  `restoreThread()` pass `cfg.selections` — the thread's own selections — so tabs/panels are
+  always built for every model a restored chat actually talked to. Verified in headless
+  Chromium: with no keys configured, a restored 3-model thread now shows all three model tabs
+  plus Consensus, and clicking a response card opens the right tab with the full saved reply
+  instead of a blank screen; re-verified the ordinary live-send path (Free demo, 2 models)
+  still only builds tabs for models that can actually answer, unchanged; zero console errors
+  in either path.
 - [x] **IA cleanup (FIXED 2026-07-03, 13:55 CT): "Clear all keys" showed on every Settings tab,
   not just Keys.** With the roadmap still fully checked off, ran a fresh headless-Chromium
   session (Playwright + system chromium) driving Settings across all three tabs (Models &

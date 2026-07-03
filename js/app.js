@@ -780,8 +780,9 @@ function pruneTabs() {
     }
   });
 }
-function ensureTabs() {
+function ensureTabs(selList) {
   const tabBar = $('tabBar'), panels = $('tabPanels');
+  const list = selList || sels();
 
   // consensus tab respects the toggle
   if (!cfg.consensus) {
@@ -789,7 +790,7 @@ function ensureTabs() {
     if (activeTab === 'consensus') activeTab = null;
   }
 
-  sels().forEach(sel => {
+  list.forEach(sel => {
     if ($('tab_' + sel.id)) return;
     const p = PROVIDERS[sel.provider];
     const dotColor = p?.color || '#888';
@@ -837,7 +838,7 @@ function ensureTabs() {
       `<div id="consensus-status">Consensus appears here after all models respond</div></div></div>`;
     panels.appendChild(panel);
   }
-  if ((!activeTab || !$('tab_' + activeTab)) && sels().length) switchTab(sels()[0].id);
+  if ((!activeTab || !$('tab_' + activeTab)) && list.length) switchTab(list[0].id);
 }
 function switchTab(id) {
   activeTab = id;
@@ -3367,7 +3368,11 @@ function restoreThread(id) {
   currentThread = t;
   buildChips();
   hideGreeting();
-  ensureTabs();
+  // Build tabs for every model this thread actually talked to, not just the ones
+  // sels() currently considers "answering" — a restored chat can reference a
+  // provider the browser no longer has a key for (cleared keys, new device,
+  // imported history), and its past replies should still be readable.
+  ensureTabs(cfg.selections);
   const lastTurn = (t.turns || []).length > 0 ? t.turns[t.turns.length - 1] : null;
   (t.turns || []).forEach(turn => {
     (t.selections || []).forEach(sel => {

@@ -4,6 +4,18 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 116,
+    title: 'Fixed restored chats losing their per-model tabs and going blank',
+    ts: '2026-07-03T21:53:00.000Z',
+    items: [
+      'With the roadmap fully checked off, seeded a synthetic multi-model consensus thread straight into history and drove a real headless-Chromium session to check the restore path, since it has been a repeat source of real bugs in recent passes',
+      'Found: reopening a saved chat only ever showed a working per-model tab (Claude, Gemini, ChatGPT...) if the current browser still had a live API key for that provider - restoring history builds its tab bar from the same currently-answering-models list used for sending new messages, not from who actually answered in that saved chat',
+      'This is a realistic scenario, not an edge case: clearing keys, switching devices, or importing a backup before re-adding keys are all things the app explicitly supports elsewhere. When it happened, clicking a model\'s "Full reply" card silently blanked the entire consensus view with no way back except starting a new chat',
+      'Fixed by having restored chats build tabs for every model that thread actually talked to, independent of which providers currently have keys configured. Live sending is unaffected - it still only creates tabs for models that can actually answer',
+      'Verified in headless Chromium: a restored 3-model consensus thread with zero configured keys now shows all three model tabs plus Consensus, and clicking through from the response cards opens the right tab with the full saved reply instead of a blank screen',
+    ],
+  },
+  {
     v: 115,
     title: 'Fixed shared consensus links silently failing to (re)open',
     ts: '2026-07-03T20:57:00.000Z',
