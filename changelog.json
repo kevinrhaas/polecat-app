@@ -1,6 +1,15 @@
 {
-  "updated": "2026-07-03 02:39 CT",
+  "updated": "2026-07-03 04:39 CT",
   "entries": [
+    {
+      "date": "2026-07-03",
+      "time": "04:39 CT",
+      "title": "Tidied up the model reorder buttons",
+      "items": [
+        "The little up/down arrows for reordering your models in Settings were plain text characters instead of proper icons -- the one spot left over from an earlier redesign",
+        "Swapped in crisp SVG chevrons that match every other icon in the app"
+      ]
+    },
     {
       "date": "2026-07-03",
       "time": "02:39 CT",

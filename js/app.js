@@ -50,6 +50,8 @@ const CHECK_SM_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none
 const EXPAND_SVG  = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>`;
 const CROSS_SM_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 const CLOCK_SM_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>`;
+const CHEVRON_UP_SM_SVG = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg>`;
+const CHEVRON_DOWN_SM_SVG = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>`;
 const DOT_SM_SVG  = `<svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>`;
 
 const DEFAULT_TITLE = document.title;
@@ -2770,8 +2772,8 @@ function renderSelList() {
     const row = el('div', 'sel-row' + (ready ? '' : ' needs-key'));
     row.innerHTML =
       `<div class="sel-move">` +
-      `<button class="sel-mv" title="Move up" aria-label="Move up"${idx === 0 ? ' disabled' : ''}>&#9650;</button>` +
-      `<button class="sel-mv" title="Move down" aria-label="Move down"${idx === allSels.length - 1 ? ' disabled' : ''}>&#9660;</button>` +
+      `<button class="sel-mv" title="Move up" aria-label="Move up"${idx === 0 ? ' disabled' : ''}>${CHEVRON_UP_SM_SVG}</button>` +
+      `<button class="sel-mv" title="Move down" aria-label="Move down"${idx === allSels.length - 1 ? ' disabled' : ''}>${CHEVRON_DOWN_SM_SVG}</button>` +
       `</div>` +
       `<span class="sel-dot" style="background:${p.color}"></span>` +
       `<span class="sel-name">${escapeHtml(p.short)}</span>` +

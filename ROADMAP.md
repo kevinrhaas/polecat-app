@@ -310,6 +310,24 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **Icon-consistency polish (2026-07-03, 04:39 CT): model reorder buttons used raw
+  Unicode triangles instead of the app's SVG icon language.** With the roadmap still fully
+  checked off, ran a fresh interactive headless-Chromium audit (desktop + 390px mobile,
+  light + dark, welcome flow, Keys tab, Models & Consensus tab with 2 models added, Browse
+  all models, Test models) instead of another code-only sweep -- everything held up
+  (zero console errors, graceful "Couldn't load"/CORS-blocked states from this sandbox's
+  network restrictions, correct light/dark rendering) except one visual inconsistency: the
+  per-model move-up/move-down buttons in Settings -> Models & Consensus (`js/app.js`
+  `renderSelList`, `.sel-mv`) rendered as raw HTML entities `&#9650;`/`&#9660;` (tiny
+  browser-default triangles at `font-size: 7px`), the only spot left using a plain glyph
+  instead of the app's consistent 24x24 `currentColor`/~2px-stroke SVG icon set that EPIC 3
+  established everywhere else (copy/share/expand/close/etc.). Added two small SVG chevrons
+  (`CHEVRON_UP_SM_SVG`/`CHEVRON_DOWN_SM_SVG`, matching the existing `EXPAND_SVG`/
+  `CHECK_SM_SVG` sizing convention) and swapped them in; updated `.sel-mv` (`css/
+  styles.css`) to flex-center the SVG instead of sizing a text glyph. No behavior change --
+  same buttons, same disabled/hover states, same click handlers. Verified in headless
+  Chromium at both viewport sizes and both themes: crisp chevrons, correct disabled dimming
+  on the first/last row, zero console errors.
 - [x] **Robustness pass (2026-07-03, 02:39 CT): app could crash if a saved selection
   referenced an unknown provider.** With the roadmap still fully checked off, ran a
   fresh headless-Chromium session (Playwright + system chromium) exercising the empty

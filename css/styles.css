@@ -525,7 +525,7 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .sel-perf-note { font-size: 10px; padding-left: 17px; color: var(--text-3); line-height: 1.3; }
 /* reorder arrows */
 .sel-move { display: flex; flex-direction: column; gap: 0; flex-shrink: 0; }
-.sel-mv { background: none; border: none; cursor: pointer; color: var(--text-3); font-size: 7px; line-height: 1.2; padding: 1px 3px; border-radius: 3px; }
+.sel-mv { display: flex; align-items: center; justify-content: center; background: none; border: none; cursor: pointer; color: var(--text-3); padding: 1px 3px; border-radius: 3px; }
 .sel-mv:hover:not(:disabled) { color: var(--text-1); background: var(--surface-3); }
 .sel-mv:disabled { opacity: .22; cursor: default; }
 /* arbiter badge button */

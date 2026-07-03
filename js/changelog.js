@@ -4,6 +4,15 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 103,
+    title: 'Tidied up the model reorder buttons',
+    ts: '2026-07-03T09:39:00.000Z',
+    items: [
+      'The little up/down arrows for reordering your models in Settings were plain text characters instead of proper icons -- the one spot left over from an earlier redesign',
+      'Swapped in crisp SVG chevrons that match every other icon in the app',
+    ],
+  },
+  {
     v: 102,
     title: 'Hardened against a rare crash from a stale saved model',
     ts: '2026-07-03T07:39:00.000Z',
