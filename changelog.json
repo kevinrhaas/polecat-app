@@ -1,6 +1,15 @@
 {
-  "updated": "2026-07-02 14:53 CT",
+  "updated": "2026-07-02 22:29 CT",
   "entries": [
+    {
+      "date": "2026-07-02",
+      "time": "22:29 CT",
+      "title": "Fixed leftover template junk after regenerating a response",
+      "items": [
+        "Regenerating a single model's answer (the retry button on any response) could leave stray template markers like <|start|> or <s> in the text on some free-demo models",
+        "That leftover text was also feeding into the next consensus/agreement analysis, not just the display -- both are now cleaned the same way the normal response path already was"
+      ]
+    },
     {
       "date": "2026-07-02",
       "time": "14:53 CT",

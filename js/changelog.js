@@ -4,6 +4,15 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 100,
+    title: 'Fixed leftover template junk after regenerating a response',
+    ts: '2026-07-03T03:29:00.000Z',
+    items: [
+      'Regenerating a single model\'s answer (the retry button on any response) could leave stray template markers like <|start|> or <s> in the text on some free-demo models',
+      'That leftover text was also feeding into the next consensus/agreement analysis, not just the display -- both are now cleaned the same way the normal response path already was',
+    ],
+  },
+  {
     v: 99,
     title: 'Consensus flow polish: grammar fix + keyboard focus rings',
     ts: '2026-07-02T19:53:00.000Z',

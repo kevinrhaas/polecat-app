@@ -340,6 +340,22 @@ pass, never a jarring rewrite, never regress:**
   other emoji/inconsistent-icon or missing-aria-label issues found on this pass. Flagging
   here so the next run knows the roadmap is caught up and should either open a new epic
   or do another best-practice audit.
+- [x] **Bug fix pass (2026-07-02, 22:29 CT): regenerate skipped template-token cleanup.**
+  With the roadmap still fully checked off, did a fresh code read of the response-streaming
+  paths instead of another cosmetic audit. Found: `cleanModelText()` (`js/app.js` ~893) strips
+  chat-template leakage (`<|start|>`, `<|im_start|>`, `<|eot_id|>`, `<s>`/`</s>`) that some
+  free-demo/self-hosted models emit, and is applied on every response path (`streamTo`,
+  `getSilentText`, `streamToConsensus`) EXCEPT the per-model regenerate button's handler
+  (`regenModel`, ~1018) -- its streaming loop and final text were never cleaned. Beyond the
+  cosmetic issue, the uncleaned text also landed in `results[sel.id]`, which feeds the NEXT
+  consensus/arbitration run's agreement computation and provenance -- so a regenerated answer
+  could silently pollute the cross-model agreement analysis, not just its own display. Fixed by
+  cleaning inside the streaming loop and before `finishBubble`/`co.push`/`results[sel.id]`,
+  matching the existing pattern in `streamTo`. Considered also porting `streamTo`'s
+  Stop-mid-stream handling into `regenModel` for symmetry, but confirmed the Stop button/
+  `_runCtrl` abort controller is only wired up during `sendAll()`'s multi-model run, not during
+  a single-model regenerate -- so that branch would have been dead code; left `regenModel`'s
+  existing (simpler) catch block alone rather than adding unreachable complexity.
 - [x] **Polish pass (2026-07-02, 14:53 CT): consensus flow explainer grammar bug +
   keyboard focus rings.** With the roadmap still fully checked off, ran a targeted
   exploration of the Models & Consensus tab and provenance panel. Found and fixed: (1)

@@ -1054,7 +1054,8 @@ async function regenModel(sel, pair) {
   bubble.innerHTML = '';
   try {
     const gen = makeGen(sel, co, cfg);
-    for await (const chunk of gen) { full += chunk; bubble.innerHTML = renderMarkdown(full); }
+    for await (const chunk of gen) { full += chunk; bubble.innerHTML = renderMarkdown(cleanModelText(full)); }
+    full = cleanModelText(full);
     finishBubble(newPair, full);
     if (full) {
       setMsgTime(newPair, performance.now() - t0);
