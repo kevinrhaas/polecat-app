@@ -4,6 +4,15 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 102,
+    title: 'Hardened against a rare crash from a stale saved model',
+    ts: '2026-07-03T07:39:00.000Z',
+    items: [
+      'If a model in your saved setup ever referenced a provider that no longer exists (an old import, a corrupted save), the whole app could throw a blank-feeling failure instead of just showing that one model gracefully',
+      'Found this with a fresh headless-browser audit of the app\'s error handling, not from a user report -- five render paths (model chips, tabs, the "Building consensus" progress list, the consensus sources bar, and "Test models") now fall back to a neutral gray dot instead of crashing',
+    ],
+  },
+  {
     v: 101,
     title: 'Fixed sidebar nudges showing up for everyone, always',
     ts: '2026-07-03T05:46:00.000Z',

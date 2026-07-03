@@ -310,6 +310,29 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **Robustness pass (2026-07-03, 02:39 CT): app could crash if a saved selection
+  referenced an unknown provider.** With the roadmap still fully checked off, ran a
+  fresh headless-Chromium session (Playwright + system chromium) exercising the empty
+  state, sidebar, settings, and light/dark/mobile -- all looked clean -- then dug into
+  `js/app.js` for defensive gaps around `PROVIDERS[sel.provider]` lookups, since one spot
+  (`renderSelList`) already guarded with `if (!p) return;` while others didn't, suggesting
+  an inconsistency rather than a deliberate invariant. Confirmed the gap is real: with a
+  saved provider key + a selection referencing a provider id not in the `PROVIDERS`
+  catalog (e.g. a stale id from an old import, or a future catalog change), five
+  unguarded `.color`/`.models` accesses threw a synchronous, uncaught `TypeError`
+  ("Cannot read properties of undefined (reading 'color')") from inside core render
+  paths -- `buildChips()` (composer chips), `ensureTabs()` (response tabs),
+  `refreshConsensusProgress()` (the "Building consensus" list), `consensusSourcesEl()`
+  (the consensus sources bar), and `testAllModels()` -- breaking the composer for that
+  session (verified: the "no models selected" hint and Add-model control silently
+  vanished mid-render). All five now fall back to a neutral gray dot (`'#888'`, matching
+  the fallback already used in ~8 other spots in the same file) instead of crashing.
+  Verified via a real headless-Chromium repro: staged a provider key + selection for a
+  nonexistent provider id, confirmed the crash on the pre-fix code (console:
+  "Cannot read properties of undefined (reading 'color')", composer chip row missing),
+  then confirmed a clean render with zero console errors after the fix (composer shows
+  a gray-dot fallback chip for the unrecognized model, everything else intact). No
+  behavior change for any valid/current selection.
 - [x] **BUG (FIXED 2026-07-03, 00:46 CT): sidebar nudge banners were always visible to
   everyone, not conditional at all.** With the roadmap still fully checked off, drove a
   fresh headless-Chromium session (Playwright + system chromium) to visually audit the

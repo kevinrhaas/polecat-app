@@ -693,7 +693,7 @@ function buildChips() {
     if (haveImages) cls += vision ? ' has-vision' : ' no-vision';
     const chip = el('span', cls);
     chip.id = 'chip_' + sel.id;
-    chip.style.setProperty('--c', p.color);
+    chip.style.setProperty('--c', p?.color || '#888');
     chip.title = st && st.ok === false ? 'Last test failed: ' + (st.error || 'unavailable')
       : selectionLabel(sel) + (vision ? ' · reads images' : ' · text only (no image support)');
     const visionMark = vision ? `<span class="m-chip-vision" title="Reads images">${EYE_SVG}</span>`
@@ -779,13 +779,14 @@ function ensureTabs() {
   sels().forEach(sel => {
     if ($('tab_' + sel.id)) return;
     const p = PROVIDERS[sel.provider];
+    const dotColor = p?.color || '#888';
     const btn = el('button', 'tab');
     btn.id = 'tab_' + sel.id; btn.dataset.svc = sel.id;
     btn.setAttribute('role', 'tab'); btn.setAttribute('aria-selected', 'false');
     btn.setAttribute('aria-controls', 'panel_' + sel.id);
     btn.onclick = () => switchTab(sel.id);
     btn.innerHTML =
-      `<span class="tab-dot" id="tdot_${sel.id}" style="background:${p.color};--dot-c:${p.color}"></span>` +
+      `<span class="tab-dot" id="tdot_${sel.id}" style="background:${dotColor};--dot-c:${dotColor}"></span>` +
       `<div class="tab-inner"><span class="tab-label">${escapeHtml(selectionLabel(sel))}</span><span class="tab-stance" id="tstance_${sel.id}" hidden></span></div>`;
     tabBar.insertBefore(btn, $('tab_consensus') || null);
 
@@ -1409,7 +1410,7 @@ function refreshConsensusProgress() {
     const st = runStatus[s.id];
     const prevText = streamPreviews[s.id] || '';
     return `<li class="cp-model cp-${st}">` +
-      `<div class="cp-row"><span class="cp-dot" style="--c:${PROVIDERS[s.provider].color}"></span>` +
+      `<div class="cp-row"><span class="cp-dot" style="--c:${PROVIDERS[s.provider]?.color || '#888'}"></span>` +
       `<span class="cp-name">${escapeHtml(selectionLabel(s))}</span><span class="cp-stat">${STAT_SVG[st] || ''}</span></div>` +
       `<span class="cp-preview${prevText ? ' has-text' : ''}" id="cprev_${s.id}">${escapeHtml(prevText)}</span>` +
       `</li>`;
@@ -1448,7 +1449,7 @@ function consensusSourcesEl(arbiterSel) {
     const isArb = s.id === arbId;
     const label = selectionLabel(s);
     return `<button class="cs-chip${isArb ? ' cs-arbiter' : ''}" data-tab="${escapeHtml(s.id)}" ` +
-      `style="--c:${PROVIDERS[s.provider].color}" ` +
+      `style="--c:${PROVIDERS[s.provider]?.color || '#888'}" ` +
       `title="${isArb ? 'Wrote the final answer. ' : ''}Open ${escapeHtml(label)}'s full answer">` +
       `<span class="cs-dot"></span>${escapeHtml(label)}${isArb ? ' ' + ARB_ICON : ''}</button>`;
   }).join('');
@@ -2551,7 +2552,7 @@ async function testAllModels() {
   const seen = new Set(), targets = [];
   const add = (provider, model) => { const k = statusKey(provider, model); if (!seen.has(k)) { seen.add(k); targets.push({ provider, model }); } };
   (cfg.selections || []).forEach(s => { if (keyed.includes(s.provider)) add(s.provider, s.model); });
-  keyed.forEach(pid => PROVIDERS[pid].models.forEach(m => add(pid, m.value)));
+  keyed.forEach(pid => PROVIDERS[pid]?.models.forEach(m => add(pid, m.value)));
   if (!targets.length) return;
   toast(`Testing ${targets.length} models…`);
   targets.forEach(t => { cfg.modelStatus[statusKey(t.provider, t.model)] = { testing: true }; });
