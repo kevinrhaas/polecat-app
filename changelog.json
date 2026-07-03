@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-03 09:04 CT",
+  "updated": "2026-07-03 10:10 CT",
   "entries": [
+    {
+      "date": "2026-07-03",
+      "time": "10:10 CT",
+      "title": "Fixed the Models & Consensus flow pills showing duplicate labels",
+      "items": [
+        "The pill row at the top of Settings (\"who answers -> who writes the final answer\") labelled every model from the same provider identically, e.g. three free demo models all just said \"Free demo\", \"Free demo\", \"Free demo\"",
+        "Found while adding several models from the same provider and checking the at-a-glance flow that's meant to make the multi-model story legible",
+        "Each pill now shows the model name too (\"Free demo - Llama 3.3 70B\", \"Free demo - Gemma 4 31B\", ...), matching the labels already used on composer chips and response tabs"
+      ]
+    },
     {
       "date": "2026-07-03",
       "time": "09:04 CT",

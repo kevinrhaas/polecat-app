@@ -4,6 +4,16 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 109,
+    title: 'Fixed the Models & Consensus flow pills showing duplicate labels',
+    ts: '2026-07-03T15:10:00.000Z',
+    items: [
+      'The pill row at the top of Settings ("who answers -> who writes the final answer") labelled every model from the same provider identically, e.g. three free demo models all just said "Free demo", "Free demo", "Free demo"',
+      'Found while adding several models from the same provider and checking the at-a-glance flow that\'s meant to make the multi-model story legible',
+      'Each pill now shows the model name too ("Free demo - Llama 3.3 70B", "Free demo - Gemma 4 31B", ...), matching the labels already used on composer chips and response tabs',
+    ],
+  },
+  {
     v: 108,
     title: 'Settings no longer re-pitches the free demo once it\'s already on',
     ts: '2026-07-03T14:04:00.000Z',

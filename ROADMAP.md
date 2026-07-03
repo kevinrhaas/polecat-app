@@ -310,6 +310,30 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 10:10 CT): Models & Consensus flow pills showed duplicate,
+  indistinguishable labels when 2+ selected models shared a provider.** With the roadmap
+  still fully checked off, ran a fresh headless-Chromium session (Playwright + system
+  chromium, desktop + mobile) driving Settings -> Models & Consensus instead of another
+  code-only sweep: added three Free demo models (Llama 3.3 70B, Gemma 4 31B, GPT-OSS 120B)
+  via the picker and screenshotted the flow-pill row at the top of the tab — the exact
+  "who answers -> who writes the final answer -> Consensus" summary that the whole
+  "Rethink the Models + Consensus screens" theme (see DO THIS NEXT item 3, now closed) was
+  built to make legible at a glance. All three answerer pills read identically: "Free demo",
+  "Free demo", "Free demo" — zero information about which distinct models were selected.
+  Root cause: `consensusFlowPills()` (`js/app.js` ~3006) labelled each answerer pill with
+  `PROVIDERS[s.provider].short` (the provider's short name only), while every other place
+  in the app that lists selections side-by-side — composer chips (`buildChips()`), response
+  tabs (`ensureTabs()`), and the flow row's own arbiter/final-answer pill — already use
+  `selectionLabel(s)` ("Provider · Model", e.g. "Free demo · Llama 3.3 70B"), so this was an
+  inconsistency, not a deliberate design choice. This is a realistic scenario, not an edge
+  case: the free demo's own onboarding starts users with 2 same-provider models, and
+  cost-conscious users comparing several free models on one provider (OpenRouter, Groq, HF)
+  is a core use case. Fixed by swapping `p.short` for `selectionLabel(s)` (one line). Verified
+  in a real headless-Chromium session (desktop + 390px mobile, light theme, after reordering
+  models and toggling "Final answer" on a different row): pills now read "Free demo · Gemma 4
+  31B", "Free demo · Llama 3.3 70B", "Free demo · GPT-OSS 120B", update live with reorder/
+  final-answer changes, and wrap cleanly on mobile with no overflow; zero console errors
+  throughout the session.
 - [x] **BUG (FIXED 2026-07-03, 09:04 CT): the Keys tab's "No key? Try it free." card kept
   pitching the free demo even after it was already active.** With the roadmap still fully
   checked off, ran a fresh headless-Chromium session (Playwright + system chromium, desktop

@@ -3005,7 +3005,7 @@ function renderKeys() {
 // and never drifts out of sync (single source of truth for the markup).
 function consensusFlowPills(answerers, arbSel) {
   return `<div class="welcome-flow cs-flow">` +
-      answerers.map(s => { const p = PROVIDERS[s.provider]; return p ? `<span class="wm-pill" style="--c:${p.color}">${escapeHtml(p.short)}</span>` : ''; }).join('') +
+      answerers.map(s => { const p = PROVIDERS[s.provider]; return p ? `<span class="wm-pill" style="--c:${p.color}">${escapeHtml(selectionLabel(s))}</span>` : ''; }).join('') +
       `<span class="wm-arrow">&rarr;</span>` +
       `<span class="wm-pill wm-consensus">${escapeHtml(arbSel ? selectionLabel(arbSel) : 'Auto pick')}${arbSel && arbSel.arbiterOnly ? '<span class="wm-syn-tag"> \xb7 synthesis only</span>' : ''}</span>` +
       `<span class="wm-arrow">&rarr;</span>` +
