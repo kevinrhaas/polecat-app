@@ -61,6 +61,22 @@ jobs:
             You are autonomously improving **Polecat** and shipping the results live.
             Operator focus for this run (may be empty): "${{ github.event.inputs.focus }}"
 
+            ── RUN CONTEXT — READ FIRST (this is a SINGLE-SHOT, NON-INTERACTIVE CI JOB) ──
+            You are running headless inside a GitHub Action. NOTHING will resume you:
+            there is no user to reply to, no next turn, and no wakeup will ever fire.
+            Therefore, in THIS one invocation you MUST:
+              - Do ALL work synchronously and finish by committing + pushing (or, if
+                nothing is worth shipping, exit cleanly having made no commit).
+              - NEVER end your turn to "wait" for anything. Do NOT say things like
+                "I'll pause here and resume when X reports back" — there is no resume.
+              - Do NOT schedule wakeups/timers or otherwise defer work to later.
+              - Do NOT spawn background/async sub-agents and then wait on them. If you
+                use a sub-agent at all, run it and BLOCK for its result within this
+                invocation; never hand off and stop. When in doubt, just do the work
+                yourself directly and inline.
+              - Treat reaching the end without a commit (when a worthwhile change was
+                possible) as a FAILURE. Budget your turns to leave room to commit.
+
             ── PART 1 — THE APP (this checkout, repo kevinrhaas/polecat-app) ──
             Static site: vanilla HTML/CSS/JS, no build step, no frameworks. Files:
             index.html, css/styles.css, js/{app,providers,config,arbitration,ui}.js,
