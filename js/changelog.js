@@ -4,6 +4,16 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 112,
+    title: 'Fixed a blurry Keyboard shortcuts panel',
+    ts: '2026-07-03T17:56:00.000Z',
+    items: [
+      'Opening "Shortcuts" from the sidebar menu rendered the whole panel out of focus - hard to read the key combos and their descriptions',
+      'Root cause: the sidebar\'s own darkening/blur layer sits above the shortcuts panel in stacking order, and the panel wasn\'t closing the sidebar first the way Settings already does',
+      'Now opening Shortcuts closes the sidebar first, same as Settings, so the panel is always crisp',
+    ],
+  },
+  {
     v: 111,
     title: 'Improved low-contrast text in a couple of spots',
     ts: '2026-07-03T17:00:00.000Z',

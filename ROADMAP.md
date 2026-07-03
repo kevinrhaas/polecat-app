@@ -310,6 +310,28 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 12:56 CT): the Keyboard shortcuts panel rendered blurry when opened
+  from the sidebar.** With the roadmap still fully checked off, ran a fresh headless-Chromium
+  session (Playwright + system chromium) instead of another code-only sweep, opened the sidebar
+  and clicked "Shortcuts", and screenshotted the result: every line in the panel — the title, the
+  section labels, the kbd keys, the descriptions — rendered visibly out of focus, unlike every
+  other modal (Settings, Compare, Export) which stayed crisp under the same audit. A pixel-level
+  crop confirmed genuine Gaussian blur on the text edges, not a color-contrast issue (a different
+  bug class than the low-contrast fix directly below this one). Re-tested opening the same panel
+  via the `?` keyboard shortcut with the sidebar closed: perfectly crisp — isolating the bug to
+  the sidebar-triggered path specifically. Root cause: `.sidebar-backdrop` (`css/styles.css`) sits
+  at `z-index: 240` and the sidebar itself at `250`, both above the shortcuts panel's `.backdrop`
+  at `z-index: 200` — the exact same stacking bug already found and fixed for Settings (see the
+  `openConfig()` comment: "opening Settings from the sidebar's own link left its higher z-index
+  backdrop covering the modal"), just never applied to the Shortcuts link. `openConfig()` and
+  `startFreeDemo()` both already call `closeSidebar()` before opening their overlay; `openKbd()`
+  (`js/app.js`) was the one remaining sidebar-launched overlay using the generic `.backdrop` class
+  that didn't. Export and What's New were checked too but use a different overlay class
+  (`.exp-overlay`, `z-index: 500`) that already sits above the sidebar, so they were never
+  affected. Fixed with the same one-line `closeSidebar()` call at the top of `openKbd()`. Verified
+  in headless Chromium: the panel now renders pixel-crisp when opened from the sidebar, the
+  sidebar itself closes (matching the Settings/free-demo precedent), and the `?`-key path and
+  Esc-to-close both still work unchanged; zero console errors.
 - [x] **POLISH (FIXED 2026-07-03, 12:00 CT): low-contrast text in the empty-state hint and the
   keyboard-shortcuts panel.** With the roadmap still fully checked off, ran a headless-Chromium
   audit pass (Playwright + system chromium) across the empty state, sidebar, settings tabs, and

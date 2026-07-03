@@ -240,7 +240,11 @@ function closeShareModal() {
   if (modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
   if (location.hash.startsWith('#share=')) history.replaceState(null, '', location.pathname);
 }
-function openKbd() { const m = $('kbdModal'); if (m) { m.classList.add('open'); m.removeAttribute('aria-hidden'); } }
+function openKbd() {
+  closeSidebar();   // same fix as openConfig(): the sidebar's own higher z-index
+                     // backdrop was blurring this modal when opened from its link
+  const m = $('kbdModal'); if (m) { m.classList.add('open'); m.removeAttribute('aria-hidden'); }
+}
 function closeKbd() { const m = $('kbdModal'); if (m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); } }
 // Copy the full exchange — question + each model's answer + consensus — as markdown.
 // Useful for pasting into docs, Slack, Notion, etc.
