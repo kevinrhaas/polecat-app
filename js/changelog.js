@@ -4,6 +4,16 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 107,
+    title: 'Fixed toast messages overflowing off-screen on phones',
+    ts: '2026-07-03T13:08:00.000Z',
+    items: [
+      'Longer status messages (e.g. "Free demo ready", the synthesis-only warning) used to render as a single unbreakable line, so on a narrow phone screen the pill ran off both edges of the screen and lost its rounded shape',
+      'Found while checking the free-demo flow on a 390px-wide mobile viewport',
+      'Toasts now wrap and stay within the screen on any device, while short toasts like "Copied" still show as a compact pill',
+    ],
+  },
+  {
     v: 106,
     title: 'Fixed a misleading message when adding a free demo model',
     ts: '2026-07-03T12:06:00.000Z',

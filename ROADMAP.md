@@ -310,6 +310,29 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 08:08 CT): toast messages could overflow off both edges
+  of the screen on mobile.** With the roadmap still fully checked off, ran a fresh
+  headless-Chromium session (Playwright + system chromium, touch-emulated 390px mobile
+  context) exercising the free-demo flow instead of another code-only sweep. Measured
+  `#toast`'s `getBoundingClientRect()` right after `startFreeDemo()`'s "Free demo ready —
+  pick a question below or type your own" toast fired: width 419px against a 390px
+  viewport, positioned from x:-14.7 to x:404.7 — i.e. overflowing by ~15px on both the
+  left and right edges simultaneously (centered via `left: 50%; transform:
+  translateX(-50%)`), which clips off the pill's rounded corners and side padding on
+  both sides. Root cause: `.toast` (`css/styles.css`) set `white-space: nowrap` with no
+  `max-width`, so any message long enough to exceed the viewport at 13px/500-weight font
+  simply ran past both screen edges — affects several real toasts, not just the demo
+  one, e.g. the iOS install-hint ("Tap the Share icon, then \"Add to Home Screen\"", 6s
+  duration) and the synthesis-only-guard warning. Fixed by adding `max-width: min(420px,
+  calc(100vw - 32px))` and switching `white-space: nowrap` to `normal` + `text-align:
+  center`, so long messages wrap onto 2-3 lines and stay fully on-screen at any viewport
+  width; `border-radius: 100px` still renders correctly on the taller wrapped box since
+  CSS auto-caps corner radius at half the box's own height. Verified in headless
+  Chromium: the same free-demo toast now measures 195px wide, fully within the 390px
+  viewport, rendered as a proper multi-line pill; on desktop (1400px), a short toast
+  ("Copied") stays a compact single-line pill and a long one (the synthesis-only
+  warning) wraps at the new 420px cap instead of stretching edge to edge — zero visual
+  regression to the common case, zero console errors.
 - [x] **BUG (FIXED 2026-07-03, 07:06 CT): adding a Free demo model showed a misleading
   "add a key" toast.** With the roadmap still fully checked off, ran another real
   headless-Chromium session (Playwright + system chromium) driving Settings -> Models &
