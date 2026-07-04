@@ -325,6 +325,19 @@ pass, never a jarring rewrite, never regress:**
       Replaced both with small stroke SVGs matching the page's existing icon convention (13px,
       `currentColor`, `aria-hidden`). Verified in a real headless-Chromium session: both render
       crisply in place with no layout shift, `node scripts/validate.mjs` passes.
+- [x] **POLISH (FIXED 2026-07-04, 11:47 CT): axe-core audit found two real a11y bugs in the
+      comparison table.** Ran an automated axe-core scan (desktop + mobile) instead of another
+      manual sweep. Found: (1) `.compare-wrap` (the horizontally-scrolling wrapper around the
+      "Polecat vs. a single-model chat" table) had no `tabindex`, so keyboard/screen-reader users
+      could never scroll it to see the Polecat column — the same bug class fixed on the examples
+      carousel earlier. Added `tabindex="0"`, `role="region"`, an `aria-label`, and a focus ring.
+      (2) The table's blank corner `<th scope="col">` had no discernible text — added a
+      visually-hidden "Feature" label via a new `.sr-only` utility. Left the examples carousel's
+      `.pcx-clabel` contrast finding alone, per the prior pass's explicit call that the `.pcx-*`
+      block is the verified, do-not-rewrite component. Verified with a real headless-Chromium +
+      playwright-core session: axe-core violations drop from 2 fixable to the one pre-existing
+      carousel note, arrow keys move the table's `scrollLeft`, zero visual change, zero console
+      errors, `node scripts/validate.mjs` passes.
 
 ---
 
