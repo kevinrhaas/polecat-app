@@ -317,6 +317,27 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-04, 02:23 CT): attaching a Word (.docx) file never confirmed its text
+  was extracted, unlike PDF/PPTX/XLSX.** With the roadmap and backlog fully checked off, drove a
+  real headless-Chromium session (Puppeteer + system chromium) attaching real test files of all
+  four supported document types (a generated PDF, DOCX, PPTX, XLSX) instead of another code-only
+  sweep. Found: the PDF, PPTX, and XLSX attachment chips all show a confirmation count once
+  extraction finishes ("2 pages extracted", "1 slides extracted", "1 sheets extracted") in both
+  the visible chip label and its tooltip, and the same counts are passed to every model as a type
+  hint ("PowerPoint presentation, 1 slides"). A DOCX attachment extracted its text via mammoth.js
+  correctly (confirmed the text was present and injected), but `renderAttachments()`'s
+  `metaLabel`/`tipText` branches (`js/app.js`) and `buildTextBlocks()`'s `typeHint` branch had no
+  `docType === 'docx'` case with a count, unlike its pptx/xlsx siblings — so the chip silently fell
+  through to the generic `fmtBytes(a.size)` label, identical to how an unrecognized file would
+  render, leaving a beginner with no confirmation their Word document was actually read (vs. just
+  attached as opaque bytes). Fixed by having `readDocxFile()` compute a paragraph count from the
+  extracted text (matching the existing `slideCount`/`sheetCount`/`pageCount` pattern) and adding
+  the matching `docType === 'docx'` branch in all three spots so it now reads "N paragraphs
+  extracted" everywhere a pptx/xlsx file would show its own count, and the model-facing type hint
+  becomes "Word document, N paragraphs" instead of a bare "Word document". Verified in a real
+  headless-Chromium session: all four file types now show a matching "N extracted" confirmation
+  label after upload, zero console errors, zero regression to PDF/PPTX/XLSX (their labels are
+  byte-for-byte identical to before).
 - [x] **POLISH (FIXED 2026-07-04, 00:38 CT): Settings modal left a big empty gap on short tabs
   (e.g. Support).** With the roadmap and backlog fully checked off, did a UI sweep of every
   Settings tab in a real headless-Chromium session (desktop + mobile, light + dark) instead of a

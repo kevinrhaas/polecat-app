@@ -428,11 +428,12 @@ async function readDocxFile(file, id) {
   const buf = await file.arrayBuffer();
   const result = await mammoth.extractRawText({ arrayBuffer: buf });
   let text = result.value || '';
+  const paragraphCount = text.split(/\n+/).map(s => s.trim()).filter(Boolean).length;
   const truncated = text.length > MAX_TEXT_CHARS;
   if (truncated) text = text.slice(0, MAX_TEXT_CHARS);
   return { id, name: file.name || 'document.docx',
     mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    kind: 'text', size: file.size, textContent: text, truncated, docType: 'docx' };
+    kind: 'text', size: file.size, textContent: text, truncated, paragraphCount, docType: 'docx' };
 }
 
 async function readXlsxFile(file, id) {
@@ -593,6 +594,7 @@ function renderAttachments() {
     const metaLabel = a.mime === 'application/pdf' && a.pageCount ? `${a.pageCount}p`
       : a.docType === 'pptx' && a.slideCount != null ? `${a.slideCount} slides`
       : a.docType === 'xlsx' && a.sheetCount != null ? `${a.sheetCount} sheets`
+      : a.docType === 'docx' && a.paragraphCount != null ? `${a.paragraphCount} paragraphs`
       : fmtBytes(a.size);
     const tipText = a.mime === 'application/pdf' && a.pageCount
       ? `${escapeHtml(a.name)} · ${a.pageCount} pages extracted${a.truncated ? ' (truncated)' : ''}`
@@ -600,6 +602,8 @@ function renderAttachments() {
       ? `${escapeHtml(a.name)} · ${a.slideCount} slides extracted${a.truncated ? ' (truncated)' : ''}`
       : a.docType === 'xlsx' && a.sheetCount != null
       ? `${escapeHtml(a.name)} · ${a.sheetCount} sheets extracted${a.truncated ? ' (truncated)' : ''}`
+      : a.docType === 'docx' && a.paragraphCount != null
+      ? `${escapeHtml(a.name)} · ${a.paragraphCount} paragraphs extracted${a.truncated ? ' (truncated)' : ''}`
       : `${escapeHtml(a.name)} · ${fmtBytes(a.size)}`;
     return `<div class="attach-file-chip" title="${tipText}">${DOC_ICON}<span class="afc-name">${escapeHtml(a.name)}</span><span class="afc-size">${metaLabel}</span>` +
       `<button class="at-x" data-id="${a.id}" title="Remove" aria-label="Remove ${escapeHtml(a.name)}">×</button></div>`;
@@ -1161,7 +1165,7 @@ function buildTextBlocks(textFiles) {
     // Type hint so every model understands the document kind
     let typeHint = '';
     if (tf.docType === 'pptx') typeHint = tf.slideCount != null ? `PowerPoint presentation, ${tf.slideCount} slides` : 'PowerPoint presentation';
-    else if (tf.docType === 'docx') typeHint = 'Word document';
+    else if (tf.docType === 'docx') typeHint = tf.paragraphCount != null ? `Word document, ${tf.paragraphCount} paragraphs` : 'Word document';
     else if (tf.docType === 'xlsx') typeHint = tf.sheetCount != null ? `Excel spreadsheet, ${tf.sheetCount} sheets` : 'Excel spreadsheet';
     else if (tf.mime === 'application/pdf') typeHint = tf.pageCount != null ? `PDF document, ${tf.pageCount} pages` : 'PDF document';
     const typeAttr = typeHint ? ` type="${typeHint}"` : '';

@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 123,
+    title: 'Word document attachments now confirm text was extracted',
+    ts: '2026-07-04T07:23:00.000Z',
+    items: [
+      'With the roadmap and backlog fully checked off, drove a real headless-Chromium session attaching real PDF, Word, PowerPoint, and Excel files instead of another code-only sweep',
+      'PDF, PowerPoint, and Excel attachments all confirm extraction with a count (e.g. "3 pages extracted", "5 slides extracted"), but a Word (.docx) attachment only ever showed its file size, identical to an unrecognized file - no way to tell its text was actually read',
+      'The Word extraction itself worked fine; the confirmation label was simply never wired up for that one file type. Added a paragraph count and used it consistently in the attachment chip, its tooltip, and the hint sent to each model, matching PDF/PPTX/XLSX',
+      'Verified all four file types in a real browser session: each attachment chip now reads a matching "N extracted" confirmation, zero console errors',
+    ],
+  },
+  {
     v: 122,
     title: 'Settings modal no longer leaves a big empty gap on short tabs',
     ts: '2026-07-04T05:38:00.000Z',
