@@ -4,6 +4,16 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 120,
+    title: 'Fixed the sidebar rendering dark and blurry behind Export/What\'s New/Compare',
+    ts: '2026-07-04T02:10:00.000Z',
+    items: [
+      'Drove a real headless-Chromium session in light theme and found that opening the sidebar, then Export, What\'s New, or the side-by-side Compare view left the sidebar open underneath - its higher z-index used to be the problem for Settings/Shortcuts (already fixed), but here it\'s the opposite: these overlays sit above the sidebar and their dark blurred backdrop tinted it, making a light-theme sidebar look broken and dark',
+      'Fixed by closing the sidebar first, the same pattern already used by Settings and Shortcuts',
+      'Verified in headless Chromium (light theme): opening Export or What\'s New from the sidebar now closes it cleanly first, zero console errors',
+    ],
+  },
+  {
     v: 119,
     title: 'Fixed a confusing tip that could appear on a failed consensus run',
     ts: '2026-07-04T01:09:00.000Z',

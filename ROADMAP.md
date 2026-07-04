@@ -317,6 +317,22 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 21:10 CT): opening Export, What's New, or Compare from the sidebar
+  left the sidebar rendered dark and blurry underneath, even in light theme.** With the roadmap
+  still fully checked off, ran a real headless-Chromium session (Playwright + system chromium) in
+  light theme, opened the sidebar, then clicked "What's new" — the modal itself rendered fine, but
+  the sidebar behind it was visibly dark (near-black background, light text), as if it had switched
+  to dark theme. Confirmed via a repro script that `data-theme` stayed `"light"` the whole time — it
+  wasn't a theme bug at all. Root cause: this is the mirror image of the earlier sidebar-stacking bug
+  (see the Shortcuts/Settings blur fixes above, where the sidebar's z-index sat ABOVE those modals'
+  backdrops and covered them) — here `.exp-overlay` (Export/What's New, z-index 500) and
+  `.compare-overlay` (Compare, z-index 1200) sit ABOVE the sidebar (z-index 250), so their dark,
+  blurred `::before` backdrop renders on top of a still-open sidebar and visually tints it dark
+  regardless of the active theme. `openConfig()` and `openKbd()` already call `closeSidebar()` first
+  for exactly this reason; `openExport()`, `openWhatsNew()`, and `openCompareModal()` never got the
+  same treatment. Fixed with the same one-line `closeSidebar()` call at the top of all three. Verified
+  in headless Chromium (light theme): opening Export or What's New from the sidebar now closes it
+  first and the modal's backdrop shows the correct light page behind it, zero console errors.
 - [x] **BUG (FIXED 2026-07-03, 20:09 CT): the one-time "tap a model tab" onboarding tip could fire
   on a FAILED consensus run, then never show again.** With the roadmap still fully checked off, ran
   a real headless-Chromium session (Playwright + system chromium) through the free-demo flow and the

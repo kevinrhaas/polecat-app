@@ -2317,6 +2317,8 @@ function buildCompareEntries() {
 // Each column is independently scrollable on desktop; stacks on mobile.
 function openCompareModal(entries) {
   if (!entries || entries.length < 2) { toast('Compare needs 2+ model responses'); return; }
+  closeSidebar();   // same fix as openConfig()/openKbd(): a still-open sidebar sits
+                     // under this overlay's backdrop and renders visibly darkened.
   const uid = Date.now().toString(36);
   const ov = el('div', 'compare-overlay');
   ov.setAttribute('role', 'dialog');
@@ -3146,6 +3148,8 @@ function deleteStrategy(id) {
 
 // ── Export / Import (pick what to include) ─────────────────────────────────
 function openExport() {
+  closeSidebar();   // same fix as openConfig()/openKbd(): a still-open sidebar sits
+                     // under this overlay's backdrop and renders visibly darkened.
   const ov = el('div', 'exp-overlay');
   ov.innerHTML =
     `<div class="exp-card">` +
@@ -3467,6 +3471,8 @@ function updateWhatsNewBadge() {
 }
 function openWhatsNew() {
   if (!_changelog || !(_changelog.entries || []).length) { toast('No changelog yet'); return; }
+  closeSidebar();   // same fix as openConfig()/openKbd(): a still-open sidebar sits
+                     // under this overlay's backdrop and renders visibly darkened.
   localStorage.setItem(CHANGELOG_SEEN_KEY, changelogLatest());
   updateWhatsNewBadge();
   const ov = el('div', 'exp-overlay');
