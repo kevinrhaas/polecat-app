@@ -338,6 +338,14 @@ pass, never a jarring rewrite, never regress:**
       playwright-core session: axe-core violations drop from 2 fixable to the one pre-existing
       carousel note, arrow keys move the table's `scrollLeft`, zero visual change, zero console
       errors, `node scripts/validate.mjs` passes.
+- [x] **POLISH (SHIPPED 2026-07-04, 12:54 CT): gave the "How consolidation works" flow diagram
+      subtle live motion**, acting on the "show, don't tell, product in motion" direction that
+      hadn't been touched since the section was built — the diagram explaining consensus was
+      itself completely static. Added three small CSS-only touches (staggered pulsing model dots,
+      a small dot traveling down/across the connecting line, a gentle breathing glow on the
+      Consensus card), all scoped to this one diagram and all respecting
+      `prefers-reduced-motion`. Verified in headless Chromium at desktop + 390px mobile: zero
+      console errors, no layout shift, `node scripts/validate.mjs` passes.
 
 ---
 
