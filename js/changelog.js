@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 119,
+    title: 'Fixed a confusing tip that could appear on a failed consensus run',
+    ts: '2026-07-04T01:09:00.000Z',
+    items: [
+      'Drove a real headless-Chromium session through the free demo and settings flows, then simulated a run where every model failed to respond (all keys missing/network blocked)',
+      'The one-time \'That\'s your synthesized answer - tap any model tab to read each one\'s individual response\' tip fired even when the run had failed and there was no synthesized answer to point at',
+      'Worse, the tip only ever shows once per browser (by design, so it doesn\'t nag returning users) - so if a first-time user\'s very first attempt happened to fail, they\'d permanently lose this onboarding moment for every future successful consensus',
+      'Fixed so the tip only shows after a real synthesized answer appears; verified it still appears correctly on success and stays silent on failure',
+    ],
+  },
+  {
     v: 118,
     title: 'Fixed a synthesis-only model being skipped with just one answering model',
     ts: '2026-07-03T23:43:00.000Z',

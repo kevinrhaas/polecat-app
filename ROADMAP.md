@@ -310,6 +310,28 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 20:09 CT): the one-time "tap a model tab" onboarding tip could fire
+  on a FAILED consensus run, then never show again.** With the roadmap still fully checked off, ran
+  a real headless-Chromium session (Playwright + system chromium) through the free-demo flow and the
+  actual send path, then specifically simulated a run where every model fails (all keys missing /
+  network blocked — a realistic first-run state, e.g. an ad blocker or firewall blocking the demo
+  proxy). Found: `maybeShowConsHint()` (`js/app.js`), the callout that teaches new users "That's your
+  synthesized answer — tap any model tab above to read each one's individual response," was called
+  unconditionally from `sendAll()` after `runConsensus()` resolved, with no check for whether the run
+  actually produced a synthesized answer or the "All models failed to respond — no consensus
+  available" error bubble. Beyond just being confusing copy on a failed run, this is a permanent loss:
+  the tip is gated by a `localStorage` flag so it only ever shows once per browser (by design, so
+  it doesn't nag returning users) — so a first-time user whose very first attempt happened to fail
+  (a very plausible first-run scenario) would silently lose this onboarding moment forever, even
+  though every later successful consensus would have been a valid time to show it. Fixed by having
+  `maybeShowConsHint()` check the just-rendered consensus pair for a `.msg-error` bubble (the exact
+  class `showConsensusStatic(text, isError)` renders for the failure path) and bail out before
+  setting the localStorage flag, so a failed first attempt leaves the hint armed for the next
+  successful one. Verified in headless Chromium with two scenarios: a real failed run (network
+  blocked) now shows zero copies of the callout and leaves the flag unset, while a mocked successful
+  streamed consensus (via `page.route`) still shows the callout exactly as before, anchored under
+  the Consensus tab with full contribution bars, "Responses at a glance," and follow-up chips intact
+  — no regression to the success path. `node scripts/validate.mjs` passes.
 - [x] **BUG (FIXED 2026-07-03, 18:43 CT): a "Synthesis only" (arbiter-only) final-answer model was
   silently skipped whenever only ONE model actually answered.** With the roadmap still fully
   checked off, re-examined `js/arbitration.js` right after the previous run's `runChain()` fix for

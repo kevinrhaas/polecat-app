@@ -1633,6 +1633,12 @@ function showConsensusStatic(text, isError = false) {
 function maybeShowConsHint() {
   if (localStorage.getItem(CONS_HINT_KEY)) return;
   const tab = $('tab_consensus'); if (!tab) return;
+  // Don't burn the one-time hint on a failed run ("All models failed to respond") —
+  // there's no synthesized answer to point at yet, and the localStorage flag below
+  // means a first-attempt failure would otherwise silently skip this teaching moment
+  // for good on every future successful consensus.
+  const lastPair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
+  if (lastPair?.querySelector('.msg-error')) return;
   localStorage.setItem(CONS_HINT_KEY, '1');
   const rect = tab.getBoundingClientRect();
   const tip = el('div', 'cons-onboard-tip');

@@ -1,6 +1,17 @@
 {
-  "updated": "2026-07-03 18:43 CT",
+  "updated": "2026-07-03 20:09 CT",
   "entries": [
+    {
+      "date": "2026-07-03",
+      "time": "20:09 CT",
+      "title": "Fixed a confusing tip that could appear on a failed consensus run",
+      "items": [
+        "Drove a real headless-Chromium session through the free demo and settings flows, then simulated a run where every model failed to respond (all keys missing/network blocked)",
+        "The one-time 'That's your synthesized answer - tap any model tab to read each one's individual response' tip fired even when the run had failed and there was no synthesized answer to point at",
+        "Worse, the tip only ever shows once per browser (by design, so it doesn't nag returning users) - so if a first-time user's very first attempt happened to fail, they'd permanently lose this onboarding moment for every future successful consensus",
+        "Fixed so the tip only shows after a real synthesized answer appears; verified it still appears correctly on success and stays silent on failure"
+      ]
+    },
     {
       "date": "2026-07-03",
       "time": "18:43 CT",
