@@ -329,6 +329,21 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-04, 08:56 CT): the over-budget attachment warning told users the
+  wrong files would be cut.** With the roadmap and backlog fully checked off, read through the
+  file-attachment context-budgeting logic in `js/app.js` (EPIC 2's F4 token budgeting) instead of
+  another browser click-through, since that logic hadn't had a code-level correctness pass since
+  it shipped. Found: `updateVisionNote()`'s over-budget warning read "over 40k limit; **oldest**
+  files will be trimmed on send" — but `buildTextBlocks()`, which actually enforces the budget,
+  walks `textFiles` in attachment order (oldest-attached first) and skips/truncates whatever
+  comes AFTER the budget runs out, i.e. it keeps the oldest-attached files intact and drops the
+  most-recently-attached ones first — the exact opposite of what the warning claimed. This is a
+  realistic trust problem, not cosmetic: a user attaching several documents and seeing "oldest
+  will be trimmed" would reasonably conclude their latest, probably most-relevant attachment is
+  safe, when it's actually the one at risk of being silently dropped. Fixed by correcting the
+  copy to "the most recently attached files will be trimmed first on send," matching the real
+  behavior. Pure copy fix, no logic changes — verified by re-reading `buildTextBlocks()`'s loop
+  order and `node scripts/validate.mjs` passes.
 - [x] **PERIODIC BEST-PRACTICE PASS (2026-07-04, 06:58 CT): automated accessibility audit instead of another
   manual bug hunt.** After a long streak (30+ consecutive runs) of single-bug headless-Chromium hunts with no
   holistic pass, per the standing "periodic best-practice pass" directive, ran an automated axe-core audit

@@ -693,7 +693,7 @@ function updateVisionNote() {
       const kChars = totalChars >= 10000 ? Math.round(totalChars / 1000) + 'k' : (totalChars / 1000).toFixed(1) + 'k';
       const budgetK = Math.round(MAX_TOTAL_TEXT_CHARS / 1000);
       if (totalChars > MAX_TOTAL_TEXT_CHARS) {
-        parts.push(`Context: ~${kChars} chars extracted <span class="vn-warn">— over ${budgetK}k limit; oldest files will be trimmed on send</span>`);
+        parts.push(`Context: ~${kChars} chars extracted <span class="vn-warn">— over ${budgetK}k limit; the most recently attached files will be trimmed first on send</span>`);
       } else {
         const pct = Math.round(totalChars / MAX_TOTAL_TEXT_CHARS * 100);
         parts.push(`Context: ~${kChars} chars of ${budgetK}k budget${pct >= 80 ? ' <span class="vn-warn">(budget nearly full)</span>' : ''}`);

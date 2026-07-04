@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 129,
+    title: 'Fixed a misleading warning about which attached files get trimmed over budget',
+    ts: '2026-07-04T13:56:00.000Z',
+    items: [
+      'With the roadmap and backlog fully checked off, read through the file-attachment context-budgeting code instead of another browser click-through',
+      'Found the over-budget warning said "oldest files will be trimmed on send" - but the actual budgeting logic keeps the oldest-attached files intact and drops the most-recently-attached ones first once the limit is hit, the exact opposite',
+      'This could mislead someone into thinking their newest, probably most-relevant attachment was safe when it was actually the one at risk of being silently dropped',
+      'Fixed the copy to say the most recently attached files are trimmed first, matching real behavior. No logic changes',
+    ],
+  },
+  {
     v: 128,
     title: 'Models & Consensus tab: disabled controls can no longer be clicked or tabbed into',
     ts: '2026-07-04T12:50:00.000Z',
