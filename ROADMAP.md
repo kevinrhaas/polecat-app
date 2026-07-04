@@ -350,6 +350,20 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-04, 13:42 CT): stray "Ask a follow-up" chips appeared after a
+  totally failed consensus run.** With the roadmap and backlog fully checked off, drove a real
+  consensus run in headless Chromium and forced a total failure (all models unreachable, e.g. via
+  CORS) to check how gracefully the app degrades — the resulting screen showed only "All models
+  failed to respond — no consensus available." yet three generic follow-up chips ("What are the
+  strongest counterarguments to this?" etc.) still rendered underneath, inviting the user to keep
+  exploring an answer that never existed. Root cause: the previous run's fix (below) made
+  `runConsensus()` call `renderFollowUpChips()`/`renderResynthStrip()` unconditionally after
+  arbitration so they'd still work with the agreement map off — but "unconditional" also meant no
+  check for the arbiter's own total-failure path (`ctx.fail()`, which renders a `.msg-error` and
+  never calls `ctx.provenance()`). Fixed by skipping that whole post-arbitration render block when
+  the consensus turn's pair contains a `.msg-error`, leaving just the clean failure notice. Verified
+  in headless Chromium: reproduced the stray chips on the pre-fix code, confirmed they're gone
+  after the fix, zero console errors, `node scripts/validate.mjs` passes. `js/app.js` only.
 - [x] **BUG (FIXED 2026-07-04, 12:46 CT): follow-up chips and the "try another strategy"
   re-synthesis strip vanished when the agreement-map toggle was off.** With the roadmap and
   backlog fully checked off, read through `runConsensus()`/`onProvenance()` in `js/app.js`

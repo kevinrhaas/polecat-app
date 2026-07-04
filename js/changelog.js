@@ -4,6 +4,18 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 134,
+    title: 'Fixed bogus "Ask a follow-up" chips appearing after a totally failed consensus run',
+    ts: '2026-07-04T18:42:00.000Z',
+    items: [
+      'With the roadmap fully checked off, drove a real consensus run in headless Chromium and forced a total failure (all models unreachable) to check how gracefully the app degrades',
+      'Found that even when every model failed and the answer area showed only "All models failed to respond - no consensus available", three generic "Ask a follow-up" chips still rendered underneath it, inviting the user to keep exploring an answer that never existed',
+      'Root cause: the post-arbitration render step that shows follow-up chips and the re-synthesis strip runs unconditionally so it still works when the agreement-map setting is off, but it had no check for the arbiter\'s own total-failure error state',
+      'Fixed by skipping that render step when the consensus turn ended in an error message, leaving just the clean failure notice with nothing bogus attached',
+      'Verified in headless Chromium: reproduced the stray chips on the pre-fix code, confirmed they\'re gone after the fix, zero console errors, `node scripts/validate.mjs` passes',
+    ],
+  },
+  {
     v: 133,
     title: 'Fixed follow-ups and "try another strategy" disappearing when the agreement map is off',
     ts: '2026-07-04T17:46:00.000Z',

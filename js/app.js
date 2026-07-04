@@ -1736,8 +1736,10 @@ async function runConsensus() {
   // agreement map off (onProvenance() is never called in that case, since it's
   // driven entirely by the provenance callback). Each render fn already guards
   // against double-rendering, so this is a no-op if onProvenance ran above.
+  // Skip entirely on a total failure (ctx.fail() rendered a .msg-error) — there's
+  // no answer to follow up on or re-synthesize.
   const _consPair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
-  if (_consPair) {
+  if (_consPair && !_consPair.querySelector('.msg-error')) {
     renderModelSnapshotsEl(_consPair);
     renderFollowUpChips(_consPair, lastConsensusProvenance);
     if (lastSynthesisOrdered.length >= 2) {
