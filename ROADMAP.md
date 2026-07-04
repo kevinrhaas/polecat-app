@@ -346,6 +346,19 @@ pass, never a jarring rewrite, never regress:**
       Consensus card), all scoped to this one diagram and all respecting
       `prefers-reduced-motion`. Verified in headless Chromium at desktop + 390px mobile: zero
       console errors, no layout shift, `node scripts/validate.mjs` passes.
+- [x] **POLISH (FIXED 2026-07-04, 13:54 CT): fixed the examples carousel's `.pcx-clabel` contrast
+      finding that two prior passes had explicitly left alone.** An axe-core re-scan re-flagged
+      the "Consensus" label's 3.27:1 contrast, which passes 90 and 99 (above) had each noted and
+      deliberately skipped, reasoning that the `.pcx-*` block is the verified, do-not-rewrite
+      component pasted in from `website/examples-carousel.html`. On inspection, the real fix
+      doesn't require touching structure at all — it's a single CSS custom-property value. Changed
+      `--pcx-purple` from `#9333ea` to `#b070f0`, which is (nearly) the site's own existing
+      `--consensus` brand color already used for this identical concept in the hero flow diagram —
+      so it's a brand-consistency fix, not just a contrast tweak. New contrast: 5.38:1 (passes AA's
+      4.5:1). Applied identically to the canonical `website/examples-carousel.html` source in this
+      repo so the two never drift. Verified with axe-core (violation gone) and a real
+      headless-Chromium screenshot (desktop + mobile): label reads clearly, zero structural or
+      layout change, `node scripts/validate.mjs` passes on both repos.
 
 ---
 
