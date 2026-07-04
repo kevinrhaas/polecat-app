@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 122,
+    title: 'Settings modal no longer leaves a big empty gap on short tabs',
+    ts: '2026-07-04T05:38:00.000Z',
+    items: [
+      'With the roadmap and backlog fully checked off, did a UI sweep of every Settings tab in a real headless-Chromium session (desktop + mobile, light + dark) looking for rough edges rather than a scripted next step',
+      'Found the Support tab (a short one-paragraph + tip-jar layout) rendered inside a modal sized for the much taller Models tab, leaving roughly half the dialog as dead space below the content on both desktop and mobile',
+      'The modal body used a fixed height (clamp(300px, 62vh, 470px)) so every tab shared one size; switched it to max-height so each tab now sizes to its own content and only the taller tabs (Models, Keys) cap out and scroll internally, exactly as before',
+      'Verified all three tabs (Models, Keys, Support) on desktop and mobile: tall tabs are pixel-identical to before, Support now hugs its content with no layout jump on tab switches',
+    ],
+  },
+  {
     v: 121,
     title: 'Fixed Settings force-opening on every visit for keyless returning users',
     ts: '2026-07-04T03:32:00.000Z',

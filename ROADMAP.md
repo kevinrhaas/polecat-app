@@ -317,6 +317,16 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **POLISH (FIXED 2026-07-04, 00:38 CT): Settings modal left a big empty gap on short tabs
+  (e.g. Support).** With the roadmap and backlog fully checked off, did a UI sweep of every
+  Settings tab in a real headless-Chromium session (desktop + mobile, light + dark) instead of a
+  scripted next step. `.modal-body` (`css/styles.css`) used a fixed `height: clamp(300px, 62vh,
+  470px)` so every tab shared one size — fine for the tall Models/Keys tabs, but it left roughly
+  half the dialog as dead space below the Support tab's one paragraph + tip-jar buttons. Changed
+  `height` to `max-height` so each tab now sizes to its own content; tall tabs still cap out at
+  the same clamp and scroll internally, unchanged from before. Verified all three tabs on desktop
+  and mobile: Models/Keys pixel-identical, Support now hugs its content, no layout jump switching
+  tabs.
 - [x] **BUG (FIXED 2026-07-03, 22:32 CT): Settings force-opened on EVERY page load for a returning
   visitor with no key and no demo model.** With the roadmap still fully checked off, ran a real
   headless-Chromium session (Puppeteer + system chromium; playwright wasn't cached locally, so used
