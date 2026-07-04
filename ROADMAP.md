@@ -313,6 +313,18 @@ pass, never a jarring rewrite, never regress:**
       cards. Added `tabindex="0"` + `role="region"` + a visible focus ring to the scroll container
       so arrow keys now page through all 6 cards. Verified in headless Chromium (scrollLeft moves
       from 0 to 356px on 3x ArrowRight while focused, visible purple outline).
+- [x] **POLISH (FIXED 2026-07-04, 04:17 CT): two raw glyphs slipped past the site's last two
+      emoji/icon sweeps.** With the website roadmap section fully checked off, ran a real
+      headless-Chromium audit of the homepage (scrolled the full page, checked images, links,
+      and mobile overflow — zero bugs found) and then looked for the same glyph-consistency issue
+      the last two site passes had already fixed twice. Found two survivors: the agreement-map
+      mockup's "Where they agreed" note still used a plain `✓` character while its sibling "Where
+      they split" note, in the identical icon slot one row below, already used a proper stroke
+      SVG; and the closing "leave a tip ☕" link used a real emoji, inconsistent with the app's own
+      tip-jar UI (Settings → Support), which uses plain text tier buttons with no emoji at all.
+      Replaced both with small stroke SVGs matching the page's existing icon convention (13px,
+      `currentColor`, `aria-hidden`). Verified in a real headless-Chromium session: both render
+      crisply in place with no layout shift, `node scripts/validate.mjs` passes.
 
 ---
 
