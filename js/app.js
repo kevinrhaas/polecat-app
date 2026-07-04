@@ -3348,7 +3348,9 @@ function renameThread(id) {
   input.onclick = (e) => e.stopPropagation();
 }
 function deleteThread(id) {
-  history = history.filter(t => t.id !== id);
+  const t = history.find(x => x.id === id);
+  if (!confirm(`Delete "${t?.title || 'Untitled'}"? This can't be undone.`)) return;
+  history = history.filter(x => x.id !== id);
   if (currentThread && currentThread.id === id) currentThread = null;
   saveHistory(history); renderHistoryList();
 }

@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 124,
+    title: 'Deleting a saved conversation now asks for confirmation',
+    ts: '2026-07-04T09:10:00.000Z',
+    items: [
+      'With the roadmap and backlog fully checked off, drove a real headless-Chromium session through the sidebar\'s history list instead of another code-only sweep',
+      'Every other destructive action in Polecat - clearing all keys, clearing all history - asks "are you sure?" first. Deleting a single saved conversation from the sidebar\'s hover menu did not: one click, and it was gone for good, with no undo',
+      'That one click sits right next to Pin and Rename in a cramped icon row, making it an easy misclick - and a real risk to the app\'s own "never lose user data" promise',
+      'Added the same confirmation dialog used elsewhere ("Delete \\"<title>\\"? This can\'t be undone.") - verified in a real browser session that canceling keeps the conversation and confirming still deletes it, zero console errors',
+    ],
+  },
+  {
     v: 123,
     title: 'Word document attachments now confirm text was extracted',
     ts: '2026-07-04T07:23:00.000Z',

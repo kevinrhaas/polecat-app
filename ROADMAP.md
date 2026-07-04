@@ -317,6 +317,27 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-04, 04:10 CT): deleting a single saved conversation from the sidebar
+  had no confirmation, unlike every other destructive action in the app.** With the roadmap and
+  backlog fully checked off, ran a real headless-Chromium session (Puppeteer + system chromium)
+  seeding two synthetic threads into `polecat_history` and driving the sidebar's history list —
+  search, pin, rename, delete — instead of another code-only sweep. Found: clicking a
+  conversation's `.sb-del` ("×") button called `deleteThread(id)` (`js/app.js`), which filtered
+  the thread out of `history` and saved immediately with zero confirmation — no dialog, no
+  undo, no toast. This is inconsistent with the app's own established pattern: `clearHistory()`
+  (delete ALL conversations) and the Keys tab's `clearKeys` handler (delete all API keys) both
+  gate on `confirm(...)` with an explicit "This can't be undone" — but the single-conversation
+  delete, arguably the MORE commonly-used destructive action since it's one click away in a
+  cramped hover-revealed icon row right next to Pin and Rename, had no such guard. A single
+  misclick permanently destroyed a conversation with no recourse, directly contradicting the
+  "Data durability" section's standing "never lose user data" directive. Fixed by adding the same
+  `confirm('Delete "<title>"? This can\'t be undone.')` gate used elsewhere, looking up the
+  thread's title first so the dialog names the specific conversation being deleted (clearer than
+  a generic "delete this conversation?"). Verified in a real headless-Chromium session: dismissing
+  the dialog leaves the conversation untouched in the list, confirming it removes exactly that
+  conversation and none other, search/pin/rename all continue to work unchanged, zero console
+  errors. `node scripts/validate.mjs` passes. No UI/HTML changes needed — the fix is entirely in
+  `js/app.js`'s `deleteThread()`.
 - [x] **BUG (FIXED 2026-07-04, 02:23 CT): attaching a Word (.docx) file never confirmed its text
   was extracted, unlike PDF/PPTX/XLSX.** With the roadmap and backlog fully checked off, drove a
   real headless-Chromium session (Puppeteer + system chromium) attaching real test files of all
