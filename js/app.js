@@ -780,6 +780,15 @@ function updateChipsFade() {
   const hasMore = row.scrollWidth - row.clientWidth - row.scrollLeft > 4;
   fade.classList.toggle('show', hasMore);
 }
+// Same affordance as updateChipsFade(), for the model/consensus tab bar above the
+// transcript — it hides its scrollbar too, so on a phone with 3+ models the
+// Consensus tab (the whole point of the app) can sit scrolled off-screen with no cue.
+function updateTabBarFade() {
+  const row = $('tabBar'), fade = $('tbFade');
+  if (!row || !fade) return;
+  const hasMore = row.scrollWidth - row.clientWidth - row.scrollLeft > 4;
+  fade.classList.toggle('show', hasMore);
+}
 function setChipsDisabled(disabled) {
   document.querySelectorAll('.m-chip').forEach(c => c.classList.toggle('disabled', disabled));
 }
@@ -824,6 +833,7 @@ function pruneTabs() {
       if (activeTab === id) activeTab = null;
     }
   });
+  updateTabBarFade();
 }
 function ensureTabs(selList) {
   const tabBar = $('tabBar'), panels = $('tabPanels');
@@ -884,6 +894,7 @@ function ensureTabs(selList) {
     panels.appendChild(panel);
   }
   if ((!activeTab || !$('tab_' + activeTab)) && list.length) switchTab(list[0].id);
+  updateTabBarFade();
 }
 function switchTab(id) {
   activeTab = id;
@@ -3621,6 +3632,8 @@ function init() {
   buildChips();
   $('modelChips').addEventListener('scroll', updateChipsFade, { passive: true });
   window.addEventListener('resize', updateChipsFade);
+  $('tabBar').addEventListener('scroll', updateTabBarFade, { passive: true });
+  window.addEventListener('resize', updateTabBarFade);
   { const lv = $('logoVer'); if (lv) lv.textContent = buildStamp(); }
 
   const note = takeMigrationNote();                  // e.g. "Your saved setup carried over"

@@ -206,9 +206,16 @@ body.processing .send-btn { display: none; }
 @media (max-width: 520px) { .send-text { display: none; } }
 
 /* ── Responses / tabs ────────────────────────────────────── */
+.tab-bar-wrap { position: relative; flex-shrink: 0; }
 .tab-bar { display: flex; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--border); }
 .tab-bar:empty { display: none; }
 .tab-bar::-webkit-scrollbar { display: none; }
+/* Fade hint on the right edge when the tab bar has tabs scrolled off-screen —
+   same affordance as .mc-fade on the composer's model-chip row. Without it a
+   phone user has no visual cue that e.g. the Consensus tab is off to the side. */
+.tb-fade { position: absolute; top: 0; right: 0; bottom: 1px; width: 28px; pointer-events: none; opacity: 0; transition: opacity .15s; background: linear-gradient(to right, transparent, var(--surface) 65%); }
+.tb-fade.show { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .tb-fade { transition: none; } }
 .tab { display: flex; align-items: center; gap: 6px; padding: 10px 16px; font-family: inherit; font-size: 12px; font-weight: 600; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; color: var(--text-2); white-space: nowrap; flex-shrink: 0; transition: color .15s, border-color .15s; }
 .tab.active { color: var(--text); }
 .tab-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; position: relative; }

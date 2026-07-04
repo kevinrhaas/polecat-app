@@ -329,6 +329,22 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-04, 10:48 CT): the model/consensus tab bar could hide the Consensus
+  tab off-screen on mobile with no scroll cue.** Right after the previous run shipped a
+  scroll-fade hint for the composer's model-chip row (see the changelog entry immediately
+  below), seeded a synthetic 3-model consensus thread and drove it in a real headless-Chromium
+  mobile session (390px) to check whether the same hidden-scrollbar pattern existed elsewhere.
+  It did, on a more consequential element: `.tab-bar` (the row of per-model tabs plus
+  "Consensus") also sets `overflow-x: auto; scrollbar-width: none`, so with 3 models selected
+  the tab bar overflowed by 209px on a 390px screen and the Consensus tab - the actual
+  synthesized answer, Polecat's core value - was scrolled off-screen with no visual indication
+  there was more to swipe to. Fixed with the identical fade-affordance pattern just shipped for
+  the chip row: a `.tab-bar-wrap` around `#tabBar` with a `#tbFade` element that only shows
+  when `scrollWidth - clientWidth - scrollLeft > 4`, wired to `scroll`/`resize` and recomputed
+  whenever `ensureTabs()`/`pruneTabs()` change the tab set. Verified in headless Chromium: fade
+  shows exactly when tabs overflow, hides at the scroll end and when everything fits (desktop,
+  or the empty pre-chat state with no tabs at all), light + dark theme both correct, zero
+  console errors, `node scripts/validate.mjs` passes. No change to tab click/keyboard behavior.
 - [x] **BUG (FIXED 2026-07-04, 08:56 CT): the over-budget attachment warning told users the
   wrong files would be cut.** With the roadmap and backlog fully checked off, read through the
   file-attachment context-budgeting logic in `js/app.js` (EPIC 2's F4 token budgeting) instead of

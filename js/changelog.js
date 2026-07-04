@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 131,
+    title: 'Model/Consensus tab bar: added the same scroll hint just shipped for the chip row',
+    ts: '2026-07-04T15:48:00.000Z',
+    items: [
+      'Right after shipping a scroll-fade hint for the composer\'s model-chip row, seeded a synthetic 3-model consensus thread and drove it in a real headless-Chromium mobile session (390 wide) to check for the same overflow pattern elsewhere',
+      'Found a more consequential case of the identical bug: the tab bar above the transcript (each model\'s tab plus Consensus) also hides its scrollbar for a clean look, so on a phone with 3 models selected the Consensus tab - the actual synthesized answer, the whole point of Polecat - was scrolled off-screen with zero visual cue to swipe for it',
+      'Added the same right-edge fade affordance used on the chip row: only shows when tabs are actually scrolled off-screen, disappears at the scroll end or when everything fits (verified: fades in when 209px of tabs overflow a 390px screen, fades out once scrolled to the end, stays hidden on desktop where all 4 tabs fit with room to spare, and stays hidden on the empty state where the bar is empty)',
+      'Verified in headless Chromium (light + dark, mobile + desktop): zero console errors, `node scripts/validate.mjs` passes, no change to tab click/keyboard behavior',
+    ],
+  },
+  {
     v: 130,
     title: 'Composer: added a scroll hint to the model-chip row on mobile',
     ts: '2026-07-04T15:04:00.000Z',
