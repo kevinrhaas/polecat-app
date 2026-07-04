@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 125,
+    title: 'Escape key now closes Export, What\'s New, and the Welcome tour',
+    ts: '2026-07-04T10:03:00.000Z',
+    items: [
+      'With the roadmap and backlog fully checked off, drove a real headless-Chromium session opening every overlay in the app and pressing Escape',
+      'Settings, Shortcuts, Share, Compare, and the image lightbox all already close on Escape, but the Export dialog, the What\'s New panel, and the first-run Welcome tour did not - they only closed via a button click',
+      'Added the same Escape-to-close handling already used elsewhere in the app to all three, and made sure a stray Escape while the Welcome tour is open can\'t also abort a running consensus',
+      'Verified in a real browser session: all three now close on Escape, zero console errors, and Settings/Shortcuts still close on Escape exactly as before',
+    ],
+  },
+  {
     v: 124,
     title: 'Deleting a saved conversation now asks for confirmation',
     ts: '2026-07-04T09:10:00.000Z',

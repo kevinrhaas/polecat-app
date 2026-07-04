@@ -1246,3 +1246,22 @@ addressed below.)
   and hides the nudge. Brand-new users never see it. Verified end-to-end in headless Chromium:
   fresh user -> hidden; seeded 20-day-old + unbacked-up user -> nudge shows -> Export -> hides
   + status updates to "Backed up just now" -> stays hidden on reopen. Zero console errors.
+- [x] **BUG (FIXED 2026-07-04, 05:03 CT): Escape did not close the Export dialog, the What's
+  New panel, or the first-run Welcome tour, unlike every other overlay in the app.** With the
+  roadmap and backlog fully checked off, ran a real headless-Chromium session (puppeteer-core
+  against `/usr/bin/chromium`) opening each overlay through actual UI interactions (sidebar ->
+  Export / What's New buttons, and a fresh profile load for the Welcome tour) and pressing
+  Escape. Settings, Shortcuts, Share, Compare, and the lightbox all already close on Escape (a
+  prior pass explicitly called this out as the app-wide pattern when fixing Settings), but
+  `openExport()` and `openWhatsNew()` (`js/app.js`) only ever wired a backdrop click and a
+  Cancel/Close button, and the Welcome tour's overlay had no keydown handling anywhere — all
+  three could only be dismissed by clicking. Fixed by adding the same scoped `keydown` listener
+  pattern already used by `openCompareModal()` to both `openExport()` and `openWhatsNew()`
+  (added and removed alongside the overlay), and a global Escape handler in `init()` for the
+  Welcome tour that calls `dismissWelcome()` when `#welcomeOverlay` is open — matching the
+  existing handlers for the other modals right next to it. Also added `welcomeOverlay` to the
+  existing "don't abort an in-flight generation if any overlay is open" Escape guard, so a stray
+  Escape while the tour is open can't simultaneously kill a running consensus (defensive, matches
+  the existing list for every other overlay). Verified in headless Chromium: all three overlays
+  now close on Escape with zero console errors; re-verified Settings and Shortcuts still close on
+  Escape unchanged (no regression). `node scripts/validate.mjs` passes. `js/app.js` only.

@@ -3166,8 +3166,10 @@ function openExport() {
     `<div class="exp-actions"><button class="btn btn-ghost" id="expCancel">Cancel</button><button class="btn btn-solid" id="expGo">Download</button></div>` +
     `</div>`;
   document.body.appendChild(ov);
-  const close = () => ov.remove();
+  const close = () => { ov.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
   ov.onclick = (e) => { if (e.target === ov) close(); };
+  document.addEventListener('keydown', onKey);
   $('expCancel').onclick = close;
   $('expGo').onclick = () => {
     const incS = $('expSettings').checked, incK = $('expKeys').checked, incH = $('expHistory').checked;
@@ -3495,8 +3497,10 @@ function openWhatsNew() {
     `<div class="exp-actions"><button class="btn btn-solid" id="wnClose">Close</button></div>` +
     `</div>`;
   document.body.appendChild(ov);
-  const close = () => ov.remove();
+  const close = () => { ov.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
   ov.onclick = (e) => { if (e.target === ov) close(); };
+  document.addEventListener('keydown', onKey);
   $('wnClose').onclick = close;
 }
 
@@ -3708,6 +3712,7 @@ function init() {
 
   $('wNext').onclick = welcomeNext; $('wBack').onclick = welcomeBack;
   $('wSkip').onclick = () => dismissWelcome(); $('wClose').onclick = () => dismissWelcome();
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('welcomeOverlay').classList.contains('open')) dismissWelcome(); });
   $('wDonate') && ($('wDonate').onclick = (e) => { e.preventDefault(); window.open(DONATE_URL, '_blank', 'noopener'); });
   { const wt = $('wTryDemo'); if (wt) { wt.hidden = !PROVIDERS.demo; wt.onclick = startFreeDemo; } }
 
@@ -3739,6 +3744,7 @@ function init() {
         $('kbdModal').classList.contains('open') ||
         $('shareModal').classList.contains('open') ||
         $('lightbox').classList.contains('open') ||
+        $('welcomeOverlay').classList.contains('open') ||
         !!document.querySelector('.compare-overlay, .exp-overlay');
       if (!anyOverlay) { e.preventDefault(); stopGeneration(); }
     }
