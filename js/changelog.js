@@ -6,30 +6,33 @@ export const CHANGELOG = [
   {
     v: 134,
     title: 'Fixed bogus "Ask a follow-up" chips appearing after a totally failed consensus run',
+    kind: 'fix',
     ts: '2026-07-04T18:42:00.000Z',
     items: [
       'With the roadmap fully checked off, drove a real consensus run in headless Chromium and forced a total failure (all models unreachable) to check how gracefully the app degrades',
       'Found that even when every model failed and the answer area showed only "All models failed to respond - no consensus available", three generic "Ask a follow-up" chips still rendered underneath it, inviting the user to keep exploring an answer that never existed',
       'Root cause: the post-arbitration render step that shows follow-up chips and the re-synthesis strip runs unconditionally so it still works when the agreement-map setting is off, but it had no check for the arbiter\'s own total-failure error state',
       'Fixed by skipping that render step when the consensus turn ended in an error message, leaving just the clean failure notice with nothing bogus attached',
-      'Verified in headless Chromium: reproduced the stray chips on the pre-fix code, confirmed they\'re gone after the fix, zero console errors, `node scripts/validate.mjs` passes',
+      'Verified in headless Chromium: reproduced the stray chips on the pre-fix code, confirmed they\'re gone after the fix, zero console errors, node scripts/validate.mjs passes',
     ],
   },
   {
     v: 133,
     title: 'Fixed follow-ups and "try another strategy" disappearing when the agreement map is off',
+    kind: 'fix',
     ts: '2026-07-04T17:46:00.000Z',
     items: [
       'With the roadmap fully checked off, read through the consensus render path instead of another manual click-through, since the code already had one telling clue: a comment explaining why the model-snapshot strip had to be force-rendered outside the provenance callback',
       'Found the same problem the earlier fix didn\'t fully cover: turning off Settings\' agreement-map toggle skips the arbiter\'s provenance step entirely, and the follow-up question chips and the re-synthesis strategy strip were both wired to render only from that callback - so they silently vanished on every consensus answer whenever agreement-map was off, not just the analytical panel it was meant to hide',
       'Confirmed the intended behavior already existed elsewhere: reopening a saved conversation renders all three (snapshots, follow-ups, re-synthesis) unconditionally - the live path had just never been updated to match',
       'Fixed by rendering follow-up chips and the re-synthesis strip unconditionally after arbitration, same as the snapshot strip; verified live with two mocked models and agreement-map off: chips and the strategy strip now appear every time, and reproduced the bug on the pre-fix code first to confirm it was real',
-      '`node scripts/validate.mjs` passes; no change to the panel itself or its on/off toggle',
+      'node scripts/validate.mjs passes; no change to the panel itself or its on/off toggle',
     ],
   },
   {
     v: 132,
     title: 'Fixed a broken screen-reader link on the consensus "How this was formed" panel',
+    kind: 'fix',
     ts: '2026-07-04T16:40:00.000Z',
     items: [
       'With the roadmap fully checked off, audited the flagship provenance/agreement panel (the disclosure that explains how each consensus answer was formed) for accessibility instead of picking another visual polish item',
@@ -41,28 +44,31 @@ export const CHANGELOG = [
   {
     v: 131,
     title: 'Model/Consensus tab bar: added the same scroll hint just shipped for the chip row',
+    kind: 'feature',
     ts: '2026-07-04T15:48:00.000Z',
     items: [
       'Right after shipping a scroll-fade hint for the composer\'s model-chip row, seeded a synthetic 3-model consensus thread and drove it in a real headless-Chromium mobile session (390 wide) to check for the same overflow pattern elsewhere',
       'Found a more consequential case of the identical bug: the tab bar above the transcript (each model\'s tab plus Consensus) also hides its scrollbar for a clean look, so on a phone with 3 models selected the Consensus tab - the actual synthesized answer, the whole point of Polecat - was scrolled off-screen with zero visual cue to swipe for it',
       'Added the same right-edge fade affordance used on the chip row: only shows when tabs are actually scrolled off-screen, disappears at the scroll end or when everything fits (verified: fades in when 209px of tabs overflow a 390px screen, fades out once scrolled to the end, stays hidden on desktop where all 4 tabs fit with room to spare, and stays hidden on the empty state where the bar is empty)',
-      'Verified in headless Chromium (light + dark, mobile + desktop): zero console errors, `node scripts/validate.mjs` passes, no change to tab click/keyboard behavior',
+      'Verified in headless Chromium (light + dark, mobile + desktop): zero console errors, node scripts/validate.mjs passes, no change to tab click/keyboard behavior',
     ],
   },
   {
     v: 130,
     title: 'Composer: added a scroll hint to the model-chip row on mobile',
+    kind: 'feature',
     ts: '2026-07-04T15:04:00.000Z',
     items: [
       'With the roadmap and backlog fully checked off, audited the app in a real headless-Chromium mobile session (390x844) instead of another code-only pass',
       'Found that picking even 2 models overflowed the composer\'s model-chip row on a phone-width screen - the row hides its scrollbar for a clean look, so the "+ Add" button and later chips\' remove controls were scrolled off-screen with zero visual cue to swipe sideways',
       'Added a subtle right-edge fade over the chip row that only appears when there\'s more content scrolled off-screen, and disappears once you\'ve scrolled to the end (or if everything already fits) - matching the same fade-affordance pattern used for other scrollable UI',
-      'Verified in a real mobile browser session: fade shows exactly when content overflows, hides at the scroll end and when nothing overflows, looks correct in both light and dark mode, and the composer footer layout is unaffected at both mobile and desktop widths. Zero console errors, `node scripts/validate.mjs` passes',
+      'Verified in a real mobile browser session: fade shows exactly when content overflows, hides at the scroll end and when nothing overflows, looks correct in both light and dark mode, and the composer footer layout is unaffected at both mobile and desktop widths. Zero console errors, node scripts/validate.mjs passes',
     ],
   },
   {
     v: 129,
     title: 'Fixed a misleading warning about which attached files get trimmed over budget',
+    kind: 'fix',
     ts: '2026-07-04T13:56:00.000Z',
     items: [
       'With the roadmap and backlog fully checked off, read through the file-attachment context-budgeting code instead of another browser click-through',
@@ -74,17 +80,19 @@ export const CHANGELOG = [
   {
     v: 128,
     title: 'Models & Consensus tab: disabled controls can no longer be clicked or tabbed into',
+    kind: 'feature',
     ts: '2026-07-04T12:50:00.000Z',
     items: [
       'With the roadmap and backlog fully checked off, audited the Models & Consensus tab in a real headless-Chromium session, focusing on the differentiator screen where answering models, strategy, and the final-answer model all get configured',
       'Found that switching "Consensus answer" off only dimmed the Strategy, Agreement map, and Final-answer-by controls to 50% opacity - they looked disabled but every select, checkbox, and switch underneath stayed fully clickable and keyboard-focusable, so a user could keep changing consensus settings that had no effect while consensus was off',
-      'Added the standard `inert` attribute (plus a `pointer-events: none` CSS fallback) to that control block whenever consensus is off, so it truly can\'t be clicked, tabbed into, or reached by a screen reader - matching how it already looks',
-      'Verified in a real browser session: with consensus off, clicks no longer reach the controls (elementFromPoint falls through to the parent) and focus() no longer lands on them; flipping the switch back on instantly restores full interactivity with no regression. Zero console errors, `node scripts/validate.mjs` passes',
+      'Added the standard inert attribute (plus a pointer-events: none CSS fallback) to that control block whenever consensus is off, so it truly can\'t be clicked, tabbed into, or reached by a screen reader - matching how it already looks',
+      'Verified in a real browser session: with consensus off, clicks no longer reach the controls (elementFromPoint falls through to the parent) and focus() no longer lands on them; flipping the switch back on instantly restores full interactivity with no regression. Zero console errors, node scripts/validate.mjs passes',
     ],
   },
   {
     v: 127,
     title: 'Accessibility sweep: fixed a visible dark-mode bug plus several low-contrast labels',
+    kind: 'fix',
     ts: '2026-07-04T11:58:00.000Z',
     items: [
       'With the roadmap and backlog fully checked off, and after a long streak of single-bug hunts, ran a periodic best-practice pass: an automated axe-core accessibility audit across the empty state, Settings\' three tabs, and the sidebar, instead of another manual click-through',
@@ -97,6 +105,7 @@ export const CHANGELOG = [
   {
     v: 126,
     title: 'Settings, Shortcuts, Export, What\'s New, the Welcome tour, and the image viewer now manage keyboard focus properly',
+    kind: 'feature',
     ts: '2026-07-04T11:10:00.000Z',
     items: [
       'With the roadmap and backlog fully checked off, audited every overlay\'s keyboard behavior in a real headless-Chromium session instead of another code-only sweep',
@@ -109,6 +118,7 @@ export const CHANGELOG = [
   {
     v: 125,
     title: 'Escape key now closes Export, What\'s New, and the Welcome tour',
+    kind: 'feature',
     ts: '2026-07-04T10:03:00.000Z',
     items: [
       'With the roadmap and backlog fully checked off, drove a real headless-Chromium session opening every overlay in the app and pressing Escape',
@@ -120,6 +130,7 @@ export const CHANGELOG = [
   {
     v: 124,
     title: 'Deleting a saved conversation now asks for confirmation',
+    kind: 'feature',
     ts: '2026-07-04T09:10:00.000Z',
     items: [
       'With the roadmap and backlog fully checked off, drove a real headless-Chromium session through the sidebar\'s history list instead of another code-only sweep',
@@ -131,6 +142,7 @@ export const CHANGELOG = [
   {
     v: 123,
     title: 'Word document attachments now confirm text was extracted',
+    kind: 'feature',
     ts: '2026-07-04T07:23:00.000Z',
     items: [
       'With the roadmap and backlog fully checked off, drove a real headless-Chromium session attaching real PDF, Word, PowerPoint, and Excel files instead of another code-only sweep',
@@ -142,6 +154,7 @@ export const CHANGELOG = [
   {
     v: 122,
     title: 'Settings modal no longer leaves a big empty gap on short tabs',
+    kind: 'feature',
     ts: '2026-07-04T05:38:00.000Z',
     items: [
       'With the roadmap and backlog fully checked off, did a UI sweep of every Settings tab in a real headless-Chromium session (desktop + mobile, light + dark) looking for rough edges rather than a scripted next step',
@@ -153,6 +166,7 @@ export const CHANGELOG = [
   {
     v: 121,
     title: 'Fixed Settings force-opening on every visit for keyless returning users',
+    kind: 'fix',
     ts: '2026-07-04T03:32:00.000Z',
     items: [
       'With the roadmap fully checked off, drove a real headless-Chromium session simulating a returning visitor who dismissed the welcome tour without adding a key or trying the free demo',
@@ -163,6 +177,7 @@ export const CHANGELOG = [
   {
     v: 120,
     title: 'Fixed the sidebar rendering dark and blurry behind Export/What\'s New/Compare',
+    kind: 'fix',
     ts: '2026-07-04T02:10:00.000Z',
     items: [
       'Drove a real headless-Chromium session in light theme and found that opening the sidebar, then Export, What\'s New, or the side-by-side Compare view left the sidebar open underneath - its higher z-index used to be the problem for Settings/Shortcuts (already fixed), but here it\'s the opposite: these overlays sit above the sidebar and their dark blurred backdrop tinted it, making a light-theme sidebar look broken and dark',
@@ -173,6 +188,7 @@ export const CHANGELOG = [
   {
     v: 119,
     title: 'Fixed a confusing tip that could appear on a failed consensus run',
+    kind: 'fix',
     ts: '2026-07-04T01:09:00.000Z',
     items: [
       'Drove a real headless-Chromium session through the free demo and settings flows, then simulated a run where every model failed to respond (all keys missing/network blocked)',
@@ -184,6 +200,7 @@ export const CHANGELOG = [
   {
     v: 118,
     title: 'Fixed a synthesis-only model being skipped with just one answering model',
+    kind: 'fix',
     ts: '2026-07-03T23:43:00.000Z',
     items: [
       'Right after the previous fix for the \'Refine Together\' strategy, checked whether the same bug class showed up anywhere else in the consensus engine - it did, one level up',
@@ -195,6 +212,7 @@ export const CHANGELOG = [
   {
     v: 117,
     title: 'Fixed a model set to write the final answer being silently skipped',
+    kind: 'fix',
     ts: '2026-07-03T22:47:00.000Z',
     items: [
       'With the roadmap fully checked off, code-reviewed the consensus engine (js/arbitration.js) for correctness bugs and confirmed a real one with a standalone test harness (no live API calls)',
@@ -207,6 +225,7 @@ export const CHANGELOG = [
   {
     v: 116,
     title: 'Fixed restored chats losing their per-model tabs and going blank',
+    kind: 'fix',
     ts: '2026-07-03T21:53:00.000Z',
     items: [
       'With the roadmap fully checked off, seeded a synthetic multi-model consensus thread straight into history and drove a real headless-Chromium session to check the restore path, since it has been a repeat source of real bugs in recent passes',
@@ -219,6 +238,7 @@ export const CHANGELOG = [
   {
     v: 115,
     title: 'Fixed shared consensus links silently failing to (re)open',
+    kind: 'fix',
     ts: '2026-07-03T20:57:00.000Z',
     items: [
       'With the roadmap fully checked off, tested the shareable consensus link feature end-to-end (a core growth path: recipients click a \'#share=...\' link and see the exact question, per-model answers, and consensus that was shared) rather than another visual sweep',
@@ -231,6 +251,7 @@ export const CHANGELOG = [
   {
     v: 114,
     title: 'Fixed a garbled model preview and dim section labels',
+    kind: 'fix',
     ts: '2026-07-03T20:01:00.000Z',
     items: [
       '"Responses at a glance" (the per-model preview cards under a consensus answer) mangled any reply starting with a number not part of a list, e.g. "2001: A Space Odyssey..." showed up as ": A Space Odyssey..." - the text cleanup regex meant to strip list markers like "1. " was too greedy and ate plain leading digits too',
@@ -241,6 +262,7 @@ export const CHANGELOG = [
   {
     v: 113,
     title: 'Moved "Clear all keys" out of the global Settings footer',
+    kind: 'feature',
     ts: '2026-07-03T18:55:00.000Z',
     items: [
       'The destructive "Clear all keys" button used to sit in Settings\' shared footer, so it showed on every tab - Models & Consensus, Keys, and Support - even though it only makes sense on the Keys tab',
@@ -251,6 +273,7 @@ export const CHANGELOG = [
   {
     v: 112,
     title: 'Fixed a blurry Keyboard shortcuts panel',
+    kind: 'fix',
     ts: '2026-07-03T17:56:00.000Z',
     items: [
       'Opening "Shortcuts" from the sidebar menu rendered the whole panel out of focus - hard to read the key combos and their descriptions',
@@ -261,6 +284,7 @@ export const CHANGELOG = [
   {
     v: 111,
     title: 'Improved low-contrast text in a couple of spots',
+    kind: 'feature',
     ts: '2026-07-03T17:00:00.000Z',
     items: [
       'The empty-state hint ("Pick a question to try it - or type your own") and the keyboard-shortcuts panel\'s section labels and key-combo "+" separators used a very dim gray that was hard to read, especially in dark mode',
@@ -271,6 +295,7 @@ export const CHANGELOG = [
   {
     v: 110,
     title: 'Reopened consensus chats now show their agreement badges again',
+    kind: 'feature',
     ts: '2026-07-03T16:19:00.000Z',
     items: [
       'Each model tab\'s small "aligned / partial / outlier" badge and the Consensus tab\'s "strong / mixed / diverse" agreement pill stayed blank after reopening a saved chat from the sidebar, even though the data to show them was already saved',
@@ -281,6 +306,7 @@ export const CHANGELOG = [
   {
     v: 109,
     title: 'Fixed the Models & Consensus flow pills showing duplicate labels',
+    kind: 'fix',
     ts: '2026-07-03T15:10:00.000Z',
     items: [
       'The pill row at the top of Settings ("who answers -> who writes the final answer") labelled every model from the same provider identically, e.g. three free demo models all just said "Free demo", "Free demo", "Free demo"',
@@ -291,6 +317,7 @@ export const CHANGELOG = [
   {
     v: 108,
     title: 'Settings no longer re-pitches the free demo once it\'s already on',
+    kind: 'feature',
     ts: '2026-07-03T14:04:00.000Z',
     items: [
       'The Keys tab\'s "No key? Try it free" card kept inviting you to start the free demo even after you already had free demo models running',
@@ -301,6 +328,7 @@ export const CHANGELOG = [
   {
     v: 107,
     title: 'Fixed toast messages overflowing off-screen on phones',
+    kind: 'fix',
     ts: '2026-07-03T13:08:00.000Z',
     items: [
       'Longer status messages (e.g. "Free demo ready", the synthesis-only warning) used to render as a single unbreakable line, so on a narrow phone screen the pill ran off both edges of the screen and lost its rounded shape',
@@ -311,6 +339,7 @@ export const CHANGELOG = [
   {
     v: 106,
     title: 'Fixed a misleading message when adding a free demo model',
+    kind: 'fix',
     ts: '2026-07-03T12:06:00.000Z',
     items: [
       'Adding a second (or third) Free demo model in Settings showed "Added -- add a Free demo key to use it", even though the whole point of the free demo is that it needs no key at all',
@@ -321,6 +350,7 @@ export const CHANGELOG = [
   {
     v: 105,
     title: 'Fixed a few UI pieces that could show when they shouldn\'t',
+    kind: 'fix',
     ts: '2026-07-03T11:19:00.000Z',
     items: [
       'In Settings, the live model search panel (under "Browse all models") was rendering open all the time, even before you clicked the button -- and the "Browse all models" button itself was showing for providers that don\'t support a live model list (like Claude), where clicking it just produced an error toast',
@@ -332,6 +362,7 @@ export const CHANGELOG = [
   {
     v: 104,
     title: 'Fixed the composer\'s hint text getting cut off',
+    kind: 'fix',
     ts: '2026-07-03T10:45:00.000Z',
     items: [
       'The empty prompt box\'s placeholder hint ("Tap to send...", "paste or drop images...") could get visually clipped on load and right after sending a message, especially on phones -- the box height wasn\'t being fit to the two-line hint the way it already was while typing',
@@ -341,6 +372,7 @@ export const CHANGELOG = [
   {
     v: 103,
     title: 'Tidied up the model reorder buttons',
+    kind: 'feature',
     ts: '2026-07-03T09:39:00.000Z',
     items: [
       'The little up/down arrows for reordering your models in Settings were plain text characters instead of proper icons -- the one spot left over from an earlier redesign',
@@ -350,6 +382,7 @@ export const CHANGELOG = [
   {
     v: 102,
     title: 'Hardened against a rare crash from a stale saved model',
+    kind: 'fix',
     ts: '2026-07-03T07:39:00.000Z',
     items: [
       'If a model in your saved setup ever referenced a provider that no longer exists (an old import, a corrupted save), the whole app could throw a blank-feeling failure instead of just showing that one model gracefully',
@@ -359,6 +392,7 @@ export const CHANGELOG = [
   {
     v: 101,
     title: 'Fixed sidebar nudges showing up for everyone, always',
+    kind: 'fix',
     ts: '2026-07-03T05:46:00.000Z',
     items: [
       'The "Back up your chats" and "Add to Home Screen" sidebar banners were meant to appear rarely, only when relevant -- a missing CSS rule meant they actually rendered for every user on every visit, even a brand-new session with nothing to back up',
@@ -368,6 +402,7 @@ export const CHANGELOG = [
   {
     v: 100,
     title: 'Fixed leftover template junk after regenerating a response',
+    kind: 'fix',
     ts: '2026-07-03T03:29:00.000Z',
     items: [
       'Regenerating a single model\'s answer (the retry button on any response) could leave stray template markers like <|start|> or <s> in the text on some free-demo models',
@@ -377,6 +412,7 @@ export const CHANGELOG = [
   {
     v: 99,
     title: 'Consensus flow polish: grammar fix + keyboard focus rings',
+    kind: 'fix',
     ts: '2026-07-02T19:53:00.000Z',
     items: [
       'Fixed a grammar bug in the "Your N models answer..." explainer sentence on the Models & Consensus tab -- with exactly 1 answering model it used to read "Your 1 model answers in parallel... merges them", now reads correctly as "Your 1 model answers, then X turns it into the final answer"',
@@ -386,6 +422,7 @@ export const CHANGELOG = [
   {
     v: 98,
     title: 'Bigger tap targets on small icon buttons',
+    kind: 'feature',
     ts: '2026-07-02T17:01:00.000Z',
     items: [
       'The tiny copy/share/expand icon buttons (on each answer, and on the "Responses at a glance" cards) were well under the recommended mobile tap-target size',
@@ -396,6 +433,7 @@ export const CHANGELOG = [
   {
     v: 97,
     title: 'Accessibility pass on the Copy button',
+    kind: 'feature',
     ts: '2026-07-02T16:02:00.000Z',
     items: [
       'The Copy button next to a model\'s answer only had a title tooltip, unlike its Share and Copy-as-markdown neighbors -- screen readers announced it inconsistently across browsers',
@@ -406,6 +444,7 @@ export const CHANGELOG = [
   {
     v: 96,
     title: 'Tidied up a stray icon in the welcome tour',
+    kind: 'feature',
     ts: '2026-07-02T14:00:00.000Z',
     items: [
       'The "Yours, on your device" welcome slide referenced the history menu with a plain text symbol (☰) instead of the app\'s actual icon',
@@ -415,6 +454,7 @@ export const CHANGELOG = [
   {
     v: 95,
     title: 'iPhone/iPad: a nudge to install Polecat before Safari clears your data',
+    kind: 'feature',
     ts: '2026-07-02T13:00:00.000Z',
     items: [
       'iOS Safari can silently evict a site\'s saved data (your API keys and chats) after about a week of inactivity -- installing Polecat to the Home Screen avoids that',
@@ -425,6 +465,7 @@ export const CHANGELOG = [
   {
     v: 94,
     title: 'Small accessibility fixes',
+    kind: 'fix',
     ts: '2026-07-02T11:16:00.000Z',
     items: [
       'Pressing Escape now closes the Settings panel, matching every other overlay in the app (shortcuts cheatsheet, share, lightbox)',
@@ -434,6 +475,7 @@ export const CHANGELOG = [
   {
     v: 93,
     title: 'Friendlier error message when a model can\'t be reached',
+    kind: 'feature',
     ts: '2026-07-02T09:34:00.000Z',
     items: [
       'If a model\'s request fails because of a network hiccup or an ad blocker/privacy extension, the response tab used to show a raw browser error: "Error: Failed to fetch"',
@@ -444,6 +486,7 @@ export const CHANGELOG = [
   {
     v: 92,
     title: 'Tidied up the merged Models & Consensus tab',
+    kind: 'feature',
     ts: '2026-07-02T07:35:00.000Z',
     items: [
       'The new combined tab had the same phrase "how the combined answer is formed" showing twice on one screen -- once in the tab subtitle, once as a section heading right below the model list',
@@ -453,6 +496,7 @@ export const CHANGELOG = [
   {
     v: 91,
     title: 'Models and Consensus are now one tab in Settings',
+    kind: 'feature',
     ts: '2026-07-02T03:43:00.000Z',
     items: [
       'The separate "Models" and "Consensus" tabs in Settings are now merged into a single "Models & Consensus" tab -- who answers and how the combined answer is formed, top to bottom, in one place',
@@ -463,6 +507,7 @@ export const CHANGELOG = [
   {
     v: 90,
     title: 'Consensus tab now warns up front if the final-answer model can\'t run',
+    kind: 'feature',
     ts: '2026-07-02T01:45:00.000Z',
     items: [
       'If the model set to write the final answer has no API key, or its key is known-bad, a one-line amber warning now shows right under "Final answer written by" -- before you run anything, not just after synthesis silently falls back',
@@ -473,6 +518,7 @@ export const CHANGELOG = [
   {
     v: 89,
     title: 'Models tab now explains the flow in plain language too',
+    kind: 'feature',
     ts: '2026-07-01T23:56:00.000Z',
     items: [
       'The Models tab\'s [answering models] -> [final answer] -> Consensus pill flow now also shows the plain-language sentence the Consensus tab already had -- e.g. "Your 3 models answer in parallel, then Claude Opus merges them into one answer"',
@@ -482,6 +528,7 @@ export const CHANGELOG = [
   {
     v: 88,
     title: 'See who answers and who writes the final answer, right on the Models tab',
+    kind: 'feature',
     ts: '2026-07-01T22:52:00.000Z',
     items: [
       'The Consensus tab\'s at-a-glance flow -- [answering models] -> [final-answer model] -> Consensus -- now also shows at the top of the Models tab',
@@ -491,6 +538,7 @@ export const CHANGELOG = [
   {
     v: 87,
     title: 'The response-speed race bar now explains itself',
+    kind: 'feature',
     ts: '2026-07-01T21:57:00.000Z',
     items: [
       'The row of colored dots under a consensus answer (\'Blended from N models\') plots how fast each model responded, but had no label and its info was hover-only -- invisible on mobile',
@@ -501,6 +549,7 @@ export const CHANGELOG = [
   {
     v: 86,
     title: 'Plainer language for \'arbiter\' across Settings',
+    kind: 'feature',
     ts: '2026-07-01T20:02:00.000Z',
     items: [
       'Continued the plain-language cleanup: the Consensus tab\'s \'Arbiter model\' picker is now \'Final answer written by\', and the Models tab\'s per-model \'Arbiter\' toggle is now \'Final answer\'',
@@ -511,6 +560,7 @@ export const CHANGELOG = [
   {
     v: 85,
     title: 'One-tap backup nudge',
+    kind: 'feature',
     ts: '2026-07-01T18:06:00.000Z',
     items: [
       'The sidebar now shows a quiet \'Backed up 3d ago\' (or \'Never backed up\') note next to Export/Import, so you always know where you stand',
@@ -521,6 +571,7 @@ export const CHANGELOG = [
   {
     v: 84,
     title: 'Plain-language strategy names in Consensus settings',
+    kind: 'feature',
     ts: '2026-07-01T16:12:00.000Z',
     items: [
       'Renamed the consensus strategy options from technical labels to plain language: \'Sequential Refinement\' -> \'Refine Together\', \'Single Judge - Comprehensive\' -> \'Merge Everything\', \'Single Judge - Best Answer\' -> \'Best Answer\', \'Validated Synthesis\' -> \'Fact-Checked Merge\', \'Debate & Synthesize\' -> \'Debate & Merge\'',
@@ -531,6 +582,7 @@ export const CHANGELOG = [
   {
     v: 83,
     title: 'Plainer language on the "Building consensus" screen',
+    kind: 'feature',
     ts: '2026-07-01T15:21:00.000Z',
     items: [
       'While models are answering, the progress screen used to show the technical strategy name plus jargon like \'Sequential Refinement - arbiter: auto (strategy default)\'',
@@ -541,6 +593,7 @@ export const CHANGELOG = [
   {
     v: 82,
     title: 'Synthesis-only badge now stays in sync across Models and Consensus tabs',
+    kind: 'feature',
     ts: '2026-07-01T13:23:00.000Z',
     items: [
       'When an arbiter is set to synthesis-only (it merges the other models\' answers but doesn\'t answer itself), that state only appeared as a checkbox on the Models tab -- the Consensus tab\'s arbiter dropdown and flow diagram could show stale info until Settings was reopened',
@@ -551,6 +604,7 @@ export const CHANGELOG = [
   {
     v: 81,
     title: '"Responses at a glance" now always shows up after a consensus',
+    kind: 'feature',
     ts: '2026-07-01T11:29:00.000Z',
     items: [
       'The per-model preview strip below each consensus answer used to only appear when the Agreement map setting was on, since it was rendered as a side effect of that feature -- turning the map off silently hid it too',
@@ -561,6 +615,7 @@ export const CHANGELOG = [
   {
     v: 80,
     title: 'Reopened chats now restore the full source-highlighting toggle',
+    kind: 'feature',
     ts: '2026-07-01T09:34:00.000Z',
     items: [
       'Reopening a past multi-model chat from history already brought back the consensus answer and its \'How this was formed\' agreement map -- but the inline highlight toggle (which colors each paragraph by the model that shaped it) didn\'t come back with it',
@@ -571,6 +626,7 @@ export const CHANGELOG = [
   {
     v: 79,
     title: 'Keys tab now shows a real, verified connection status',
+    kind: 'feature',
     ts: '2026-07-01T07:56:00.000Z',
     items: [
       'Settings -> Keys used to show \'connected\' the moment you typed anything, even a wrong or wrong-type key -- it never actually checked. It now probes the provider automatically ~600ms after you stop typing and shows the real result: No key, Checking..., Connected, or Not connected with the provider\'s error',
@@ -581,6 +637,7 @@ export const CHANGELOG = [
   {
     v: 78,
     title: 'No more raw chat-template tokens leaking into answers',
+    kind: 'feature',
     ts: '2026-07-01T04:15:00.000Z',
     items: [
       'Some models (often via the free demo) occasionally leak internal chat-template markers (raw start/end/eot control tokens) into their reply — these are now stripped from every answer, the consensus, saved history, and copied text',
@@ -591,6 +648,7 @@ export const CHANGELOG = [
   {
     v: 77,
     title: 'A graceful \'synthesizing\' moment before the consensus answer',
+    kind: 'feature',
     ts: '2026-07-01T04:11:00.000Z',
     items: [
       'The Consensus tab no longer flashes an awkward empty box while it waits for the arbiter to start — it now shows a subtle animated \'Synthesizing consensus…\' indicator',
@@ -601,6 +659,7 @@ export const CHANGELOG = [
   {
     v: 76,
     title: 'One-tap \'Add key\' from any model that needs one',
+    kind: 'feature',
     ts: '2026-07-01T04:05:00.000Z',
     items: [
       'A model row that is missing its key now shows a clickable \'Add key\' badge (instead of a dead \'no key\' label)',
@@ -610,6 +669,7 @@ export const CHANGELOG = [
   {
     v: 75,
     title: 'Fixed a stale "synthesis only" bug when switching arbiters',
+    kind: 'fix',
     ts: '2026-07-01T03:37:00.000Z',
     items: [
       'If a model was set to Arbiter + "Synthesis only" and you later picked a different arbiter, the old one silently stayed excluded from answering forever, with nothing in the UI showing why — now that flag clears automatically the moment a model stops being the arbiter',
@@ -620,6 +680,7 @@ export const CHANGELOG = [
   {
     v: 74,
     title: 'See the consensus flow at a glance in Settings',
+    kind: 'feature',
     ts: '2026-07-01T01:35:00.000Z',
     items: [
       'The Consensus tab now opens with a small visual flow — your answering models, then the arbiter, then Consensus — plus a plain-language sentence like "Your 3 models answer in parallel, then Claude merges them into one answer"',
@@ -630,6 +691,7 @@ export const CHANGELOG = [
   {
     v: 73,
     title: 'Polecat is now installable',
+    kind: 'feature',
     ts: '2026-06-30T20:57:00.000Z',
     items: [
       'Add Polecat to your phone or desktop Home Screen / app dock — it now ships a proper web app manifest with icons, so Chrome/Edge/Android show an Install option and iOS Safari supports Add to Home Screen',
@@ -640,6 +702,7 @@ export const CHANGELOG = [
   {
     v: 72,
     title: 'Tell same-provider models apart in the contribution bar',
+    kind: 'feature',
     ts: '2026-06-30T20:40:00.000Z',
     items: [
       'When two models share a color (e.g. two OpenRouter models), the contribution bar and legend now add a texture — stripes, then dots — to each repeat, so you can tell them apart at a glance even in the small bar',
@@ -649,6 +712,7 @@ export const CHANGELOG = [
   {
     v: 71,
     title: 'Consensus no longer goes blank when the arbiter can\'t run',
+    kind: 'feature',
     ts: '2026-06-30T20:25:00.000Z',
     items: [
       'If your chosen Arbiter model fails mid-synthesis (most often an exhausted or invalid API key), Polecat now falls back to the most representative model answer and still shows the full agreement map and \'Responses at a glance\' — instead of an empty bubble with no comparison',
@@ -659,6 +723,7 @@ export const CHANGELOG = [
   {
     v: 70,
     title: 'Model roles: reorder, set Arbiter, and synthesis-only mode',
+    kind: 'feature',
     ts: '2026-06-30T17:09:00.000Z',
     items: [
       'Settings → Models now shows up/down arrows on every row so you can reorder your models — tab order, chip order, and response order all follow',
@@ -670,6 +735,7 @@ export const CHANGELOG = [
   {
     v: 69,
     title: 'Saved chats keep their consensus analysis',
+    kind: 'feature',
     ts: '2026-06-30T15:49:00.000Z',
     items: [
       'Reopening a conversation from history now restores the full \'How this was formed\' panel — the contribution bars, agreement map, where models differed, and notable claims — not just the answer text',
@@ -680,6 +746,7 @@ export const CHANGELOG = [
   {
     v: 68,
     title: 'Model race bar, inline expand scroll fix, and compare shortcut',
+    kind: 'fix',
     ts: '2026-06-30T13:09:00.000Z',
     items: [
       'The consensus \'blended from\' footer now shows a compact horizontal race bar — colored dots at relative positions reveal which model finished first and how far ahead it was, making the parallel-execution advantage instantly visible',
@@ -691,6 +758,7 @@ export const CHANGELOG = [
   {
     v: 67,
     title: 'Number key shortcuts to jump between model tabs',
+    kind: 'feature',
     ts: '2026-06-30T09:31:00.000Z',
     items: [
       'Press 1, 2, 3 (and so on) anywhere in the app to jump straight to model tab 1, 2, 3 — no need to focus the tab bar first',
@@ -703,6 +771,7 @@ export const CHANGELOG = [
   {
     v: 66,
     title: 'Stacked contribution bar in consensus panel',
+    kind: 'feature',
     ts: '2026-06-30T05:43:00.000Z',
     items: [
       'The \'How this was formed\' panel now shows a single horizontal bar split into colored segments — one per model — so you can see each model\'s share of the consensus at a glance',
@@ -714,6 +783,7 @@ export const CHANGELOG = [
   {
     v: 65,
     title: 'Draft auto-save: never lose a half-typed prompt again',
+    kind: 'feature',
     ts: '2026-06-30T01:27:00.000Z',
     items: [
       'Polecat now quietly saves whatever you are typing in the composer to your browser\'s local storage — if you accidentally close or refresh the tab, your prompt is waiting for you when you come back',
@@ -724,6 +794,7 @@ export const CHANGELOG = [
   {
     v: 64,
     title: 'Edit prompt button on your messages',
+    kind: 'feature',
     ts: '2026-06-29T21:00:00.000Z',
     items: [
       'Hover over any message you sent and a small pencil icon appears — click it to copy that prompt back to the composer so you can tweak it and resend without retyping',
@@ -734,6 +805,7 @@ export const CHANGELOG = [
   {
     v: 63,
     title: 'Stop generation mid-response',
+    kind: 'feature',
     ts: '2026-06-29T17:22:00.000Z',
     items: [
       'A red Stop button now appears while models are streaming — click it (or press Esc) to cancel all in-flight requests immediately',
@@ -744,6 +816,7 @@ export const CHANGELOG = [
   {
     v: 62,
     title: 'Prompt history recall with arrow keys',
+    kind: 'feature',
     ts: '2026-06-29T13:54:00.000Z',
     items: [
       'Press the up arrow key when the composer is empty to load your last prompt — press it again to go further back through your recent prompts (up to 50 stored)',
@@ -754,6 +827,7 @@ export const CHANGELOG = [
   {
     v: 61,
     title: 'Model track record in Settings',
+    kind: 'feature',
     ts: '2026-06-29T09:59:00.000Z',
     items: [
       'After each consensus session, Polecat now quietly tracks how each model contributed — whether it usually aligns with the group, takes a distinct angle, or shows mixed patterns',
@@ -764,6 +838,7 @@ export const CHANGELOG = [
   {
     v: 60,
     title: 'Expand any model\'s full response inline',
+    kind: 'feature',
     ts: '2026-06-29T06:00:00.000Z',
     items: [
       'Each model card in \'Responses at a glance\' now has an expand button (the down-arrow icon) — click it to read that model\'s complete response right below the strip, without leaving the consensus view',
@@ -774,6 +849,7 @@ export const CHANGELOG = [
   {
     v: 59,
     title: 'Clearer status for the slow Polecat Model Server',
+    kind: 'feature',
     ts: '2026-06-29T01:45:00.000Z',
     items: [
       'A self-hosted Polecat model that\'s just warming up (CPU, slow first response) now shows a neutral amber \'slow\' mark instead of a red ✗ that looked broken',
@@ -783,6 +859,7 @@ export const CHANGELOG = [
   {
     v: 58,
     title: 'Ask about this — targeted follow-ups from the agreement map',
+    kind: 'feature',
     ts: '2026-06-29T01:34:00.000Z',
     items: [
       'Each disagreement point in the \'How this was formed\' panel now has an \'Ask about this →\' button that pre-fills a rich follow-up question — including each model\'s exact stated position — so you can dig into any specific difference in one click',
@@ -792,6 +869,7 @@ export const CHANGELOG = [
   {
     v: 57,
     title: 'Polecat Model Server: reliable connections',
+    kind: 'feature',
     ts: '2026-06-29T01:33:00.000Z',
     items: [
       'Fixed Polecat Model Server connections failing or showing a red ✗ — the self-hosted models are CPU-served and can be slow to warm up, but the app\'s timeouts were too short',
@@ -802,6 +880,7 @@ export const CHANGELOG = [
   {
     v: 56,
     title: 'Response speed bars in Responses at a glance',
+    kind: 'feature',
     ts: '2026-06-28T23:49:00.000Z',
     items: [
       'Each model card in \'Responses at a glance\' now shows a thin colored speed bar — the wider the bar, the slower the model responded, making the response-time comparison immediately visual',
@@ -812,6 +891,7 @@ export const CHANGELOG = [
   {
     v: 55,
     title: 'Live streaming previews in the consensus progress box',
+    kind: 'feature',
     ts: '2026-06-28T22:46:00.000Z',
     items: [
       'While models are streaming, the consensus progress box now shows a live one-line preview of each model\'s opening response — so you can read what each AI is saying before synthesis even begins',
@@ -822,6 +902,7 @@ export const CHANGELOG = [
   {
     v: 54,
     title: 'Format quick-actions on consensus answers',
+    kind: 'feature',
     ts: '2026-06-28T21:48:00.000Z',
     items: [
       'New \'Format\' row in the re-synthesis strip lets you instantly reformat any consensus answer — Shorter, Bullet points, More detail, or Simplify — without re-querying the AI models',
@@ -832,6 +913,7 @@ export const CHANGELOG = [
   {
     v: 53,
     title: 'Clickable model names + targeted debate chips',
+    kind: 'feature',
     ts: '2026-06-29T04:30:00.000Z',
     items: [
       'Model names in the \'Where they differed\' section of the provenance panel are now clickable — tap a model\'s name to jump straight to its full response tab without hunting through the model list',
@@ -842,6 +924,7 @@ export const CHANGELOG = [
   {
     v: 52,
     title: 'Contribution % in Responses at a glance',
+    kind: 'feature',
     ts: '2026-06-29T04:00:00.000Z',
     items: [
       'Each model card in \'Responses at a glance\' now shows ~N% — the estimated share of the consensus that model shaped — as a colored pill in the metadata row',
@@ -852,6 +935,7 @@ export const CHANGELOG = [
   {
     v: 51,
     title: 'Model stance badges in tabs',
+    kind: 'feature',
     ts: '2026-06-29T03:00:00.000Z',
     items: [
       'After consensus runs, each model\'s tab now shows a small badge — \'aligned\', \'partial\', or \'outlier\' — so you can see at a glance which models agreed and which diverged, without opening the details panel',
@@ -862,6 +946,7 @@ export const CHANGELOG = [
   {
     v: 50,
     title: 'Mobile UX polish + reading-flow improvements',
+    kind: 'feature',
     ts: '2026-06-28T23:00:00.000Z',
     items: [
       'On mobile, \'Responses at a glance\' now starts collapsed by default — saves scrolling past cards to reach follow-up questions; tap once to expand',
@@ -873,6 +958,7 @@ export const CHANGELOG = [
   {
     v: 49,
     title: 'Snapshot cards polish: copy button + smarter layout',
+    kind: 'feature',
     ts: '2026-06-28T19:00:00.000Z',
     items: [
       'Each model\'s \'Responses at a glance\' card now has a quick copy button — hover a card (or touch on mobile) to copy that model\'s full response without switching to its tab',
@@ -883,6 +969,7 @@ export const CHANGELOG = [
   {
     v: 48,
     title: 'Accessibility & icon polish pass',
+    kind: 'feature',
     ts: '2026-06-28T15:00:00.000Z',
     items: [
       'Model response tabs now support keyboard navigation — press ← / → arrow keys while a tab is focused to switch between models instantly, without reaching for the mouse',
@@ -894,6 +981,7 @@ export const CHANGELOG = [
   {
     v: 47,
     title: 'Consensus insight + icon refresh',
+    kind: 'feature',
     ts: '2026-06-29T03:00:00.000Z',
     items: [
       'Every consensus answer now shows a brief, plain-language verdict right below the sources — e.g. \'All 3 models were in strong agreement\' or \'2 of 3 models agreed; GPT-4o had a contrasting perspective\' — so the multi-model story is immediately legible without expanding any panels',
@@ -904,6 +992,7 @@ export const CHANGELOG = [
   {
     v: 46,
     title: 'Snapshot cards now show each model\'s distinct take',
+    kind: 'feature',
     ts: '2026-06-29T11:00:00.000Z',
     items: [
       'When the arbiter detects a point of disagreement, each model\'s \'Responses at a glance\' card now shows a brief \'Distinct take\' snippet — so you can see at a glance exactly what made that model\'s answer different, without switching tabs',
@@ -914,6 +1003,7 @@ export const CHANGELOG = [
   {
     v: 45,
     title: 'Restored conversations now feel as rich as live ones',
+    kind: 'feature',
     ts: '2026-06-29T07:00:00.000Z',
     items: [
       'When you resume a conversation from history, the model snapshot cards and \'Try another synthesis\' strip now appear on the most recent consensus — so you can instantly see what each model said and explore alternative synthesis strategies without re-asking',
@@ -924,6 +1014,7 @@ export const CHANGELOG = [
   {
     v: 44,
     title: 'Try another synthesis — re-synthesize without re-asking',
+    kind: 'feature',
     ts: '2026-06-29T05:00:00.000Z',
     items: [
       'After any consensus answer, a new \'Try another synthesis\' strip lets you instantly re-synthesize the same model responses with a different approach — Comprehensive, Best Answer, Validated, or Debate — with no extra model calls',
@@ -934,6 +1025,7 @@ export const CHANGELOG = [
   {
     v: 43,
     title: 'Smarter history sidebar: date groups + model indicators',
+    kind: 'feature',
     ts: '2026-06-29T03:00:00.000Z',
     items: [
       'Conversation history is now grouped by Today, Yesterday, This week, This month, and Older — so a long list is instantly scannable instead of one big undifferentiated stream',
@@ -944,6 +1036,7 @@ export const CHANGELOG = [
   {
     v: 42,
     title: 'Tab notifications: see live model progress while you work elsewhere',
+    kind: 'feature',
     ts: '2026-06-29T01:00:00.000Z',
     items: [
       'The browser tab title now shows live progress when you switch away while models are responding — \'(2/3 answered) Polecat\' counts up as each model finishes',
@@ -955,6 +1048,7 @@ export const CHANGELOG = [
   {
     v: 41,
     title: 'Live agreement signal while models respond',
+    kind: 'feature',
     ts: '2026-06-28T23:00:00.000Z',
     items: [
       'As each model finishes responding, a live indicator now appears in the Consensus tab showing whether the models are agreeing or diverging — before the full synthesis even starts',
@@ -966,6 +1060,7 @@ export const CHANGELOG = [
   {
     v: 40,
     title: 'Compare all model responses side by side',
+    kind: 'feature',
     ts: '2026-06-28T21:00:00.000Z',
     items: [
       'New \'Compare\' button (grid icon) appears on every consensus answer — click it to see all model responses laid out side by side in one view',
@@ -977,6 +1072,7 @@ export const CHANGELOG = [
   {
     v: 39,
     title: 'Responses at a glance: stance badges + word counts',
+    kind: 'feature',
     ts: '2026-06-28T19:00:00.000Z',
     items: [
       'Each model\'s preview card in the \'Responses at a glance\' strip now shows its stance vs. the consensus — \'aligned\', \'partial\', or \'outlier\' — so you can see at a glance which model disagreed without opening the full provenance panel',
@@ -987,6 +1083,7 @@ export const CHANGELOG = [
   {
     v: 38,
     title: 'Agreement badge + smarter provenance + icon polish',
+    kind: 'feature',
     ts: '2026-06-28T17:00:00.000Z',
     items: [
       'The Consensus tab now shows a tiny colored badge after each synthesis — "strong", "mixed", or "diverse" — so you can see model agreement at a glance without opening the provenance panel',
@@ -997,6 +1094,7 @@ export const CHANGELOG = [
   {
     v: 37,
     title: 'Polish: send button shows model count + accessibility improvements',
+    kind: 'feature',
     ts: '2026-06-27T23:00:00.000Z',
     items: [
       'The Send button now shows exactly how many models will receive your prompt — "Send to 3" instead of the vague "Send to all", making the multi-model nature concrete at a glance',
@@ -1007,6 +1105,7 @@ export const CHANGELOG = [
   {
     v: 36,
     title: 'Responses at a glance — scan every model without tab-switching',
+    kind: 'feature',
     ts: '2026-06-27T22:15:00.000Z',
     items: [
       'After each consensus, a new strip shows each model\'s opening take as a compact card — no need to click through tabs to compare',
@@ -1019,6 +1118,7 @@ export const CHANGELOG = [
   {
     v: 35,
     title: 'UI polish: SVG icons replace emoji in the consensus view',
+    kind: 'feature',
     ts: '2026-06-27T21:30:00.000Z',
     items: [
       'The live model status indicators in the consensus progress screen now use animated SVG spinners instead of emoji — a spinning ring for \'waiting\' and \'streaming\', a check for done, an X for errors',
@@ -1030,6 +1130,7 @@ export const CHANGELOG = [
   {
     v: 34,
     title: 'Image context for text-only models',
+    kind: 'feature',
     ts: '2026-06-27T20:42:00.000Z',
     items: [
       'When you attach an image and a model can\'t view it, it now receives a short note explaining an image was attached — so it can say "I can\'t see that image, can you describe it?" rather than giving a confused non-answer',
@@ -1041,6 +1142,7 @@ export const CHANGELOG = [
   {
     v: 33,
     title: 'New provider: Polecat Model Server',
+    kind: 'feature',
     ts: '2026-06-27T17:00:00.000Z',
     items: [
       'Polecat now has its own free, first-party model server you can add as a provider — open-source models (Qwen, Llama, DeepSeek, Mistral, Phi, Gemma) served by us',
@@ -1052,6 +1154,7 @@ export const CHANGELOG = [
   {
     v: 32,
     title: 'Custom system prompt',
+    kind: 'feature',
     ts: '2026-06-27T17:00:00.000Z',
     items: [
       'Set a system prompt in Settings → Models that applies to all selected models at once',
@@ -1063,6 +1166,7 @@ export const CHANGELOG = [
   {
     v: 31,
     title: 'Smart follow-up suggestions after every consensus',
+    kind: 'feature',
     ts: '2026-06-27T17:00:00.000Z',
     items: [
       'After each consensus answer, 2–3 clickable follow-up question chips appear below the answer',
@@ -1074,6 +1178,7 @@ export const CHANGELOG = [
   {
     v: 30,
     title: 'Keyboard shortcuts cheatsheet',
+    kind: 'feature',
     ts: '2026-06-27T17:00:00.000Z',
     items: [
       'Press ? (when not typing) to open a compact cheatsheet of all keyboard shortcuts',
@@ -1084,6 +1189,7 @@ export const CHANGELOG = [
   {
     v: 29,
     title: 'Per-model regenerate',
+    kind: 'feature',
     ts: '2026-06-27T17:00:00.000Z',
     items: [
       'Each model response now has a ↺ button — click it to ask that one model to try again without re-running all the others',
@@ -1094,6 +1200,7 @@ export const CHANGELOG = [
   {
     v: 28,
     title: 'First-run Consensus tip + demo handoff polish',
+    kind: 'feature',
     ts: '2026-06-27T17:00:00.000Z',
     items: [
       'After your first synthesized answer, a small callout appears below the Consensus tab explaining you can tap any model tab to see its individual response — shown once, auto-dismisses',
@@ -1103,6 +1210,7 @@ export const CHANGELOG = [
   {
     v: 27,
     title: 'Centered composer on the empty state',
+    kind: 'feature',
     ts: '2026-06-27T17:00:00.000Z',
     items: [
       'When there are no messages yet, the prompt box and greeting now sit together in the center of the screen — Gemini/ChatGPT style',
@@ -1113,6 +1221,7 @@ export const CHANGELOG = [
   {
     v: 26,
     title: 'Copy the full thread as markdown',
+    kind: 'feature',
     ts: '2026-06-27T17:00:00.000Z',
     items: [
       'New document icon on every Consensus answer — click it to copy the full exchange as clean markdown',
@@ -1123,6 +1232,7 @@ export const CHANGELOG = [
   {
     v: 25,
     title: 'Share any consensus with a link',
+    kind: 'feature',
     ts: '2026-06-27T17:00:00.000Z',
     items: [
       'New Share button on every Consensus answer — click it to copy a shareable URL to your clipboard',
@@ -1134,6 +1244,7 @@ export const CHANGELOG = [
   {
     v: 24,
     title: 'Warmer empty-state greeting with Polecat mascot',
+    kind: 'feature',
     ts: '2026-06-27T17:00:00.000Z',
     items: [
       'The welcome screen now features the Polecat mascot logo (gently animated) instead of the plain ✦ glyph — warmer and more app-like',
@@ -1145,6 +1256,7 @@ export const CHANGELOG = [
   {
     v: 23,
     title: 'Overlay polish — crisp dialogs on all browsers',
+    kind: 'feature',
     ts: '2026-06-27T17:00:00.000Z',
     items: [
       'Fixed a rendering bug where the welcome tour, export dialog, and image lightbox could appear blurred on open in Safari and some Chromium builds',
@@ -1154,6 +1266,7 @@ export const CHANGELOG = [
   {
     v: 22,
     title: 'Settings IA cleanup — Arbitration tab renamed to Consensus',
+    kind: 'feature',
     ts: '2026-06-27T17:00:00.000Z',
     items: [
       'The \'Arbitration\' settings tab is now labelled \'Consensus\' — clearer and jargon-free for new users',
@@ -1167,6 +1280,7 @@ export const CHANGELOG = [
   {
     v: 21,
     title: 'Consistent SVG icon set — no more emoji in the UI',
+    kind: 'feature',
     ts: '2026-06-27T17:00:00.000Z',
     items: [
       'All sidebar buttons (Settings, Theme, Export, Import, Clear history, What\'s new) now use clean monochrome SVG icons instead of emoji',
@@ -1179,6 +1293,7 @@ export const CHANGELOG = [
   {
     v: 20,
     title: 'Attachment polish: privacy note, error feedback & mobile',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       'When you attach a document, a clear note confirms files are read in your browser — nothing is ever uploaded to a server',
@@ -1191,6 +1306,7 @@ export const CHANGELOG = [
   {
     v: 19,
     title: 'Native PDF support for Claude and Gemini',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       'PDFs attached to Claude or Gemini models are now sent as native document blocks — the model reads the actual PDF, not just extracted text',
@@ -1203,6 +1319,7 @@ export const CHANGELOG = [
   {
     v: 18,
     title: 'Smarter file context: budget cap + clearer labels',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       'Attached files now share a 60k-character context budget — all models get the right amount without silently overflowing',
@@ -1215,6 +1332,7 @@ export const CHANGELOG = [
   {
     v: 17,
     title: 'Office document support (PPTX, DOCX, XLSX)',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       'Attach PowerPoint (.pptx), Word (.docx), and Excel (.xlsx/.xls) files — text is extracted in-browser and sent to all models',
@@ -1229,6 +1347,7 @@ export const CHANGELOG = [
   {
     v: 16,
     title: 'PDF text extraction',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       'You can now attach PDF files — text is extracted page-by-page in your browser and sent to all models',
@@ -1241,6 +1360,7 @@ export const CHANGELOG = [
   {
     v: 15,
     title: 'Attach text files & docs',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       'You can now attach text files — .txt, .md, .csv, .json, .py, .js, .ts, .sh, .log, .yaml, .sql, and many more',
@@ -1253,6 +1373,7 @@ export const CHANGELOG = [
   {
     v: 14,
     title: 'Agreement map polish',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       'The provenance panel and source attribution now respect reduced-motion preferences — no animations if you prefer stillness',
@@ -1263,6 +1384,7 @@ export const CHANGELOG = [
   {
     v: 13,
     title: 'Website: examples carousel polished',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       'Fixed the homepage examples carousel — each card now has a proper card background and clean uniform layout',
@@ -1272,6 +1394,7 @@ export const CHANGELOG = [
   {
     v: 12,
     title: 'A friendlier free start',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       'The welcome screen now shows rotating, clickable example questions — tap one to try it instantly',
@@ -1281,6 +1404,7 @@ export const CHANGELOG = [
   {
     v: 11,
     title: 'See which model wrote which part',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       '✦ New "Highlight source models" button on every consensus answer — tap it to color each paragraph by which model it came from',
@@ -1293,6 +1417,7 @@ export const CHANGELOG = [
   {
     v: 10,
     title: 'Crisper Settings',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       'Settings now opens sharp instead of momentarily blurred — no more clicking to make it readable',
@@ -1301,6 +1426,7 @@ export const CHANGELOG = [
   {
     v: 9,
     title: 'See how every consensus was built',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       '✦ New "How this was formed" panel below each consensus — collapsible, mobile-friendly',
@@ -1313,6 +1439,7 @@ export const CHANGELOG = [
   {
     v: 8,
     title: 'A measured agreement signal, no extra calls',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       '✦ Polecat now measures how much each model\'s wording actually overlaps the consensus, straight from the text — free, no extra model call',
@@ -1323,6 +1450,7 @@ export const CHANGELOG = [
   {
     v: 7,
     title: 'Groundwork for the agreement map',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       '✦ After each consensus, Polecat now quietly asks the arbiter how much each model shaped the answer and where they agreed or disagreed',
@@ -1333,6 +1461,7 @@ export const CHANGELOG = [
   {
     v: 6,
     title: 'Land on the consensus, watch the race live',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       '✦ Hit send with consensus on and you now jump straight to the Consensus tab — watch every model check in (✓/✗) in real time, then see the blended answer form',
@@ -1342,6 +1471,7 @@ export const CHANGELOG = [
   {
     v: 5,
     title: 'Easier to read answers as they stream',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       'Your question now stays pinned to the top while the answer grows below it — no more jumping around while results come in',
@@ -1350,6 +1480,7 @@ export const CHANGELOG = [
   {
     v: 4,
     title: 'See what went into every consensus',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       '✦ Each consensus answer now shows the models it was blended from, with the arbiter marked ⚖️',
@@ -1360,6 +1491,7 @@ export const CHANGELOG = [
   {
     v: 3,
     title: 'See which model answered fastest',
+    kind: 'feature',
     ts: '2026-06-26T17:00:00.000Z',
     items: [
       '⏱ Each model\'s reply now shows how long it took — watch the multi-model race in real time',
@@ -1369,6 +1501,7 @@ export const CHANGELOG = [
   {
     v: 2,
     title: 'Free demo + a whole new chat experience',
+    kind: 'feature',
     ts: '2026-06-25T17:00:00.000Z',
     items: [
       '✨ Try it free — run a real model instantly, no key or signup',
@@ -1382,6 +1515,7 @@ export const CHANGELOG = [
   {
     v: 1,
     title: 'Conversations & history',
+    kind: 'feature',
     ts: '2026-06-15T17:00:00.000Z',
     items: [
       'Saved conversation history with search, rename and pin',

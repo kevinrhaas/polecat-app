@@ -44,12 +44,32 @@ function ctToUtcISO(dateStr, timeStr) {
   return new Date(ts).toISOString();
 }
 
+// Keep item/title text plain prose, matching the rest of the fleet (games, relay)
+// so the manager's changelog parser stays happy. Two hazards to remove:
+//   - markdown code-span backticks (noise; the panel renders plain text anyway)
+//   - curly braces: an item like `.foo { display: block }` looks like an object
+//     literal to the manager's bare-key quoter and breaks its JSON parse.
+function cleanText(s) {
+  return String(s)
+    .replace(/`/g, '')            // drop markdown code-span backticks
+    .replace(/\{/g, '(')          // neutralize braces so code/CSS snippets in prose
+    .replace(/\}/g, ')')          //   aren't mistaken for object literals
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+}
+// Classify each entry for the fleet's `kind` field (games/manager convention).
+function kindOf(title) {
+  return /\b(fix|fixed|fixes|bug|crash|regress|hardened?|typo|stale|leak|revert|patch|correct|repair|broke|broken)\b/i
+    .test(title) ? 'fix' : 'feature';
+}
+
 const n = entries.length;
 const out = entries.map((e, i) => ({
   v: n - i,                                  // newest gets the highest version
-  title: String(e.title || ''),
+  title: cleanText(e.title || ''),
+  kind: kindOf(String(e.title || '')),
   ts: ctToUtcISO(e.date, e.time),
-  items: Array.isArray(e.items) ? e.items.map(String) : [],
+  items: Array.isArray(e.items) ? e.items.map(x => cleanText(x)) : [],
 }));
 
 // Serialize as a SINGLE-quoted JS string literal — the fleet convention the
@@ -73,6 +93,7 @@ const body = out.map(e =>
   '  {\n' +
   `    v: ${e.v},\n` +
   `    title: ${jsStr(e.title)},\n` +
+  `    kind: ${jsStr(e.kind)},\n` +
   `    ts: ${jsStr(e.ts)},\n` +
   '    items: [\n' +
   e.items.map(it => `      ${jsStr(it)},\n`).join('') +
