@@ -4,6 +4,18 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 127,
+    title: 'Accessibility sweep: fixed a visible dark-mode bug plus several low-contrast labels',
+    ts: '2026-07-04T11:58:00.000Z',
+    items: [
+      'With the roadmap and backlog fully checked off, and after a long streak of single-bug hunts, ran a periodic best-practice pass: an automated axe-core accessibility audit across the empty state, Settings\' three tabs, and the sidebar, instead of another manual click-through',
+      'Found a real visible bug: the composer\'s dashed "+ Add" model chip is a native <button> with no background override, so in dark mode it rendered with the browser\'s default light-gray button face - a jarring pale pill next to its plain, transparent sibling chips, with barely-readable text on top. Fixed by giving it the same transparent background as every other chip',
+      'Found the private-mode toggle switch had no accessible name for screen readers - added one',
+      'Continued the token-level contrast cleanup flagged (but deliberately deferred) in an earlier pass: bumped several more informational-text spots - the header\'s version stamp, key status/tier badges, field hints, tab subtitles, the empty-sidebar message, and the shared "mini-note" helper-text style used throughout Settings - from the ~2.2:1 dim token to the ~5.5:1 one already used elsewhere, matching the precedent set for labels like "HISTORY" and model names',
+      'Verified in a real headless-Chromium session, light and dark, desktop and mobile: axe-core\'s serious-impact violations (color-contrast, aria-toggle-field-name) are now zero across every screen audited; only pre-existing, larger-scope landmark/heading-structure notes remain, left for a dedicated pass. Zero console errors, no layout shift, no regression to any existing feature',
+    ],
+  },
+  {
     v: 126,
     title: 'Settings, Shortcuts, Export, What\'s New, the Welcome tour, and the image viewer now manage keyboard focus properly',
     ts: '2026-07-04T11:10:00.000Z',

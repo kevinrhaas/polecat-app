@@ -329,6 +329,25 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **PERIODIC BEST-PRACTICE PASS (2026-07-04, 06:58 CT): automated accessibility audit instead of another
+  manual bug hunt.** After a long streak (30+ consecutive runs) of single-bug headless-Chromium hunts with no
+  holistic pass, per the standing "periodic best-practice pass" directive, ran an automated axe-core audit
+  across the empty state, all three Settings tabs, and the sidebar (open + mobile), rather than another manual
+  click-through. Found and fixed: (1) a genuinely visible dark-mode bug - the composer's dashed "+ Add" model
+  chip is a native `<button>` with no background override, so Chromium's default light-gray button face
+  rendered as a jarring pale pill next to its plain transparent sibling chips, with low-contrast text on top
+  (`css/styles.css` `.m-chip-add` now sets `background: none`); (2) `#privateSwitch` (the Private mode toggle)
+  had no accessible name for screen readers - added `aria-label="Private mode"`; (3) continued the token-level
+  contrast cleanup explicitly flagged-but-deferred in an earlier pass (see the two "low-contrast" entries
+  above) - bumped `.logo-ver`, `.no-config-hint`, `.cfg-sub`, `.field-hint`, `.key-status`, `.key-tier.paid`,
+  `.mini-note`, and `.sb-empty` from `var(--text-3)` (~2.2:1 in dark mode) to `var(--text-2)` (~5.5:1, passes
+  WCAG AA), matching the same precedent already applied to `.msg-label`/`.arb-plabel`/`.sb-section-label`/
+  `.prov-section-label`/`.sb-date-group`. Left alone: axe's remaining "moderate" landmark/heading-structure
+  findings (no `<main>`, no `<h1>`, several regions not in a landmark) - a larger, riskier structural change
+  better suited to its own dedicated pass, not bundled into this one. Verified in a real headless-Chromium
+  session (light + dark, desktop + mobile): axe-core reports zero serious-impact violations across every
+  screen audited (down from `aria-toggle-field-name` + `color-contrast` on every single screen), zero console
+  errors, no layout shift, no regression to any existing feature. `node scripts/validate.mjs` passes.
 - [x] **BUG (FIXED 2026-07-04, 04:10 CT): deleting a single saved conversation from the sidebar
   had no confirmation, unlike every other destructive action in the app.** With the roadmap and
   backlog fully checked off, ran a real headless-Chromium session (Puppeteer + system chromium)
