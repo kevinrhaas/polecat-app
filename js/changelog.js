@@ -4,6 +4,18 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 126,
+    title: 'Settings, Shortcuts, Export, What\'s New, the Welcome tour, and the image viewer now manage keyboard focus properly',
+    ts: '2026-07-04T11:10:00.000Z',
+    items: [
+      'With the roadmap and backlog fully checked off, audited every overlay\'s keyboard behavior in a real headless-Chromium session instead of another code-only sweep',
+      'Opening any of these overlays left focus wherever it happened to be - usually still on the button you clicked, hidden behind the modal - so keyboard and screen-reader users had no idea where they\'d landed, and closing an overlay never returned focus to what opened it',
+      'The one exception, Compare, already got this right (it focuses its own close button on open); brought every other overlay up to that same standard: focus moves into the overlay when it opens, and back to whatever triggered it when it closes, even through nesting (e.g. opening Export from inside Settings correctly returns to the Export button in Settings, not to Settings\' own trigger)',
+      'While verifying the nested case, found and fixed a real bug it exposed: pressing Escape while Export was open on top of Settings closed both at once, instead of just the top layer - jarring for a keyboard user expecting one Escape to undo one step',
+      'Verified in a real browser session across all six overlays (Settings, Shortcuts, Export, What\'s New, Welcome tour, image lightbox) plus the nested Export-inside-Settings case: correct focus-in, correct focus-restore, zero console errors, no change to any overlay\'s visuals or existing click/Escape/backdrop behavior',
+    ],
+  },
+  {
     v: 125,
     title: 'Escape key now closes Export, What\'s New, and the Welcome tour',
     ts: '2026-07-04T10:03:00.000Z',

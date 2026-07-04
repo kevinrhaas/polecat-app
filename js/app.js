@@ -180,6 +180,22 @@ function stopGeneration() {
   if (sb) { sb.disabled = true; const st = sb.querySelector('.stop-text'); if (st) st.textContent = 'Stopping…'; }
 }
 
+// ── Modal focus management ──────────────────────────────────────────────────
+// Every overlay/dialog should move focus into itself when it opens and hand
+// focus back to whatever triggered it when it closes, so keyboard and
+// screen-reader users aren't dropped back at the top of the page. Stack-based
+// so a modal opened from inside another (e.g. Export from within Settings)
+// unwinds correctly.
+const _focusStack = [];
+function pushModalFocus(focusEl) {
+  _focusStack.push(document.activeElement);
+  if (focusEl) setTimeout(() => focusEl.focus(), 60);
+}
+function popModalFocus() {
+  const el = _focusStack.pop();
+  if (el && typeof el.focus === 'function' && document.body.contains(el)) el.focus();
+}
+
 // ── Clipboard ───────────────────────────────────────────────────────────────
 function copyText(text, btn) {
   navigator.clipboard.writeText(text).then(() => {
@@ -233,12 +249,16 @@ function showShareModal(data) {
   }
   content.innerHTML = html;
   if (typeof hljs !== 'undefined') content.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+  const wasOpen = modal.classList.contains('open');
   modal.classList.add('open');
   modal.removeAttribute('aria-hidden');
+  if (!wasOpen) pushModalFocus($('closeShare'));
 }
 function closeShareModal() {
   const modal = $('shareModal');
+  const wasOpen = modal?.classList.contains('open');
   if (modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
+  if (wasOpen) popModalFocus();
   // NB: must be window.history — a module-scoped `history` (the chat thread
   // list, declared below) shadows the global of the same name in this file.
   if (location.hash.startsWith('#share=')) window.history.replaceState(null, '', location.pathname);
@@ -246,9 +266,19 @@ function closeShareModal() {
 function openKbd() {
   closeSidebar();   // same fix as openConfig(): the sidebar's own higher z-index
                      // backdrop was blurring this modal when opened from its link
-  const m = $('kbdModal'); if (m) { m.classList.add('open'); m.removeAttribute('aria-hidden'); }
+  const m = $('kbdModal');
+  if (m) {
+    const wasOpen = m.classList.contains('open');
+    m.classList.add('open'); m.removeAttribute('aria-hidden');
+    if (!wasOpen) pushModalFocus($('closeKbd'));
+  }
 }
-function closeKbd() { const m = $('kbdModal'); if (m) { m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); } }
+function closeKbd() {
+  const m = $('kbdModal'); if (!m) return;
+  const wasOpen = m.classList.contains('open');
+  m.classList.remove('open'); m.setAttribute('aria-hidden', 'true');
+  if (wasOpen) popModalFocus();
+}
 // Copy the full exchange — question + each model's answer + consensus — as markdown.
 // Useful for pasting into docs, Slack, Notion, etc.
 function copyThreadAsMarkdown(payload, btn) {
@@ -2353,12 +2383,13 @@ function openCompareModal(entries) {
     `</div>`;
   document.body.appendChild(ov);
   ov.querySelectorAll('pre code').forEach(b => { if (typeof hljs !== 'undefined') hljs.highlightElement(b); });
-  const close = () => { ov.remove(); document.removeEventListener('keydown', onKey); };
+  let closed = false;
+  const close = () => { if (closed) return; closed = true; ov.remove(); document.removeEventListener('keydown', onKey); popModalFocus(); };
   const onKey = (e) => { if (e.key === 'Escape') close(); };
   ov.onclick = (e) => { if (e.target === ov) close(); };
   document.getElementById('cmpClose' + uid).onclick = close;
   document.addEventListener('keydown', onKey);
-  setTimeout(() => document.getElementById('cmpClose' + uid)?.focus(), 60);
+  pushModalFocus(document.getElementById('cmpClose' + uid));
 }
 
 // ── Consensus insight sentence ──────────────────────────────────────────────
@@ -2730,9 +2761,15 @@ function openConfig(tab) {
   renderModels(); renderKeys(); renderArbitration(); renderDonate(); renderSystemPrompt();
   const stored = cfg.ui.lastTab;
   setConfigTab(tab || (VALID_TABS.has(stored) ? stored : 'models'));
+  const wasOpen = $('configModal').classList.contains('open');
   $('configModal').classList.add('open');
+  if (!wasOpen) pushModalFocus($('closeConfig'));
 }
-function closeConfig() { $('configModal').classList.remove('open'); }
+function closeConfig() {
+  const wasOpen = $('configModal').classList.contains('open');
+  $('configModal').classList.remove('open');
+  if (wasOpen) popModalFocus();
+}
 
 // One-tap free demo: select TWO fast, free models + a light consensus so the
 // cross-model magic is obvious, then keep the clickable example questions up.
@@ -2751,7 +2788,9 @@ function startFreeDemo() {
   cfg.consensus = true;                       // show the consensus so it's obvious how it works
   persist();
   closeConfig(); closeSidebar();
+  const wasWelcomeOpen = $('welcomeOverlay')?.classList.contains('open');
   localStorage.setItem(WELCOME_KEY, '1'); $('welcomeOverlay')?.classList.remove('open');
+  if (wasWelcomeOpen) popModalFocus();
   const t = $('cgTry'); if (t) t.hidden = true;
   const hint = $('cgHint'); if (hint) hint.hidden = false;
   buildChips(); showGreeting(); renderSuggestions();        // keep the example questions visible
@@ -3166,10 +3205,12 @@ function openExport() {
     `<div class="exp-actions"><button class="btn btn-ghost" id="expCancel">Cancel</button><button class="btn btn-solid" id="expGo">Download</button></div>` +
     `</div>`;
   document.body.appendChild(ov);
-  const close = () => { ov.remove(); document.removeEventListener('keydown', onKey); };
+  let closed = false;
+  const close = () => { if (closed) return; closed = true; ov.remove(); document.removeEventListener('keydown', onKey); popModalFocus(); };
   const onKey = (e) => { if (e.key === 'Escape') close(); };
   ov.onclick = (e) => { if (e.target === ov) close(); };
   document.addEventListener('keydown', onKey);
+  pushModalFocus($('expCancel'));
   $('expCancel').onclick = close;
   $('expGo').onclick = () => {
     const incS = $('expSettings').checked, incK = $('expKeys').checked, incH = $('expHistory').checked;
@@ -3497,10 +3538,12 @@ function openWhatsNew() {
     `<div class="exp-actions"><button class="btn btn-solid" id="wnClose">Close</button></div>` +
     `</div>`;
   document.body.appendChild(ov);
-  const close = () => { ov.remove(); document.removeEventListener('keydown', onKey); };
+  let closed = false;
+  const close = () => { if (closed) return; closed = true; ov.remove(); document.removeEventListener('keydown', onKey); popModalFocus(); };
   const onKey = (e) => { if (e.key === 'Escape') close(); };
   ov.onclick = (e) => { if (e.target === ov) close(); };
   document.addEventListener('keydown', onKey);
+  pushModalFocus($('wnClose'));
   $('wnClose').onclick = close;
 }
 
@@ -3517,10 +3560,17 @@ function renderDonate() {
 //  WELCOME TOUR
 // ════════════════════════════════════════════════════════════════════════════
 let _wslide = 1; const W_TOTAL = 6;
-function showWelcome() { _wslide = 1; gotoWelcome(1); $('welcomeOverlay').classList.add('open'); }
+function showWelcome() {
+  _wslide = 1; gotoWelcome(1);
+  const wasOpen = $('welcomeOverlay').classList.contains('open');
+  $('welcomeOverlay').classList.add('open');
+  if (!wasOpen) pushModalFocus($('wClose'));
+}
 function dismissWelcome(openCfg = false) {
   localStorage.setItem(WELCOME_KEY, '1');
+  const wasOpen = $('welcomeOverlay').classList.contains('open');
   $('welcomeOverlay').classList.remove('open');
+  if (wasOpen) popModalFocus();
   if (openCfg) { localStorage.setItem(KEYS_NUDGE_KEY, '1'); setTimeout(() => openConfig('keys'), 200); }
   else if (!configuredProviders(cfg).length) { localStorage.setItem(KEYS_NUDGE_KEY, '1'); setTimeout(() => openConfig('keys'), 400); }
 }
@@ -3569,7 +3619,9 @@ function init() {
   $('closeConfig').onclick = closeConfig;
   $('doneConfig').onclick  = closeConfig;
   $('configModal').onclick = (e) => { if (e.target === $('configModal')) closeConfig(); };
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('configModal').classList.contains('open')) closeConfig(); });
+  // Skip if a higher-stacked overlay (e.g. Export, opened from the Keys tab) is
+  // showing on top — Escape should close just that overlay first, not both at once.
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('configModal').classList.contains('open') && !document.querySelector('.exp-overlay, .compare-overlay')) closeConfig(); });
   $('tourBtn').onclick = () => { closeConfig(); setTimeout(showWelcome, 200); };
 
   $('clearKeys').onclick = () => {
@@ -3658,8 +3710,18 @@ function init() {
   { const hint = $('cgHint'); if (hint) hint.hidden = !demoActive; }   // show "pick a question" once demo is active
 
   // Image lightbox — click any thumbnail to view full-size
-  const openLightbox = (src, alt) => { const lb = $('lightbox'); $('lightboxImg').src = src; $('lightboxImg').alt = alt || ''; lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false'); };
-  const closeLightbox = () => { const lb = $('lightbox'); lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); $('lightboxImg').src = ''; };
+  const openLightbox = (src, alt) => {
+    const lb = $('lightbox'); $('lightboxImg').src = src; $('lightboxImg').alt = alt || '';
+    const wasOpen = lb.classList.contains('open');
+    lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false');
+    if (!wasOpen) pushModalFocus($('lightboxClose'));
+  };
+  const closeLightbox = () => {
+    const lb = $('lightbox');
+    const wasOpen = lb.classList.contains('open');
+    lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); $('lightboxImg').src = '';
+    if (wasOpen) popModalFocus();
+  };
   document.addEventListener('click', (e) => {
     const img = e.target.closest('.msg-thumb, .attach-thumb img');
     if (img && img.src) { e.preventDefault(); openLightbox(img.src, img.alt); }
@@ -3805,7 +3867,9 @@ function tryShowShareFromHash() {
   // A shared link always wins over whatever else was about to greet the
   // visitor (first-run welcome tour, the settings deep-link) — otherwise a
   // higher-stacked overlay can hide the very thing they clicked through for.
+  const wasWelcomeOpen = $('welcomeOverlay')?.classList.contains('open');
   $('welcomeOverlay')?.classList.remove('open');
+  if (wasWelcomeOpen) popModalFocus();
   closeConfig();
   showShareModal(data);
 }
