@@ -1731,11 +1731,19 @@ async function runConsensus() {
     provenance: (data) => onProvenance(data),
     arbiterFailed: (sel, err) => recordArbiterHealthFailure(sel, err),
   });
-  // "Responses at a glance" only needs the model answers, not the arbiter's
-  // provenance analysis — always show it, even with the agreement map off.
-  // (No-op if onProvenance already rendered it above.)
+  // "Responses at a glance", follow-up chips, and the re-synthesis strip don't
+  // need the arbiter's provenance analysis — always show them, even with the
+  // agreement map off (onProvenance() is never called in that case, since it's
+  // driven entirely by the provenance callback). Each render fn already guards
+  // against double-rendering, so this is a no-op if onProvenance ran above.
   const _consPair = $('conv_consensus')?.querySelector('.qa-pair:last-child');
-  if (_consPair) renderModelSnapshotsEl(_consPair);
+  if (_consPair) {
+    renderModelSnapshotsEl(_consPair);
+    renderFollowUpChips(_consPair, lastConsensusProvenance);
+    if (lastSynthesisOrdered.length >= 2) {
+      renderResynthStrip(_consPair, lastSynthesisOrdered, lastSynthesisPrompt, activeStrategy(cfg).id);
+    }
+  }
 }
 // EPIC 1 · P4 — Inline attribution: color-coded paragraph highlighting.
 // A floating tooltip div is shared across all attributed paragraphs.

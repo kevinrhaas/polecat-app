@@ -4,6 +4,18 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 133,
+    title: 'Fixed follow-ups and "try another strategy" disappearing when the agreement map is off',
+    ts: '2026-07-04T17:46:00.000Z',
+    items: [
+      'With the roadmap fully checked off, read through the consensus render path instead of another manual click-through, since the code already had one telling clue: a comment explaining why the model-snapshot strip had to be force-rendered outside the provenance callback',
+      'Found the same problem the earlier fix didn\'t fully cover: turning off Settings\' agreement-map toggle skips the arbiter\'s provenance step entirely, and the follow-up question chips and the re-synthesis strategy strip were both wired to render only from that callback - so they silently vanished on every consensus answer whenever agreement-map was off, not just the analytical panel it was meant to hide',
+      'Confirmed the intended behavior already existed elsewhere: reopening a saved conversation renders all three (snapshots, follow-ups, re-synthesis) unconditionally - the live path had just never been updated to match',
+      'Fixed by rendering follow-up chips and the re-synthesis strip unconditionally after arbitration, same as the snapshot strip; verified live with two mocked models and agreement-map off: chips and the strategy strip now appear every time, and reproduced the bug on the pre-fix code first to confirm it was real',
+      '`node scripts/validate.mjs` passes; no change to the panel itself or its on/off toggle',
+    ],
+  },
+  {
     v: 132,
     title: 'Fixed a broken screen-reader link on the consensus "How this was formed" panel',
     ts: '2026-07-04T16:40:00.000Z',

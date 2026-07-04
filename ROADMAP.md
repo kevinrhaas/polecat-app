@@ -342,6 +342,29 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-04, 12:46 CT): follow-up chips and the "try another strategy"
+  re-synthesis strip vanished when the agreement-map toggle was off.** With the roadmap and
+  backlog fully checked off, read through `runConsensus()`/`onProvenance()` in `js/app.js`
+  instead of another manual click-through — a comment already sitting right there explained why
+  the "Responses at a glance" snapshot strip had to be force-rendered *outside* the provenance
+  callback ("only needs the model answers, not the arbiter's provenance analysis"), which was a
+  strong hint the same class of bug existed elsewhere. It did: `renderFollowUpChips()` and
+  `renderResynthStrip()` were only ever called from inside `onProvenance()`, which
+  `arbitration.js`'s `maybeProvenance()` never invokes when `cfg.arbitration.provenance` is off
+  (`ctx.provenanceEnabled` gate at `js/arbitration.js:296`). So turning off the agreement-map
+  toggle — a first-class, persisted setting, not an edge case — silently killed two real,
+  actionable features (follow-up question chips, and the zero-extra-call "try a different
+  synthesis strategy" strip) on every live consensus answer, not just the analytical panel the
+  toggle was meant to hide. Confirmed the intended behavior via `restoreThread()`, which already
+  renders all three unconditionally on a reopened chat — the live path had just never been
+  updated to match. Fixed by rendering `renderFollowUpChips()` and `renderResynthStrip()`
+  unconditionally after `runArbitration()` in `runConsensus()`, same pattern as the existing
+  snapshot-strip fix (both render fns already guard against double-rendering, so this is a no-op
+  when `onProvenance` already rendered them). Verified live in a real headless-Chromium session
+  with two mocked demo-model responses and agreement-map off: reproduced the bug on the pre-fix
+  code first (chips and strip both absent), then confirmed the fix (both present, zero console
+  errors). `node scripts/validate.mjs` passes. `js/app.js` only, no change to the panel itself or
+  its on/off toggle.
 - [x] **BUG (FIXED 2026-07-04, 11:40 CT): the "How this was formed" provenance panel's
   aria-controls pointed at a nonexistent element.** With the roadmap and backlog fully checked
   off, audited the EPIC 1 provenance/agreement panel — the disclosure that explains how each
