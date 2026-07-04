@@ -1,6 +1,17 @@
 {
-  "updated": "2026-07-04 10:48 CT",
+  "updated": "2026-07-04 11:40 CT",
   "entries": [
+    {
+      "date": "2026-07-04",
+      "time": "11:40 CT",
+      "title": "Fixed a broken screen-reader link on the consensus \"How this was formed\" panel",
+      "items": [
+        "With the roadmap fully checked off, audited the flagship provenance/agreement panel (the disclosure that explains how each consensus answer was formed) for accessibility instead of picking another visual polish item",
+        "Found the toggle button's aria-controls always pointed at a nonexistent element ID - it referenced a pair.id that was never actually set anywhere in the app, so it silently rendered as aria-controls=\"prov-body-\" on every consensus answer",
+        "Screen readers had no programmatic link between the toggle and the panel it opens - exactly the feature meant to make Polecat's multi-model consensus story legible to everyone",
+        "Gave the panel body a real generated ID and wired the button to it correctly; verified node scripts/validate.mjs passes and the toggle's expand/collapse behavior is unchanged"
+      ]
+    },
     {
       "date": "2026-07-04",
       "time": "10:48 CT",

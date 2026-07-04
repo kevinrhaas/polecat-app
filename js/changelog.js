@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 132,
+    title: 'Fixed a broken screen-reader link on the consensus "How this was formed" panel',
+    ts: '2026-07-04T16:40:00.000Z',
+    items: [
+      'With the roadmap fully checked off, audited the flagship provenance/agreement panel (the disclosure that explains how each consensus answer was formed) for accessibility instead of picking another visual polish item',
+      'Found the toggle button\'s aria-controls always pointed at a nonexistent element ID - it referenced a pair.id that was never actually set anywhere in the app, so it silently rendered as aria-controls="prov-body-" on every consensus answer',
+      'Screen readers had no programmatic link between the toggle and the panel it opens - exactly the feature meant to make Polecat\'s multi-model consensus story legible to everyone',
+      'Gave the panel body a real generated ID and wired the button to it correctly; verified node scripts/validate.mjs passes and the toggle\'s expand/collapse behavior is unchanged',
+    ],
+  },
+  {
     v: 131,
     title: 'Model/Consensus tab bar: added the same scroll hint just shipped for the chip row',
     ts: '2026-07-04T15:48:00.000Z',

@@ -329,6 +329,18 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-04, 11:40 CT): the "How this was formed" provenance panel's
+  aria-controls pointed at a nonexistent element.** With the roadmap and backlog fully checked
+  off, audited the EPIC 1 provenance/agreement panel — the disclosure that explains how each
+  consensus answer was formed, the feature most directly showcasing the multi-model
+  differentiator — for accessibility instead of another visual pass. `renderProvenancePanel()`
+  in `js/app.js` built the toggle button's `aria-controls` from `pair.id`, but `pair` (the
+  `.qa-pair` container) never had an `.id` assigned anywhere in the file, so every consensus
+  answer rendered `aria-controls="prov-body-"` — pointing at nothing. Screen-reader users got
+  no programmatic disclosure relationship for the panel. Fixed by generating a real unique id
+  for the panel body and using it on both the button and the body div. Verified
+  `node scripts/validate.mjs` passes and the toggle's expand/collapse/auto-expand-on-disagreement
+  behavior is unchanged.
 - [x] **BUG (FIXED 2026-07-04, 10:48 CT): the model/consensus tab bar could hide the Consensus
   tab off-screen on mobile with no scroll cue.** Right after the previous run shipped a
   scroll-fade hint for the composer's model-chip row (see the changelog entry immediately

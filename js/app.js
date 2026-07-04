@@ -1899,15 +1899,16 @@ function renderProvenancePanel(pair, prov) {
     notableHtml = `<details class="prov-details"><summary>Notable claims (${prov.notable.length})</summary><div class="prov-details-body">${items}</div></details>`;
   }
 
+  const bodyId = 'prov-body-' + Math.random().toString(36).slice(2, 8);
   const panel = el('div', 'provenance-panel');
   panel.innerHTML =
-    `<button class="prov-toggle" aria-expanded="false" aria-controls="prov-body-${pair.id || ''}">` +
+    `<button class="prov-toggle" aria-expanded="false" aria-controls="${bodyId}">` +
     `<span class="prov-toggle-icon" aria-hidden="true">${CHEV_R}</span>` +
     `<span class="prov-toggle-label">How this was formed</span>` +
     (agreeLevel ? `<span class="prov-badge ${agreeLevel.cls}">${escapeHtml(agreeLevel.label)}</span>` : '') +
     (isLocal ? `<span class="prov-badge prov-local" title="Contribution estimated from text overlap — no extra model call">measured</span>` : '') +
     `</button>` +
-    `<div class="prov-body" hidden>` +
+    `<div class="prov-body" id="${bodyId}" hidden>` +
     `<div class="prov-section">` +
     `<div class="prov-section-label">Contribution <span class="prov-approx">(approximate)</span></div>` +
     barsHtml +
