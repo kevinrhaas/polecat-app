@@ -490,7 +490,7 @@ select.field-input { font-family: inherit; cursor: pointer; min-width: 0; max-wi
 .switch.on { background: var(--brand-b); border-color: var(--brand-b); }
 .switch.on .knob { transform: translateX(17px); background: #fff; }
 .arb-body { display: flex; flex-direction: column; gap: 10px; }
-.arb-body[aria-disabled="true"] { opacity: .5; }
+.arb-body[aria-disabled="true"] { opacity: .5; pointer-events: none; }
 .mini-label { font-size: 10px; text-transform: uppercase; letter-spacing: .4px; color: var(--text-3); font-weight: 700; }
 .mini-note { text-transform: none; letter-spacing: 0; color: var(--text-2); font-weight: 400; }
 

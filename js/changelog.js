@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 128,
+    title: 'Models & Consensus tab: disabled controls can no longer be clicked or tabbed into',
+    ts: '2026-07-04T12:50:00.000Z',
+    items: [
+      'With the roadmap and backlog fully checked off, audited the Models & Consensus tab in a real headless-Chromium session, focusing on the differentiator screen where answering models, strategy, and the final-answer model all get configured',
+      'Found that switching "Consensus answer" off only dimmed the Strategy, Agreement map, and Final-answer-by controls to 50% opacity - they looked disabled but every select, checkbox, and switch underneath stayed fully clickable and keyboard-focusable, so a user could keep changing consensus settings that had no effect while consensus was off',
+      'Added the standard `inert` attribute (plus a `pointer-events: none` CSS fallback) to that control block whenever consensus is off, so it truly can\'t be clicked, tabbed into, or reached by a screen reader - matching how it already looks',
+      'Verified in a real browser session: with consensus off, clicks no longer reach the controls (elementFromPoint falls through to the parent) and focus() no longer lands on them; flipping the switch back on instantly restores full interactivity with no regression. Zero console errors, `node scripts/validate.mjs` passes',
+    ],
+  },
+  {
     v: 127,
     title: 'Accessibility sweep: fixed a visible dark-mode bug plus several low-contrast labels',
     ts: '2026-07-04T11:58:00.000Z',

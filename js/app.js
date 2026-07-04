@@ -3130,7 +3130,7 @@ function renderArbitration() {
   wrap.innerHTML =
     `<label class="switch-row"><span><b>Consensus answer</b><br><span class="switch-sub">Off = individual model tabs only, no combined answer</span></span>` +
       `<span class="switch ${on ? 'on' : ''}" id="consensusSwitch" role="switch" aria-checked="${on}" tabindex="0"><span class="knob"></span></span></label>` +
-    `<div class="arb-body"${on ? '' : ' aria-disabled="true"'}>` +
+    `<div class="arb-body"${on ? '' : ' aria-disabled="true" inert'}>` +
       `<label class="mini-label">Strategy <span class="mini-note">how the combined answer is produced</span></label><select class="field-input" id="arbSelect">${stratOpts}</select>` +
       `<div class="arb-desc">${escapeHtml(strat.description || '')}</div>` +
       `<label class="switch-row"><span><b>Agreement map</b><br><span class="switch-sub">After each answer, show how much the models agreed and what each contributed</span></span>` +
