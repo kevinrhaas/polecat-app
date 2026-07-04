@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 130,
+    title: 'Composer: added a scroll hint to the model-chip row on mobile',
+    ts: '2026-07-04T15:04:00.000Z',
+    items: [
+      'With the roadmap and backlog fully checked off, audited the app in a real headless-Chromium mobile session (390x844) instead of another code-only pass',
+      'Found that picking even 2 models overflowed the composer\'s model-chip row on a phone-width screen - the row hides its scrollbar for a clean look, so the "+ Add" button and later chips\' remove controls were scrolled off-screen with zero visual cue to swipe sideways',
+      'Added a subtle right-edge fade over the chip row that only appears when there\'s more content scrolled off-screen, and disappears once you\'ve scrolled to the end (or if everything already fits) - matching the same fade-affordance pattern used for other scrollable UI',
+      'Verified in a real mobile browser session: fade shows exactly when content overflows, hides at the scroll end and when nothing overflows, looks correct in both light and dark mode, and the composer footer layout is unaffected at both mobile and desktop widths. Zero console errors, `node scripts/validate.mjs` passes',
+    ],
+  },
+  {
     v: 129,
     title: 'Fixed a misleading warning about which attached files get trimmed over budget',
     ts: '2026-07-04T13:56:00.000Z',

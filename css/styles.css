@@ -162,8 +162,13 @@ header {
 .composer.dragover .drop-hint { display: flex; }
 
 /* ── Model chips ─────────────────────────────────────────── */
+.model-chips-wrap { position: relative; display: flex; flex: 1; min-width: 0; }
 .model-chips { display: flex; gap: 5px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; align-items: center; }
 .model-chips::-webkit-scrollbar { display: none; }
+/* Fade hint on the right edge when the chip row has more content than fits (mobile) */
+.mc-fade { position: absolute; top: 0; right: 0; bottom: 0; width: 22px; pointer-events: none; opacity: 0; transition: opacity .15s; background: linear-gradient(to right, transparent, var(--surface) 70%); border-radius: 0 8px 8px 0; }
+.mc-fade.show { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .mc-fade { transition: none; } }
 .m-chip {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 3px 5px 3px 8px; border-radius: 100px; border: 1px solid var(--border);

@@ -769,6 +769,16 @@ function buildChips() {
     : `Send to ${list.length} <kbd>⌘↵</kbd>`;
 
   updateVisionNote();
+  updateChipsFade();
+}
+// Shows a right-edge fade over the model-chip row when it's scrolled and more
+// chips (or "+ Add") sit off-screen — the row hides its scrollbar for looks,
+// so without this a phone user has no visual cue there's anything to swipe to.
+function updateChipsFade() {
+  const row = $('modelChips'), fade = $('mcFade');
+  if (!row || !fade) return;
+  const hasMore = row.scrollWidth - row.clientWidth - row.scrollLeft > 4;
+  fade.classList.toggle('show', hasMore);
 }
 function setChipsDisabled(disabled) {
   document.querySelectorAll('.m-chip').forEach(c => c.classList.toggle('disabled', disabled));
@@ -3609,6 +3619,8 @@ function init() {
   applyTheme(localStorage.getItem('polecat_theme') || 'dark');
   requestPersistentStorage();
   buildChips();
+  $('modelChips').addEventListener('scroll', updateChipsFade, { passive: true });
+  window.addEventListener('resize', updateChipsFade);
   { const lv = $('logoVer'); if (lv) lv.textContent = buildStamp(); }
 
   const note = takeMigrationNote();                  // e.g. "Your saved setup carried over"
