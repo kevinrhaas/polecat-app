@@ -306,6 +306,13 @@ pass, never a jarring rewrite, never regress:**
       cooking one.** Quality & consistency over quantity.
 - [x] Keep the website's brand, "last updated" stamp, and changelog in sync with
       the app; emphasise the cross-model consensus differentiator. (Ongoing — updated each run.)
+- [x] **BUG (FIXED 2026-07-03, 20:14 CT): the examples carousel (the homepage's signature
+      "they disagreed → consensus reconciled" showcase) was completely unreachable by keyboard.**
+      Its horizontal scroll row had no `tabindex` and no focusable children inside the cards, so a
+      keyboard-only visitor could Tab straight past the section and only ever see the first of 6
+      cards. Added `tabindex="0"` + `role="region"` + a visible focus ring to the scroll container
+      so arrow keys now page through all 6 cards. Verified in headless Chromium (scrollLeft moves
+      from 0 to 356px on 3x ArrowRight while focused, visible purple outline).
 
 ---
 
