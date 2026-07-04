@@ -18,6 +18,7 @@ import { $, el, escapeHtml, nl2br, renderMarkdown, highlightBubble, toast, apply
 
 const DONATE_URL = 'https://ko-fi.com/polecatlive';
 const WELCOME_KEY = 'polecat_welcomed';
+const KEYS_NUDGE_KEY = 'polecat_keys_nudge_shown';
 const CONS_HINT_KEY = 'polecat_cons_hint';
 const BACKUP_KEY = 'polecat_last_backup';        // ms timestamp of the last successful export
 const BACKUP_NUDGE_KEY = 'polecat_backup_nudge_at'; // ms timestamp the backup nudge was last shown
@@ -3510,8 +3511,8 @@ function showWelcome() { _wslide = 1; gotoWelcome(1); $('welcomeOverlay').classL
 function dismissWelcome(openCfg = false) {
   localStorage.setItem(WELCOME_KEY, '1');
   $('welcomeOverlay').classList.remove('open');
-  if (openCfg) setTimeout(() => openConfig('keys'), 200);
-  else if (!configuredProviders(cfg).length) setTimeout(() => openConfig('keys'), 400);
+  if (openCfg) { localStorage.setItem(KEYS_NUDGE_KEY, '1'); setTimeout(() => openConfig('keys'), 200); }
+  else if (!configuredProviders(cfg).length) { localStorage.setItem(KEYS_NUDGE_KEY, '1'); setTimeout(() => openConfig('keys'), 400); }
 }
 function welcomeNext() { if (_wslide < W_TOTAL) gotoWelcome(++_wslide, 'forward'); else dismissWelcome(true); }
 function welcomeBack() { if (_wslide > 1) gotoWelcome(--_wslide, 'back'); }
@@ -3771,7 +3772,12 @@ function init() {
     // Guard against a share link arriving (via hashchange) in the gap before
     // this fires — it must never pop the welcome tour over a shared answer.
     setTimeout(() => { if (!location.hash.startsWith('#share=')) showWelcome(); }, 350);
-  } else if (!hasKeys) {
+  } else if (!hasKeys && !localStorage.getItem(KEYS_NUDGE_KEY)) {
+    // One-time nudge for a returning visitor who dismissed the welcome tour
+    // without adding a key or trying the demo. Without this flag it would
+    // re-open Settings on every single reload forever, even right after the
+    // user closes it — this fires once, not on every future visit.
+    localStorage.setItem(KEYS_NUDGE_KEY, '1');
     setTimeout(() => { if (!location.hash.startsWith('#share=')) openConfig('keys'); }, 400);
   }
   // A same-document hash change (no reload) doesn't re-run init() — e.g. an

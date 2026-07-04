@@ -317,6 +317,34 @@ pass, never a jarring rewrite, never regress:**
 ---
 
 ## Backlog (smaller, pick up anytime)
+- [x] **BUG (FIXED 2026-07-03, 22:32 CT): Settings force-opened on EVERY page load for a returning
+  visitor with no key and no demo model.** With the roadmap still fully checked off, ran a real
+  headless-Chromium session (Puppeteer + system chromium; playwright wasn't cached locally, so used
+  puppeteer-core against `/usr/bin/chromium` instead — same audit approach as prior runs) simulating
+  a returning visitor: `localStorage.polecat_welcomed = '1'` already set (so the welcome tour's own
+  `!seen` gate correctly skips it), but no provider key and no demo model selected — a realistic,
+  common state (anyone who clicked "Skip" on the welcome tour without adding a key, or who later
+  cleared their keys/selections). Confirmed via `document.getElementById('configModal').classList`
+  that Settings rendered `open` on the very first load — then, more importantly, drove the full
+  cycle (load -> manually click the modal's own close button, exactly like a real user dismissing
+  it -> `page.reload()`) and found it popped open again immediately, with no way to make it stop
+  short of adding a key or trying the demo. Root cause: `init()`'s `else if (!hasKeys)` branch
+  (`js/app.js`) that auto-opens Settings on the Keys tab had no once-only guard, unlike its sibling
+  branch one line above (`!hasKeys && !seen`, which correctly gates the welcome tour on `WELCOME_KEY`
+  so it only ever shows once) — so on every subsequent page load/refresh, for as long as the user
+  has no key or demo model, this branch fires again unconditionally, forcing Settings over the
+  entire screen every single time, directly contradicting the "no jarring, no nagging" north star
+  and the app's own precedent of one-time nudges (`WELCOME_KEY`, `CONS_HINT_KEY`, `BACKUP_NUDGE_KEY`
+  already exist for exactly this purpose). Fixed by adding a matching one-time `KEYS_NUDGE_KEY`
+  (`polecat_keys_nudge_shown`) flag, set the moment the no-keys nudge is shown from either of its
+  two call sites (`init()`'s fallback branch, and `dismissWelcome()`'s own no-keys nudge right after
+  the welcome tour), and checked before firing again. Verified three scenarios in headless Chromium:
+  (1) a brand-new visitor still sees the welcome tour, and skipping it without a key still opens
+  Settings once as before; (2) the exact repro above — load, close, reload — now stays on the chat
+  screen on reload instead of re-opening Settings; (3) a visitor with a demo model already selected
+  (seeded via `localStorage.polecat`) never sees the nudge at all, unchanged. `node scripts/
+  validate.mjs` passes. No UI/HTML changes needed — the fix is entirely in `js/app.js`'s init/dismiss
+  logic.
 - [x] **BUG (FIXED 2026-07-03, 21:10 CT): opening Export, What's New, or Compare from the sidebar
   left the sidebar rendered dark and blurry underneath, even in light theme.** With the roadmap
   still fully checked off, ran a real headless-Chromium session (Playwright + system chromium) in

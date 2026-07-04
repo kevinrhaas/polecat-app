@@ -1,6 +1,16 @@
 {
-  "updated": "2026-07-03 21:10 CT",
+  "updated": "2026-07-03 22:32 CT",
   "entries": [
+    {
+      "date": "2026-07-03",
+      "time": "22:32 CT",
+      "title": "Fixed Settings force-opening on every visit for keyless returning users",
+      "items": [
+        "With the roadmap fully checked off, drove a real headless-Chromium session simulating a returning visitor who dismissed the welcome tour without adding a key or trying the free demo",
+        "Found Settings popped open over the whole screen on every single page load for that user - even immediately after they manually closed it - because the no-keys nudge had no once-only guard, unlike the welcome tour it sits right next to",
+        "Fixed by remembering that the nudge has already been shown, so it now fires once and never re-interrupts a returning visitor again; verified the first-time nudge, the welcome-tour-skip nudge, and the normal has-a-key/demo path (which never sees it) all still behave correctly"
+      ]
+    },
     {
       "date": "2026-07-03",
       "time": "21:10 CT",

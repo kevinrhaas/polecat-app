@@ -4,6 +4,16 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 121,
+    title: 'Fixed Settings force-opening on every visit for keyless returning users',
+    ts: '2026-07-04T03:32:00.000Z',
+    items: [
+      'With the roadmap fully checked off, drove a real headless-Chromium session simulating a returning visitor who dismissed the welcome tour without adding a key or trying the free demo',
+      'Found Settings popped open over the whole screen on every single page load for that user - even immediately after they manually closed it - because the no-keys nudge had no once-only guard, unlike the welcome tour it sits right next to',
+      'Fixed by remembering that the nudge has already been shown, so it now fires once and never re-interrupts a returning visitor again; verified the first-time nudge, the welcome-tour-skip nudge, and the normal has-a-key/demo path (which never sees it) all still behave correctly',
+    ],
+  },
+  {
     v: 120,
     title: 'Fixed the sidebar rendering dark and blurry behind Export/What\'s New/Compare',
     ts: '2026-07-04T02:10:00.000Z',
