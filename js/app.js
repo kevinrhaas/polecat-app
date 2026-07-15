@@ -14,7 +14,14 @@ import {
   allStrategies, activeStrategy, runArbitration, exportSettings, importSettings,
   computeParaAttribution, computeLocalAgreement,
 } from './arbitration.js';
-import { $, el, escapeHtml, nl2br, renderMarkdown, highlightBubble, toast, applyTheme, currentTheme } from './ui.js';
+import { $, el, escapeHtml, nl2br, renderMarkdown, highlightBubble, toast } from './ui.js';
+// Polecat Shell (vendored, READ-ONLY — see CLAUDE.md): frame, theme, waffle, What's-New.
+import { configure as configureTheme, applyTheme, toggleMode, effectiveMode } from '../vendor/polecat-shell/theme.js';
+import { initShell, rightPanel, appSwitcher } from '../vendor/polecat-shell/shell.js';
+import { publicFleet } from '../vendor/polecat-shell/catalog.js';
+import { initWhatsNew, hasUnseen } from '../vendor/polecat-shell/whatsnew.js';
+import { icon as shellIcon } from '../vendor/polecat-shell/icons.js';
+import { CHANGELOG, LATEST_VERSION } from './changelog.js';
 
 const DONATE_URL = 'https://ko-fi.com/polecatlive';
 const WELCOME_KEY = 'polecat_welcomed';
@@ -3287,9 +3294,21 @@ function openImport() {
 // ════════════════════════════════════════════════════════════════════════════
 //  SIDEBAR + CONVERSATION HISTORY
 // ════════════════════════════════════════════════════════════════════════════
-function openSidebar() { renderHistoryList(); renderBackupStatus(); maybeShowIosInstallHint(); maybeShowBackupNudge(); $('sidebar').classList.add('open'); $('sidebarBackdrop').classList.add('open'); }
-function closeSidebar() { $('sidebar').classList.remove('open'); $('sidebarBackdrop').classList.remove('open'); }
-function toggleSidebar() { $('sidebar').classList.contains('open') ? closeSidebar() : openSidebar(); }
+// The old overlay sidebar is now the Polecat Shell rail: persistent on
+// desktop, an overlay drawer under 860px (the shell's hamburger opens it).
+// closeSidebar() only ever closes the MOBILE drawer — and without touching
+// the persisted desktop open-state, so a phone session can't collapse the
+// rail a user keeps open on their laptop.
+const MOBILE_MQ = '(max-width: 860px)';
+function refreshRailFurniture() { renderHistoryList(); renderBackupStatus(); maybeShowIosInstallHint(); maybeShowBackupNudge(); }
+function openSidebar() { refreshRailFurniture(); _shell?.setOpen(true); }
+function closeSidebar() {
+  if (!_shell || !window.matchMedia(MOBILE_MQ).matches) return;
+  const keep = localStorage.getItem('polecat.rail.open');
+  _shell.setOpen(false);
+  if (keep == null) localStorage.removeItem('polecat.rail.open');
+  else localStorage.setItem('polecat.rail.open', keep);
+}
 
 // One-tap backup nudge: a quiet "last backed up" note plus a rare, dismissible
 // reminder — never shown to brand-new users, never more than once every few weeks.
@@ -3535,48 +3554,33 @@ function renderStaticConsensus(prompt, text) {
 }
 
 // ── What's new (changelog) ──────────────────────────────────────────────────
+// The feed is the shell's initWhatsNew() in a rightPanel, rendering the
+// generated js/changelog.js (fleet format) instead of fetching changelog.json.
 const CHANGELOG_SEEN_KEY = 'polecat_changelog_seen';
-let _changelog = null;
-async function loadChangelog() {
+
+// Pre-shell versions stored the newest entry's DATE ('2026-07-04') under the
+// seen key; the shell stores the seen VERSION int. Translate once so existing
+// users neither lose their read-state nor get a stale unseen dot forever.
+function migrateChangelogSeen() {
+  const seen = localStorage.getItem(CHANGELOG_SEEN_KEY) || '';
+  if (!seen.includes('-')) return;
+  const newestDate = (CHANGELOG[0]?.ts || '').slice(0, 10);
   try {
-    const r = await fetch('changelog.json', { cache: 'no-cache' });
-    if (r.ok) _changelog = await r.json();
-  } catch { /* offline / missing — feature just stays quiet */ }
-  updateWhatsNewBadge();
+    localStorage.setItem(CHANGELOG_SEEN_KEY, (newestDate && seen >= newestDate) ? String(LATEST_VERSION) : '0');
+  } catch { /* storage full — dot may light once, harmless */ }
 }
-function changelogLatest() { return (_changelog?.entries?.[0]?.date) || _changelog?.updated || ''; }
 function updateWhatsNewBadge() {
   const dot = $('whatsNewDot'); if (!dot) return;
-  const latest = changelogLatest();
-  const seen = localStorage.getItem(CHANGELOG_SEEN_KEY) || '';
-  dot.hidden = !latest || latest <= seen;
+  dot.hidden = !hasUnseen(CHANGELOG_SEEN_KEY, LATEST_VERSION);
 }
 function openWhatsNew() {
-  if (!_changelog || !(_changelog.entries || []).length) { toast('No changelog yet'); return; }
-  closeSidebar();   // same fix as openConfig()/openKbd(): a still-open sidebar sits
-                     // under this overlay's backdrop and renders visibly darkened.
-  localStorage.setItem(CHANGELOG_SEEN_KEY, changelogLatest());
+  closeSidebar();   // mobile drawer would sit under the panel's backdrop
+  const body = initWhatsNew({
+    entries: CHANGELOG, latest: LATEST_VERSION, storageKey: CHANGELOG_SEEN_KEY,
+    labels: { title: 'Polecat keeps getting better' },   // the panel header already says "What's new"
+  });
+  rightPanel({ title: "What's new", body, onClose: updateWhatsNewBadge });
   updateWhatsNewBadge();
-  const ov = el('div', 'exp-overlay');
-  ov.innerHTML =
-    `<div class="exp-card wn-card">` +
-    `<div class="exp-title">${STAR_SVG} What's new</div>` +
-    `<div class="exp-sub">Polecat keeps getting better${(buildStamp() || _changelog.updated) ? ` · updated ${escapeHtml(buildStamp() || _changelog.updated)}` : ''}.</div>` +
-    `<div class="wn-list">` + (_changelog.entries || []).map(e =>
-      `<div class="wn-entry"><div class="wn-date">${escapeHtml(e.date || '')}${e.time ? ' <span class="wn-time">' + escapeHtml(e.time) + '</span>' : ''}</div>` +
-      `<div class="wn-etitle">${escapeHtml(e.title || '')}</div>` +
-      `<ul class="wn-items">${(e.items || []).map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`).join('') +
-    `</div>` +
-    `<div class="exp-actions"><button class="btn btn-solid" id="wnClose">Close</button></div>` +
-    `</div>`;
-  document.body.appendChild(ov);
-  let closed = false;
-  const close = () => { if (closed) return; closed = true; ov.remove(); document.removeEventListener('keydown', onKey); popModalFocus(); };
-  const onKey = (e) => { if (e.key === 'Escape') close(); };
-  ov.onclick = (e) => { if (e.target === ov) close(); };
-  document.addEventListener('keydown', onKey);
-  pushModalFocus($('wnClose'));
-  $('wnClose').onclick = close;
 }
 
 // ── Support ─────────────────────────────────────────────────────────────────
@@ -3636,9 +3640,70 @@ function requestPersistentStorage() {
   } catch { /* no-op */ }
 }
 
+// ── Polecat Shell frame ─────────────────────────────────────────────────────
+// Builds the fleet-standard frame (rail + topbar + view) and mounts the app's
+// own chrome into it. The rail carries the chat furniture (New chat, search,
+// history, footer links) instead of section nav — pinned app-owned nodes,
+// the same pattern Manager uses for its rail furniture.
+let _shell = null;
+
+// The app highlights code with highlight.js's github-dark stylesheet; disable
+// it in light mode (theme.js doesn't know about app stylesheets).
+function syncHljsTheme() {
+  const l = $('hljs-theme'); if (l) l.disabled = (effectiveMode() === 'light');
+}
+
+function buildFrame() {
+  configureTheme({
+    storageKey: 'polecat_theme',   // historical key — kept forever (see config.js)
+    defaultTheme: 'polecat:dark',
+    palettes: [{ key: 'polecat', label: 'Polecat', hint: 'Warm amber house style' }],
+  });
+  // The index.html pre-paint snippet normalizes the pre-shell bare 'dark' /
+  // 'light' value; repeat here so direct js loads (tests) behave identically.
+  const legacy = localStorage.getItem('polecat_theme');
+  if (legacy && !legacy.includes(':')) { try { localStorage.setItem('polecat_theme', 'polecat:' + legacy); } catch { /* read-only storage */ } }
+  applyTheme();
+  syncHljsTheme();
+
+  const holder = $('chromeHolder');
+  const logo = holder.querySelector('.logo');
+  const wordmark = holder.querySelector('.logo-mark').outerHTML;
+  const waffle = appSwitcher(publicFleet().map(a => ({ ...a, icon: shellIcon(a.icon, 20) })), { current: 'chat' });
+
+  _shell = initShell({
+    app: { id: 'chat', name: 'Polecat', wordmark },
+    sections: [],                          // the chat rail is content, not section nav
+    rail: { storageKey: 'polecat.rail' },
+    topbar: { left: [logo], right: [$('privateBadge'), $('resetBtn'), waffle] },
+  });
+
+  // Rail furniture: New chat + search pinned above the scrolling history;
+  // the footer (private mode, What's-new, settings, theme, export…) pinned below.
+  const rail = _shell.els.rail;
+  const scroll = rail.querySelector('.ps-rail-scroll');
+  rail.insertBefore(holder.querySelector('.sb-top'), scroll);
+  rail.insertBefore(holder.querySelector('.sb-search-wrap'), scroll);
+  rail.insertBefore(holder.querySelector('.sb-section-label'), scroll);
+  scroll.append($('sbHistory'));
+  rail.append(holder.querySelector('.sb-foot'));
+  holder.remove();
+
+  // The chat rail has no icon-only mode — it is always open on desktop (the
+  // collapse chevron is hidden in CSS), so a persisted '0' must not strand it shut.
+  if (!window.matchMedia(MOBILE_MQ).matches) _shell.setOpen(true);
+
+  // Opening the mobile drawer via the shell's hamburger refreshes the history
+  // list + backup nudges, exactly as the old openSidebar() did.
+  _shell.els.topbar.querySelector('.ps-topbar-menu')?.addEventListener('click', refreshRailFurniture);
+
+  // The chat surface (transcript + composer) moves into the shell's main view.
+  _shell.els.main.append(document.querySelector('.app'));
+}
+
 function init() {
   if (typeof marked !== 'undefined') marked.setOptions({ breaks: true, gfm: true });
-  applyTheme(localStorage.getItem('polecat_theme') || 'dark');
+  buildFrame();
   requestPersistentStorage();
   buildChips();
   $('modelChips').addEventListener('scroll', updateChipsFade, { passive: true });
@@ -3704,7 +3769,7 @@ function init() {
       _promptHistIdx = -1; // user is editing — exit history mode
     }
   });
-  $('sbTheme').onclick = () => applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+  $('sbTheme').onclick = () => { toggleMode(); syncHljsTheme(); };
 
   // ── Tab bar keyboard navigation (← / → to switch model tabs) ──────────────
   // Implements the ARIA tablist pattern: arrow keys move between tabs while
@@ -3784,9 +3849,7 @@ function init() {
   composer.addEventListener('dragleave', (e) => { if (!hasFiles(e)) return; dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) composer.classList.remove('dragover'); });
   composer.addEventListener('drop', (e) => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth = 0; composer.classList.remove('dragover'); addFiles(e.dataTransfer.files); });
 
-  // sidebar + conversation history
-  $('sidebarToggle').onclick = toggleSidebar;
-  $('sidebarBackdrop').onclick = closeSidebar;
+  // rail (shell) + conversation history
   $('sbNewChat').onclick = newChat;
   $('sbSearch') && ($('sbSearch').oninput = renderHistoryList);
   $('sbExport').onclick = openExport;
@@ -3801,12 +3864,14 @@ function init() {
     toast('Tap the Share icon, then "Add to Home Screen"', 6000);
   });
   $('sbIosInstallLater') && ($('sbIosInstallLater').onclick = () => { localStorage.setItem(IOS_INSTALL_DISMISS_KEY, '1'); $('sbIosInstallHint').hidden = true; });
-  loadChangelog();
+  migrateChangelogSeen();
+  updateWhatsNewBadge();
   if (!localStorage.getItem(FIRST_USE_KEY)) localStorage.setItem(FIRST_USE_KEY, String(Date.now()));
-  renderBackupStatus();
   $('privateSwitch').onclick = togglePrivate;
   $('privateSwitch').onkeydown = (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); togglePrivate(); } };
-  renderHistoryList(); updatePrivateUI();
+  // The rail is persistent on desktop now, so its furniture (history, backup
+  // status, nudges) renders at boot — not just when a drawer opens.
+  refreshRailFurniture(); updatePrivateUI();
 
   $('wNext').onclick = welcomeNext; $('wBack').onclick = welcomeBack;
   $('wSkip').onclick = () => dismissWelcome(); $('wClose').onclick = () => dismissWelcome();

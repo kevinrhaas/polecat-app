@@ -6,6 +6,19 @@
   <title>Polecat — one prompt, every model</title>
   <meta name="description" content="Ask once, hear from everyone. Send one prompt to many AI models at once and get a synthesized consensus answer — 100% in your browser, your own keys, no server.">
   <meta name="theme-color" content="#0a0a0f">
+  <!-- Pre-paint theme stamp (Polecat Shell contract): stamps data-palette /
+       data-theme from storage before first paint so there is no theme flash.
+       Also normalizes the pre-shell stored value — this app historically kept
+       a bare 'dark' / 'light' at polecat_theme; the shell stores 'palette:mode'.
+       The write-back means every later reader sees the new format. -->
+  <script>(function(){try{var k='polecat_theme',v=localStorage.getItem(k)||'polecat:dark';
+if(v.indexOf(':')<0){v='polecat:'+v;try{localStorage.setItem(k,v);}catch(e){}}
+var p=v.split(':'),m=p[1]||'dark';
+if(m==='system')m=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
+var d=document.documentElement;d.setAttribute('data-palette',p[0]);d.setAttribute('data-theme',m);
+var r=localStorage.getItem(k+'.motion');
+if(r==='1'||(r!=='0'&&matchMedia('(prefers-reduced-motion: reduce)').matches))d.setAttribute('data-reduce-motion','1');
+}catch(e){}})();</script>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/polecat.svg" type="image/svg+xml">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
@@ -23,6 +36,8 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <link rel="stylesheet" href="vendor/polecat-shell/tokens.css">
+  <link rel="stylesheet" href="vendor/polecat-shell/shell.css">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="is-empty">
@@ -30,10 +45,10 @@
 <!-- Subtle animated background — fades in only while models are processing -->
 <div class="aurora" id="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
 
-<header>
-  <div class="header-left">
-    <button class="icon-btn icon-only" id="sidebarToggle" title="Menu &amp; history" aria-label="Open menu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-  <a class="logo" href="https://polecat.live" title="Polecat home" style="text-decoration:none;color:inherit">
+<!-- App chrome — mounted into the Polecat Shell frame (rail + topbar) by
+     js/app.js buildFrame() at boot. Hidden until then so nothing flashes. -->
+<div id="chromeHolder" hidden>
+  <a class="logo" id="topbarLogo" href="https://polecat.live" title="Polecat home" style="text-decoration:none;color:inherit">
     <svg class="logo-mark" viewBox="0 0 220 220" width="22" height="22" aria-hidden="true">
       <ellipse cx="60" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(-16 60 58)"/>
       <ellipse cx="160" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(16 160 58)"/>
@@ -46,18 +61,13 @@
     <span class="logo-word">Pole<span class="logo-grad">cat</span></span>
     <span class="logo-ver" id="logoVer"></span>
   </a>
-  </div>
-  <div class="header-actions">
-    <span class="private-badge" id="privateBadge" hidden>● Private</span>
-    <button class="icon-btn" id="resetBtn" title="New chat">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.39"/></svg>
-      New chat
-    </button>
-  </div>
-</header>
+  <span class="private-badge" id="privateBadge" hidden>● Private</span>
+  <button class="icon-btn" id="resetBtn" title="New chat">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.39"/></svg>
+    <span class="lbl">New chat</span>
+  </button>
 
-<!-- Left sidebar: New chat · history · settings/theme/private -->
-<aside class="sidebar" id="sidebar" aria-label="Menu and conversation history">
+  <!-- Rail furniture: New chat · search · history · footer links -->
   <div class="sb-top"><button class="sb-newchat" id="sbNewChat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New chat</button></div>
   <div class="sb-search-wrap"><input class="sb-search" id="sbSearch" type="search" placeholder="Search conversations…" autocomplete="off" spellcheck="false"></div>
   <div class="sb-section-label">History</div>
@@ -90,8 +100,7 @@
     <div class="mini-note sb-backup-status" id="sbBackupStatus" hidden></div>
     <button class="sb-link danger" id="sbClear"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Clear history</button>
   </div>
-</aside>
-<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+</div>
 
 <div class="app">
   <!-- Chat transcript scrolls here, above the composer (Gemini-style) -->
