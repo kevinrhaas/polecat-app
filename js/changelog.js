@@ -4,6 +4,18 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 136,
+    title: 'The Polecat chat story page moved in: meet /welcome/',
+    kind: 'feature',
+    ts: '2026-07-15T22:10:00.000Z',
+    items: [
+      'The chat product\'s marketing page ("Ask once. Hear from everyone." - the how-it-works flow, real-prompt examples carousel, screenshots, agreement-map explainer) now lives right here at /welcome/',
+      'polecat.live itself is now the front door for the whole Polecat suite, so the chat story needed a home of its own - same origin as the app, one deploy, no drift',
+      'Every call-to-action on the page opens the app directly; the footer links to the full Polecat suite',
+      'The smoke gate now checks /welcome/ renders cleanly on desktop and phones too',
+    ],
+  },
+  {
     v: 135,
     title: 'Polecat joined the fleet: new sidebar, app switcher, and What\'s-new panel',
     kind: 'feature',

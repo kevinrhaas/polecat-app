@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-15 16:46 CT",
+  "updated": "2026-07-15 17:10 CT",
   "entries": [
+    {
+      "date": "2026-07-15",
+      "time": "17:10 CT",
+      "kind": "feature",
+      "title": "The Polecat chat story page moved in: meet /welcome/",
+      "items": [
+        "The chat product's marketing page (\"Ask once. Hear from everyone.\" - the how-it-works flow, real-prompt examples carousel, screenshots, agreement-map explainer) now lives right here at /welcome/",
+        "polecat.live itself is now the front door for the whole Polecat suite, so the chat story needed a home of its own - same origin as the app, one deploy, no drift",
+        "Every call-to-action on the page opens the app directly; the footer links to the full Polecat suite",
+        "The smoke gate now checks /welcome/ renders cleanly on desktop and phones too"
+      ]
+    },
     {
       "date": "2026-07-15",
       "time": "16:46 CT",

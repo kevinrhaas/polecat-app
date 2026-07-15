@@ -12,13 +12,14 @@ The fleet-wide plan lives in **kevinrhaas/polecat-platform → docs/MIGRATION.md
   `polecat_theme` key (legacy bare `'dark'`/`'light'` values migrate in the
   pre-paint snippet), Playwright smoke gate at `scripts/smoke-test.mjs`.
   Storage keys, BYOK, demo-proxy contract, PWA manifest all untouched.
-- [ ] **Chat marketing page** — the polecat repo's chat-specific marketing
-  ("Ask once. Hear from everyone.", carousel, screenshots) becomes the chat
-  product's marketing page (polecat.live apex now serves the suite launcher
-  from polecat-platform). Proposal: fold into THIS repo as a `/welcome/`
-  marketing route (single Pages deploy, one origin — survives the future
-  domain rename); the polecat repo then archives. Confirm approach with Kevin
-  before executing.
+- [x] **Chat marketing page (2026-07-15, PR on `hold` for Kevin)** — the
+  polecat repo's chat marketing ("Ask once. Hear from everyone.", carousel,
+  screenshots) folded into THIS repo at `/welcome/` (one origin, one deploy —
+  survives the future domain rename; ends the `website/` mirror drift).
+  Companion `hold` PR in kevinrhaas/polecat turns its old page into a
+  redirect stub → merge the polecat-app PR FIRST. The polecat repo archives
+  afterwards (Kevin's call). `website/examples-carousel.html` + `examples.json`
+  mirrors stay until the fold merges, then retire.
 - [ ] **⛔ GATED: app.polecat.live → chat.polecat.live rename** — do NOT
   execute without Kevin's explicit written go. Prereq (buildable now): an
   origin-handoff path (export/import + one-time `#handoff=` payload) per

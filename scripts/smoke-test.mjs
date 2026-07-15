@@ -164,6 +164,22 @@ async function mobilePass(browser) {
   console.log('✓ mobile (390×780): fits, drawer opens/closes, composer present — no errors');
 }
 
+async function welcomePass(browser) {
+  // The chat marketing page at /welcome/ (folded in from the old polecat repo).
+  for (const vp of [{ width: 1280, height: 800 }, { width: 390, height: 780 }]) {
+    const ctx = await browser.newContext({ viewport: vp });
+    const { page, errs } = await trackedPage(ctx);
+    await page.goto(URL_ + 'welcome/', { waitUntil: 'networkidle', timeout: 20000 });
+    await page.waitForSelector('.hero h1', { timeout: 8000 });
+    if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1))
+      throw new Error(`welcome: page overflows horizontally at ${vp.width}px`);
+    const real = realErrors(errs);
+    if (real.length) throw new Error(`welcome ${vp.width}px errors:\n  ` + real.join('\n  '));
+    await ctx.close();
+  }
+  console.log('✓ welcome page (/welcome/): renders at desktop + 390px — no errors');
+}
+
 async function changelogContractPass() {
   const mod = await import(join(ROOT, 'js', 'changelog.js'));
   if (!Array.isArray(mod.CHANGELOG) || !mod.CHANGELOG.length) throw new Error('changelog: CHANGELOG missing/empty');
@@ -183,6 +199,7 @@ async function changelogContractPass() {
     await desktopPass(browser);
     await freshProfilePass(browser);
     await mobilePass(browser);
+    await welcomePass(browser);
     await browser.close(); browser = null;
 
     // WebKit (iOS engine) — best-effort: run when the binary exists.
