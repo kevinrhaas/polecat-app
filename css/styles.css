@@ -28,11 +28,11 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { height: 100%; }
+/* Frame layout (rail | topbar+view) comes from the shell's body.ps-shell rule;
+   this app keeps only its type + theme-transition choices on top. */
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   background: var(--bg); color: var(--text);
-  height: 100vh; height: 100dvh; overflow: hidden;
-  display: flex; flex-direction: column;
   transition: background .2s, color .2s;
 }
 
@@ -49,14 +49,7 @@ body.processing .aurora { opacity: 1; }
 @keyframes aur3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(6vmax,-8vmax) scale(1.12); } }
 @media (prefers-reduced-motion: reduce) { .aurora span { animation: none; } }
 
-/* ── Header ──────────────────────────────────────────────── */
-header {
-  position: relative; z-index: 100; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px;
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(12px); gap: 8px;
-}
+/* ── Topbar chrome (mounted into the shell's .ps-topbar) ─── */
 .logo { display: flex; align-items: center; gap: 7px; font-size: 16px; font-weight: 700; letter-spacing: -.4px; white-space: nowrap; }
 .logo-mark { flex-shrink: 0; filter: drop-shadow(0 1px 2px rgba(0,0,0,.25)); }
 .logo-grad {
@@ -679,7 +672,6 @@ button.sel-addkey:hover { background: rgba(240,168,48,.22); border-color: rgba(2
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 600px) {
   .app { padding: 10px; gap: 10px; }
-  header { padding: 10px 12px; }
   .cg-title { font-size: 18px; }
   .cg-brand { font-size: 26px; }
   .msg-bubble { max-width: 98%; font-size: 13px; }
@@ -691,7 +683,6 @@ button.sel-addkey:hover { background: rgba(240,168,48,.22); border-color: rgba(2
   .sel-arb { font-size: 8px; padding: 1px 5px; }
   .welcome-slide { padding: 30px 20px 20px; }
   .welcome-tagline { font-size: 19px; }
-  .sidebar { width: 86vw; }
   .private-badge { display: none; }
   /* Larger touch targets for attachment remove buttons on mobile */
   .attach-thumb .at-x { width: 24px; height: 24px; font-size: 15px; }
@@ -700,16 +691,11 @@ button.sel-addkey:hover { background: rgba(240,168,48,.22); border-color: rgba(2
   .attach-strip { gap: 6px; padding: 10px 10px 0; }
 }
 
-/* ── Header left group + private badge ───────────────────── */
-.header-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+/* ── Private badge ───────────────────────────────────────── */
 .private-badge { font-size: 11px; font-weight: 700; color: var(--brand-b); background: color-mix(in srgb, var(--brand-b) 14%, transparent); border: 1px solid color-mix(in srgb, var(--brand-b) 34%, transparent); border-radius: 100px; padding: 3px 9px; white-space: nowrap; }
 
-/* ── Left sidebar (history + menu) ───────────────────────── */
-.sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 290px; max-width: 86vw; z-index: 250; background: var(--surface); border-right: 1px solid var(--border); transform: translateX(-100%); transition: transform .22s ease; display: flex; flex-direction: column; }
-.sidebar.open { transform: none; box-shadow: 0 0 60px rgba(0,0,0,.5); }
-.sidebar-backdrop { position: fixed; inset: 0; z-index: 240; background: rgba(0,0,0,.5); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity .22s; }
-.sidebar-backdrop.open { opacity: 1; pointer-events: auto; }
-.sb-top { padding: 14px 14px 8px; }
+/* ── Rail furniture (history + menu, mounted into the shell's .ps-rail) ── */
+.sb-top { padding: 10px 12px 8px; }
 .sb-newchat { width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(120deg, var(--brand-a), var(--brand-b)); color: #fff; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 14px; font-weight: 700; padding: 11px; cursor: pointer; transition: opacity .12s; }
 .sb-newchat:hover { opacity: .9; }
 .sb-search-wrap { padding: 4px 14px 2px; }
@@ -760,18 +746,10 @@ button.sel-addkey:hover { background: rgba(240,168,48,.22); border-color: rgba(2
 @media (prefers-reduced-motion: reduce) { .sb-backup-nudge { animation: none; } }
 
 /* ── What's new ──────────────────────────────────────────── */
+/* The What's-New feed itself is the shell's (.shell-whatsnew in shell.css,
+   rendered in a right panel); only the unseen dot on the rail link is ours. */
 .wn-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--brand-b); margin-left: 6px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-b) 28%, transparent); }
 .wn-dot[hidden] { display: none; }
-.wn-card { max-width: 440px; }
-.wn-list { display: flex; flex-direction: column; gap: 14px; max-height: 56vh; overflow-y: auto; margin-top: 6px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
-.wn-list::-webkit-scrollbar { width: 5px; } .wn-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-.wn-entry { border-left: 2px solid color-mix(in srgb, var(--brand-b) 55%, var(--border)); padding-left: 12px; }
-.wn-date { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-3); }
-.wn-time { font-weight: 400; text-transform: none; letter-spacing: 0; opacity: .7; }
-.wn-etitle { font-size: 14px; font-weight: 700; margin: 2px 0 5px; }
-.wn-items { list-style: none; display: flex; flex-direction: column; gap: 5px; padding: 0; }
-.wn-items li { font-size: 13px; color: var(--text-2); line-height: 1.45; padding-left: 16px; position: relative; }
-.wn-items li::before { content: '›'; position: absolute; left: 2px; color: var(--brand-b); font-weight: 700; }
 
 /* ── Provenance panel (EPIC 1 · P3 — "How this was formed") ─────── */
 .provenance-panel { margin: 6px 0 2px; max-width: 90%; animation: cs-fade .4s ease both; }
@@ -1231,3 +1209,49 @@ body.is-empty .composer { margin-top: 8px; }
   .compare-col:last-child { border-bottom: none; }
   .compare-col-body { overflow-y: visible; max-height: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Polecat Shell integration — the chat app's skin over the vendored frame
+   (vendor/polecat-shell/, READ-ONLY). tokens.css + shell.css load BEFORE
+   this file; everything here is app-side skinning and compat.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── The chat view fills the shell's main area; the app keeps its own
+      internal scrolling (transcript scrolls, composer docked) ─────────── */
+.ps-view { display: flex; flex-direction: column; padding: 0; overflow: hidden; scroll-behavior: auto; }
+.ps-view .app { flex: 1; min-height: 0; }
+.ps-topbar { padding: 9px 14px; }
+.ps-tb-left { flex: 1; }
+
+/* ── Rail: a Gemini-style content rail (New chat · search · history · menu),
+      not section nav. Always open on desktop — a history list has no
+      icon-only mode — so the collapse chevron is hidden; drag-resize stays. */
+.ps-rail-toggle { display: none; }
+.ps-rail-scroll { padding: 0 8px 10px; }
+.ps-rail .sb-history { flex: none; overflow: visible; padding: 0; }
+.ps-rail .sb-foot { flex: none; background: linear-gradient(180deg, transparent, var(--rail-bg2) 30%); }
+.ps-rail .sb-section-label { padding: 8px 20px 4px; }
+.ps-rail-brand { cursor: default; }
+/* If the rail somehow lands collapsed on desktop (persisted drag-snap),
+   keep the strip clean: hide the text furniture until it reopens. */
+@media (min-width: 861px) {
+  .ps-rail:not(.open) .sb-top, .ps-rail:not(.open) .sb-search-wrap,
+  .ps-rail:not(.open) .sb-section-label, .ps-rail:not(.open) .ps-rail-scroll,
+  .ps-rail:not(.open) .sb-foot { display: none; }
+}
+
+/* ── Topbar chrome sizing ─────────────────────────────────── */
+.ps-tb-right .icon-btn { height: 34px; }
+@media (max-width: 520px) {
+  .logo-ver { display: none; }
+  .icon-btn .lbl { display: none; }         /* New chat → icon-only on phones */
+  .icon-btn { padding: 0 8px; }
+}
+
+/* ── Compat: the app's pre-shell classes that shell.css also defines ──────
+      (app modals live in .backdrop, not the shell's .modal-back, so the
+      shell's entrance transform/flex must not leak in; the pill toast keeps
+      its borderless look) */
+.backdrop .modal { display: block; transform: none; }
+#toast { border: none; }
+.send-btn kbd { background: none; border: none; padding: 0; }

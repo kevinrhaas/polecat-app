@@ -4,6 +4,20 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 135,
+    title: 'Polecat joined the fleet: new sidebar, app switcher, and What\'s-new panel',
+    kind: 'feature',
+    ts: '2026-07-15T21:46:00.000Z',
+    items: [
+      'The app now runs on Polecat Shell, the shared UI frame behind every polecat.live app: the menu is a real sidebar on desktop (always visible, drag its edge to resize) and a slide-in drawer on phones',
+      'New chat, search, your conversation history, and all the menu items live in the sidebar; the top bar keeps the logo, Private badge, New chat, and a new 3x3 app-switcher that jumps to any other Polecat app',
+      'What\'s new moved into a slide-in panel with search and Feature / Polish / Fix filters over the full release history',
+      'Your data is untouched: chats, API keys, settings, and theme all stay exactly where they were - the light/dark choice carries over automatically',
+      'Nothing changed about privacy: still 100% in your browser, keys never leave it',
+      'Verified with the new automated smoke gate: desktop and 390px mobile, fresh and returning profiles, zero console errors',
+    ],
+  },
+  {
     v: 134,
     title: 'Fixed bogus "Ask a follow-up" chips appearing after a totally failed consensus run',
     kind: 'fix',
@@ -1525,3 +1539,4 @@ export const CHANGELOG = [
     ],
   },
 ];
+export const LATEST_VERSION = CHANGELOG[0].v;

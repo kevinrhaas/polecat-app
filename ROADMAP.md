@@ -1,5 +1,33 @@
 # Polecat roadmap
 
+## 🚚 Polecat Platform migration tracker (started 2026-07-15)
+
+The fleet-wide plan lives in **kevinrhaas/polecat-platform → docs/MIGRATION.md**
+(polecat-app is phase 5). Status here so steward runs and sessions stay in sync:
+
+- [x] **Shell adoption (2026-07-15)** — vendored `vendor/polecat-shell/` v0.1.0
+  (READ-ONLY); `initShell` frame (persistent desktop rail carrying the chat
+  furniture, mobile drawer), waffle `appSwitcher(FLEET)`, What's-New in
+  `rightPanel`/`initWhatsNew`, shell `theme.js` on the historical
+  `polecat_theme` key (legacy bare `'dark'`/`'light'` values migrate in the
+  pre-paint snippet), Playwright smoke gate at `scripts/smoke-test.mjs`.
+  Storage keys, BYOK, demo-proxy contract, PWA manifest all untouched.
+- [ ] **Chat marketing page** — the polecat repo's chat-specific marketing
+  ("Ask once. Hear from everyone.", carousel, screenshots) becomes the chat
+  product's marketing page (polecat.live apex now serves the suite launcher
+  from polecat-platform). Proposal: fold into THIS repo as a `/welcome/`
+  marketing route (single Pages deploy, one origin — survives the future
+  domain rename); the polecat repo then archives. Confirm approach with Kevin
+  before executing.
+- [ ] **⛔ GATED: app.polecat.live → chat.polecat.live rename** — do NOT
+  execute without Kevin's explicit written go. Prereq (buildable now): an
+  origin-handoff path (export/import + one-time `#handoff=` payload) per
+  polecat-platform docs/DOMAINS.md, shipped and verified BEFORE any DNS work.
+- [ ] Follow-ups queued for later units: shell-v2 ui.js/icon adoption
+  (app-local `js/ui.js` keeps pre-shell signatures for now), optional
+  palette picker (shell supports aurora/neon), archive-release snapshots
+  (`/v/<n>/`) fleet pattern.
+
 The hourly self-improve loop reads this file. When an epic has unchecked steps,
 the loop advances the **next unchecked step of the highest-priority epic** as a
 real, shippable, non-breaking increment — then ticks the box and adds a
