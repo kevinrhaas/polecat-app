@@ -1,6 +1,19 @@
 {
-  "updated": "2026-07-15 17:10 CT",
+  "updated": "2026-07-15 18:05 CT",
   "entries": [
+    {
+      "date": "2026-07-15",
+      "time": "18:05 CT",
+      "kind": "feature",
+      "title": "Moving day, prepared: Polecat can carry your data to a new address",
+      "items": [
+        "Groundwork for the planned move to chat.polecat.live: a one-time hand-off link can now carry your chats, settings, API keys and theme from the old address to the new one - entirely inside your browser, nothing passes through any server",
+        "Arriving with a hand-off link always asks first, and shows exactly what would be imported (settings, how many keys, how many conversations); declining imports nothing",
+        "The old address will keep a small \"we moved\" page that offers the same one-tap move, with a reminder to re-install the Home Screen app from the new address",
+        "Nothing changes today - the switch itself only happens later, and Export / Import remains available as the manual path",
+        "The smoke gate now proves the whole trip across two real browser origins: data arrives only after you confirm, and a declined move imports nothing"
+      ]
+    },
     {
       "date": "2026-07-15",
       "time": "17:10 CT",

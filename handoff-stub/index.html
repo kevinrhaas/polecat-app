@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polecat has moved to chat.polecat.live</title>
+  <meta name="robots" content="noindex">
+  <!--
+    The app.polecat.live "we moved" stub (polecat-platform docs/DOMAINS.md
+    step 4). NOT served by this repo's Pages deploy — at rename time this
+    file is published as the site that takes over app.polecat.live (tiny
+    stub repo or branch), where it still shares the OLD origin's
+    localStorage. It packs the user's data into a one-time #handoff=
+    fragment and forwards to the new origin, which imports it (js/app.js
+    tryApplyHandoffFromHash). Self-contained on purpose: no imports.
+
+    SECURITY: the destination is HARDCODED. A URL-chosen target would let a
+    crafted link exfiltrate API keys. The ?to= override works ONLY on
+    localhost, for the cross-origin smoke test.
+  -->
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #0a0a0f; color: #e8e8f2; min-height: 100vh; margin: 0;
+      display: grid; place-items: center; text-align: center; padding: 24px; box-sizing: border-box; }
+    a, .link { color: #d4773b; }
+    .card { max-width: 520px; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+    h1 { font-size: 22px; letter-spacing: -.3px; margin: 0; }
+    p { color: #8888aa; line-height: 1.6; margin: 0; }
+    .go { display: inline-block; background: linear-gradient(120deg, #9C6B3F, #d4773b); color: #fff;
+      border: none; border-radius: 10px; font: inherit; font-size: 15px; font-weight: 700;
+      padding: 12px 22px; cursor: pointer; text-decoration: none; }
+    .note { font-size: 12.5px; color: #4a4a6a; }
+    .pwa { font-size: 13px; color: #8888aa; background: #111118; border: 1px solid #2a2a3c;
+      border-radius: 10px; padding: 10px 14px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Polecat has moved to chat.polecat.live</h1>
+    <p id="msg">Taking you there now — and bringing your chats, settings &amp; API keys along. Nothing passes through any server: your data travels inside the link itself.</p>
+    <a class="go" id="goBtn" href="https://chat.polecat.live/">Take me (and my data) there →</a>
+    <div class="pwa">Installed Polecat on your Home Screen or desktop? Install it again from the new address — the old icon points here and will keep redirecting.</div>
+    <div class="note" id="note">If anything looks missing after the move, come back and use Export / Import.</div>
+  </div>
+  <script>
+  (function () {
+    'use strict';
+    var TARGET = 'https://chat.polecat.live/';
+    // localhost-only override so the smoke test can hand off between two ports.
+    if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+      var to = new URLSearchParams(location.search).get('to');
+      if (to && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(to)) TARGET = to;
+    }
+    var MAX_FRAGMENT = 1500000;   // stay well under browser URL limits
+
+    function b64url(bytes) {
+      var s = '';
+      for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+      return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
+    function parse(raw, fallback) { try { var v = JSON.parse(raw); return v == null ? fallback : v; } catch (e) { return fallback; } }
+
+    function buildPayload() {
+      var cfg = parse(localStorage.getItem('polecat'), null);
+      var hist = parse(localStorage.getItem('polecat_history'), []);
+      if (!cfg && (!hist || !hist.length)) return null;   // nothing to move
+      var p = Object.assign({}, cfg || {}, {
+        _polecat: 1,
+        from: 'app.polecat.live',
+        history: Array.isArray(hist) ? hist : [],
+        theme: localStorage.getItem('polecat_theme') || '',
+        seen: localStorage.getItem('polecat_changelog_seen') || ''
+      });
+      return p;
+    }
+
+    function encode(payload) {
+      var raw = new TextEncoder().encode(JSON.stringify(payload));
+      if (typeof CompressionStream === 'function') {
+        return new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate-raw')))
+          .arrayBuffer().then(function (buf) { return 'v1.' + b64url(new Uint8Array(buf)); });
+      }
+      return Promise.resolve('v0.' + b64url(raw));
+    }
+
+    // Encode; if the fragment would be too long, drop oldest unpinned
+    // conversations until it fits (Export/Import covers the remainder).
+    function encodeFitting(payload) {
+      return encode(payload).then(function (frag) {
+        if (frag.length <= MAX_FRAGMENT || !payload.history.length) return { frag: frag, dropped: 0 };
+        var dropped = 0;
+        function shrink() {
+          var idx = -1;
+          for (var i = payload.history.length - 1; i >= 0; i--) if (!payload.history[i] || !payload.history[i].pinned) { idx = i; break; }
+          if (idx < 0) payload.history.pop(); else payload.history.splice(idx, 1);
+          dropped++;
+          return encode(payload).then(function (f) {
+            if (f.length <= MAX_FRAGMENT || !payload.history.length) return { frag: f, dropped: dropped };
+            return shrink();
+          });
+        }
+        return shrink();
+      });
+    }
+
+    var goBtn = document.getElementById('goBtn');
+    var msg = document.getElementById('msg');
+    var note = document.getElementById('note');
+    var url = TARGET;   // data-less fallback: plain redirect
+    var ready = false;
+
+    var payload = buildPayload();
+    var prep = payload
+      ? encodeFitting(payload).then(function (r) {
+          url = TARGET + '#handoff=' + r.frag;
+          if (r.dropped) note.textContent = r.dropped + ' oldest conversation(s) were too big for the move — Export / Import here carries the rest.';
+        }).catch(function () { msg.textContent = 'Taking you to the new address. Your data could not ride along automatically — use Export here, then Import there.'; })
+      : Promise.resolve().then(function () { msg.textContent = 'Taking you to the new address.'; });
+
+    prep.then(function () {
+      ready = true;
+      goBtn.href = url;
+      // Auto-forward shortly after the payload is ready; the button covers
+      // anyone whose browser blocks the scripted navigation.
+      setTimeout(function () { location.replace(url); }, 1800);
+    });
+    goBtn.addEventListener('click', function (e) {
+      if (!ready) { e.preventDefault(); }   // don't lose the payload to an eager click
+    });
+  })();
+  </script>
+</body>
+</html>

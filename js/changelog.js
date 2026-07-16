@@ -4,6 +4,19 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 137,
+    title: 'Moving day, prepared: Polecat can carry your data to a new address',
+    kind: 'feature',
+    ts: '2026-07-15T23:05:00.000Z',
+    items: [
+      'Groundwork for the planned move to chat.polecat.live: a one-time hand-off link can now carry your chats, settings, API keys and theme from the old address to the new one - entirely inside your browser, nothing passes through any server',
+      'Arriving with a hand-off link always asks first, and shows exactly what would be imported (settings, how many keys, how many conversations); declining imports nothing',
+      'The old address will keep a small "we moved" page that offers the same one-tap move, with a reminder to re-install the Home Screen app from the new address',
+      'Nothing changes today - the switch itself only happens later, and Export / Import remains available as the manual path',
+      'The smoke gate now proves the whole trip across two real browser origins: data arrives only after you confirm, and a declined move imports nothing',
+    ],
+  },
+  {
     v: 136,
     title: 'The Polecat chat story page moved in: meet /welcome/',
     kind: 'feature',

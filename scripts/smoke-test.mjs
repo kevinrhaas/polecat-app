@@ -29,6 +29,7 @@ catch {
 
 const ROOT = process.cwd();
 const PORT = 4180;
+const PORT_OLD = 4181;   // second origin for the cross-origin handoff pass
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
   '.svg': 'image/svg+xml', '.json': 'application/json', '.png': 'image/png',
   '.webmanifest': 'application/manifest+json', '.ico': 'image/x-icon' };
@@ -180,6 +181,89 @@ async function welcomePass(browser) {
   console.log('✓ welcome page (/welcome/): renders at desktop + 390px — no errors');
 }
 
+async function handoffPass(browser) {
+  // The origin-handoff path (DOMAINS.md step 1): the "we moved" stub on one
+  // origin (127.0.0.1:PORT_OLD) packs seeded data into #handoff= and forwards
+  // to the app on another origin (localhost:PORT), which imports it after an
+  // explicit confirm. localStorage does not cross these origins, so this
+  // exercises the real thing.
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const { page, errs } = await trackedPage(ctx);
+  page.on('dialog', d => d.accept());
+  await page.addInitScript(([oldPort]) => {
+    if (location.port === String(oldPort)) {          // the OLD origin only
+      localStorage.setItem('polecat', JSON.stringify({
+        schemaVersion: 1,
+        providers: { groq: { key: 'gsk_smoke_handoff_key' } },
+        selections: [{ id: 's1', provider: 'groq', model: 'llama-3.3-70b-versatile' }],
+        arbitration: { activeId: 'comprehensive', arbiter: 'auto', custom: [] },
+        consensus: true, systemPrompt: 'be brief',
+      }));
+      localStorage.setItem('polecat_history', JSON.stringify([
+        { id: 't1', title: 'Moved conversation', updatedAt: 1752600000000, turns: [] }]));
+      localStorage.setItem('polecat_theme', 'polecat:light');
+      localStorage.setItem('polecat_changelog_seen', '134');
+    } else {                                          // fresh destination, tour dismissed
+      localStorage.setItem('polecat_welcomed', '1');
+      localStorage.setItem('polecat_keys_nudge_shown', '1');
+    }
+  }, [PORT_OLD]);
+  await page.goto(`http://127.0.0.1:${PORT_OLD}/handoff-stub/?to=${encodeURIComponent(`http://localhost:${PORT}/`)}`,
+    { waitUntil: 'domcontentloaded', timeout: 20000 });
+  await page.waitForURL(u => u.hostname === 'localhost' && u.port === String(PORT), { timeout: 15000 });
+  await page.waitForSelector('.ps-rail #sbHistory', { timeout: 12000 });
+  await page.waitForTimeout(900);
+  const st = await page.evaluate(() => {
+    const cfg = JSON.parse(localStorage.getItem('polecat') || '{}');
+    return {
+      hash: location.hash,
+      key: cfg?.providers?.groq?.key || '',
+      sys: cfg?.systemPrompt || '',
+      titles: (JSON.parse(localStorage.getItem('polecat_history') || '[]')).map(t => t.title),
+      theme: document.documentElement.getAttribute('data-theme'),
+      storedTheme: localStorage.getItem('polecat_theme'),
+      listed: !!document.querySelector('#sbHistory .sb-item'),
+    };
+  });
+  if (st.key !== 'gsk_smoke_handoff_key') throw new Error('handoff: API key did not arrive');
+  if (st.sys !== 'be brief') throw new Error('handoff: systemPrompt did not arrive');
+  if (!st.titles.includes('Moved conversation')) throw new Error('handoff: history did not arrive');
+  if (!st.listed) throw new Error('handoff: history did not render in the rail');
+  if (st.theme !== 'light' || st.storedTheme !== 'polecat:light') throw new Error(`handoff: theme did not carry over (${st.theme}, ${st.storedTheme})`);
+  if (st.hash) throw new Error(`handoff: fragment not stripped after import (${st.hash.slice(0, 40)}…)`);
+  const real = realErrors(errs);
+  if (real.length) throw new Error('handoff errors:\n  ' + real.join('\n  '));
+  await ctx.close();
+
+  // Declining the confirm must import NOTHING.
+  const ctx2 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const { page: p3, errs: e3 } = await trackedPage(ctx2);
+  p3.on('dialog', d => d.dismiss());
+  await p3.addInitScript(([oldPort]) => {
+    if (location.port === String(oldPort)) {
+      localStorage.setItem('polecat', JSON.stringify({ schemaVersion: 1, providers: { groq: { key: 'gsk_decline_key' } }, selections: [], arbitration: { activeId: 'comprehensive', arbiter: 'auto', custom: [] } }));
+    } else {
+      localStorage.setItem('polecat_welcomed', '1');
+      localStorage.setItem('polecat_keys_nudge_shown', '1');
+    }
+  }, [PORT_OLD]);
+  await p3.goto(`http://127.0.0.1:${PORT_OLD}/handoff-stub/?to=${encodeURIComponent(`http://localhost:${PORT}/`)}`,
+    { waitUntil: 'domcontentloaded', timeout: 20000 });
+  await p3.waitForURL(u => u.hostname === 'localhost' && u.port === String(PORT), { timeout: 15000 });
+  await p3.waitForSelector('.ps-view .prompt-input', { timeout: 12000 });
+  await p3.waitForTimeout(700);
+  const declined = await p3.evaluate(() => ({
+    key: JSON.parse(localStorage.getItem('polecat') || '{}')?.providers?.groq?.key || '',
+    hash: location.hash,
+  }));
+  if (declined.key) throw new Error('handoff: declining the confirm still imported the key');
+  if (declined.hash) throw new Error('handoff: fragment not stripped after decline');
+  const real3 = realErrors(e3);
+  if (real3.length) throw new Error('handoff decline errors:\n  ' + real3.join('\n  '));
+  await ctx2.close();
+  console.log('✓ origin handoff: data crosses origins only via #handoff=, confirm-gated, fragment stripped; decline imports nothing');
+}
+
 async function changelogContractPass() {
   const mod = await import(join(ROOT, 'js', 'changelog.js'));
   if (!Array.isArray(mod.CHANGELOG) || !mod.CHANGELOG.length) throw new Error('changelog: CHANGELOG missing/empty');
@@ -191,6 +275,8 @@ async function changelogContractPass() {
 (async () => {
   const server = serve();
   await new Promise(r => server.listen(PORT, r));
+  const serverOld = serve();
+  await new Promise(r => serverOld.listen(PORT_OLD, r));
   let code = 0;
   let browser;
   try {
@@ -200,6 +286,7 @@ async function changelogContractPass() {
     await freshProfilePass(browser);
     await mobilePass(browser);
     await welcomePass(browser);
+    await handoffPass(browser);
     await browser.close(); browser = null;
 
     // WebKit (iOS engine) — best-effort: run when the binary exists.
@@ -220,7 +307,7 @@ async function changelogContractPass() {
     code = 1;
   } finally {
     if (browser) await browser.close().catch(() => {});
-    server.close();
+    server.close(); serverOld.close();
   }
   process.exit(code);
 })();

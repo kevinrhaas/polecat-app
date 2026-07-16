@@ -22,6 +22,7 @@ import { publicFleet } from '../vendor/polecat-shell/catalog.js';
 import { initWhatsNew, hasUnseen } from '../vendor/polecat-shell/whatsnew.js';
 import { icon as shellIcon } from '../vendor/polecat-shell/icons.js';
 import { CHANGELOG, LATEST_VERSION } from './changelog.js';
+import { decodeHandoff } from './handoff.js';
 
 const DONATE_URL = 'https://ko-fi.com/polecatlive';
 const WELCOME_KEY = 'polecat_welcomed';
@@ -3291,6 +3292,58 @@ function openImport() {
   inp.click();
 }
 
+// ── Origin handoff (the GATED app→chat domain rename, DOMAINS.md step 1) ────
+// The old origin's "we moved" stub (handoff-stub/index.html) packs the user's
+// data into a one-time #handoff= fragment; this applies it on the new origin.
+// Everything is guarded by an explicit confirm — a crafted link must never be
+// able to silently plant settings (e.g. a malicious proxy URL) or overwrite
+// data. Uses the same import code paths as the Export/Import feature.
+async function tryApplyHandoffFromHash() {
+  if (!location.hash.startsWith('#handoff=')) return;
+  const stripHash = () => { try { window.history.replaceState(null, '', location.pathname + location.search); } catch { /* ignore */ } };
+  const payload = await decodeHandoff(location.hash.slice(9));
+  if (!payload) { stripHash(); toast("That move-in link didn't work — use Export / Import instead", 5500); return; }
+  const nKeys = Object.keys(payload.providers || {}).filter(id => payload.providers[id]?.key).length;
+  const nChats = Array.isArray(payload.history) ? payload.history.length : 0;
+  const bits = [];
+  if (payload.selections || payload.arbitration) bits.push('your settings');
+  if (nKeys) bits.push(`${nKeys} API key${nKeys === 1 ? '' : 's'}`);
+  if (nChats) bits.push(`${nChats} conversation${nChats === 1 ? '' : 's'}`);
+  const ok = confirm(`Finish moving your Polecat data from ${payload.from || 'your old Polecat'}?\n\n` +
+    `This imports ${bits.join(', ') || 'your setup'} into this browser.`);
+  if (!ok) { stripHash(); toast('Move-in cancelled — nothing was imported'); return; }
+
+  cfg = importSettings(cfg, payload);
+  // importSettings keeps only {id, provider, model} per selection; restore the
+  // flags and fields it doesn't cover so the move is lossless.
+  if (Array.isArray(payload.selections)) {
+    const src = new Map(payload.selections.filter(s => s && s.id).map(s => [s.id, s]));
+    (cfg.selections || []).forEach(s => { if (src.get(s.id)?.arbiterOnly) s.arbiterOnly = true; });
+  }
+  if (typeof payload.systemPrompt === 'string') cfg.systemPrompt = payload.systemPrompt;
+  if (payload.ui && typeof payload.ui === 'object') cfg.ui = payload.ui;
+  if (typeof payload.private === 'boolean') cfg.private = payload.private;
+  persist();
+  if (nChats) {                                   // merge by id, newest first (same as openImport)
+    const have = new Set(history.map(t => t.id));
+    payload.history.forEach(t => { if (t && t.id && !have.has(t.id)) history.push(t); });
+    history.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    saveHistory(history);
+  }
+  if (typeof payload.theme === 'string' && payload.theme) {
+    try { localStorage.setItem('polecat_theme', payload.theme.includes(':') ? payload.theme : 'polecat:' + payload.theme); } catch { /* ignore */ }
+    applyTheme(); syncHljsTheme();
+  }
+  if (payload.seen != null && payload.seen !== '') { try { localStorage.setItem(CHANGELOG_SEEN_KEY, String(payload.seen)); } catch { /* ignore */ } }
+  migrateChangelogSeen();                          // the old origin may hand over the pre-shell date format
+  localStorage.setItem(WELCOME_KEY, '1');          // a mover is an existing user — no first-run tour
+  localStorage.setItem(KEYS_NUDGE_KEY, '1');
+  stripHash();
+  buildChips(); renderModels(); renderKeys(); renderArbitration(); updatePrivateUI();
+  refreshRailFurniture(); updateWhatsNewBadge();
+  toast("Welcome to Polecat's new home — your chats, settings & keys moved in", 6000);
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 //  SIDEBAR + CONVERSATION HISTORY
 // ════════════════════════════════════════════════════════════════════════════
@@ -3939,7 +3992,11 @@ function init() {
 
   const hasKeys = configuredProviders(cfg).length > 0 || (cfg.selections || []).some(s => s.provider === 'demo');
   const seen = !!localStorage.getItem(WELCOME_KEY);
-  if (location.hash.startsWith('#share=')) {
+  if (location.hash.startsWith('#handoff=')) {
+    // Arriving from the old origin's "we moved" stub — apply before anything
+    // else can greet the user (this branch also keeps the welcome tour away).
+    setTimeout(tryApplyHandoffFromHash, 100);
+  } else if (location.hash.startsWith('#share=')) {
     setTimeout(tryShowShareFromHash, 100);
   } else if (location.hash === '#settings') {
     setTimeout(() => openConfig(), 200);   // deep-link to settings

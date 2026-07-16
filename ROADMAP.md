@@ -20,10 +20,22 @@ The fleet-wide plan lives in **kevinrhaas/polecat-platform → docs/MIGRATION.md
   redirect stub → merge the polecat-app PR FIRST. The polecat repo archives
   afterwards (Kevin's call). `website/examples-carousel.html` + `examples.json`
   mirrors stay until the fold merges, then retire.
-- [ ] **⛔ GATED: app.polecat.live → chat.polecat.live rename** — do NOT
-  execute without Kevin's explicit written go. Prereq (buildable now): an
-  origin-handoff path (export/import + one-time `#handoff=` payload) per
-  polecat-platform docs/DOMAINS.md, shipped and verified BEFORE any DNS work.
+- [ ] **app.polecat.live → chat.polecat.live rename — Kevin gave the written
+  go 2026-07-15 (in-session)**, executing per polecat-platform docs/DOMAINS.md:
+  - [x] Step 1 (2026-07-15): origin-handoff path shipped + verified — inbound
+    `#handoff=` importer (`js/handoff.js` + app.js `tryApplyHandoffFromHash`,
+    confirm-gated, lossless incl. theme/seen/arbiterOnly), outbound
+    `handoff-stub/index.html` (hardcoded target, localhost-only test
+    override, drops oldest unpinned chats if the fragment would be too big).
+    Smoke proves the trip across two real origins, accept AND decline.
+  - [ ] Step 2 — **Kevin, manual (GoDaddy)**: add CNAME `chat` →
+    `kevinrhaas.github.io`.
+  - [ ] Step 3 (after DNS): flip this repo's `CNAME` file to
+    `chat.polecat.live` (repoints Pages); verify HTTPS cert.
+  - [ ] Step 4: publish `handoff-stub/index.html` as the app.polecat.live
+    site (tiny stub repo/branch claims the old domain); keep for months.
+  - [ ] Step 5: update the fleet catalog `chat` entry + every polecat.live
+    CTA + /welcome/ links to the new origin (platform PR + shell release).
 - [ ] Follow-ups queued for later units: shell-v2 ui.js/icon adoption
   (app-local `js/ui.js` keeps pre-shell signatures for now), optional
   palette picker (shell supports aurora/neon), archive-release snapshots
