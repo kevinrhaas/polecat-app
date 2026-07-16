@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polecat — one prompt, every model</title>
+  <meta name="description" content="Polecat sends one prompt to up to 7 AI providers — free and paid — then merges the answers into one you can trust. Your keys, no server, free demo.">
+  <meta name="theme-color" content="#0b0a10">
+  <link rel="icon" href="../assets/polecat.svg" type="image/svg+xml">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/favicon-180.png">
+  <meta property="og:title" content="Polecat — one prompt, every model">
+  <meta property="og:description" content="Ask once. Hear from everyone. One prompt → 7 AI providers (free + paid) → one trustworthy answer.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://app.polecat.live/welcome/">
+  <meta property="og:image" content="https://app.polecat.live/assets/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Polecat — one prompt, every model">
+  <meta name="twitter:description" content="Ask once. Hear from everyone. One prompt → 7 AI providers (free + paid) → one trustworthy answer.">
+  <meta name="twitter:image" content="https://app.polecat.live/assets/og-card.png">
+  <link rel="canonical" href="https://app.polecat.live/welcome/">
+  <link rel="stylesheet" href="site.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Polecat",
+    "url": "https://app.polecat.live",
+    "description": "Polecat sends one prompt to up to 7 AI providers at once - free and paid - then merges them into one answer you can trust, with an agreement map showing where the models agreed and where they split.",
+    "applicationCategory": "BrowserApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "browserRequirements": "Requires JavaScript. Runs entirely in the browser with your own API keys; a free keyless demo is also available."
+  }
+  </script>
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="./">
+    <svg class="brand-mark" viewBox="0 0 220 220" width="26" height="26" aria-hidden="true">
+      <ellipse cx="60" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(-16 60 58)"/>
+      <ellipse cx="160" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(16 160 58)"/>
+      <ellipse cx="110" cy="122" rx="84" ry="78" fill="#F5E9D6"/>
+      <path d="M28 102 Q110 80 192 102 Q196 128 160 137 Q110 146 60 137 Q24 128 28 102 Z" fill="#2E2A33"/>
+      <circle cx="78" cy="113" r="19" fill="#fff"/><circle cx="142" cy="113" r="19" fill="#fff"/>
+      <circle cx="81" cy="116" r="10.5" fill="#2E2A33"/><circle cx="139" cy="116" r="10.5" fill="#2E2A33"/>
+      <path d="M110 150 q10 0 8 8.5 q-2 6.5 -8 7.5 q-6 -1 -8 -7.5 q-2 -8.5 8 -8.5 Z" fill="#3A2F3A"/>
+    </svg>
+    <span>Pole<span class="grad">cat</span></span>
+  </a>
+  <nav class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#cases">Examples</a>
+    <a href="#consensus-settings">Consensus</a>
+    <a class="btn btn-primary" href="/">Try it free →</a>
+  </nav>
+</header>
+
+<main>
+<!-- ── Hero ─────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <svg class="hero-mascot" viewBox="0 0 220 220" width="132" height="132" aria-label="Polecat">
+    <ellipse cx="60" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(-16 60 58)"/>
+    <ellipse cx="160" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(16 160 58)"/>
+    <ellipse cx="62" cy="62" rx="12" ry="15" fill="#F4A6A6" transform="rotate(-16 62 62)"/>
+    <ellipse cx="158" cy="62" rx="12" ry="15" fill="#F4A6A6" transform="rotate(16 158 62)"/>
+    <ellipse cx="110" cy="122" rx="84" ry="78" fill="#F5E9D6"/>
+    <path d="M28 102 Q110 80 192 102 Q196 128 160 137 Q110 146 60 137 Q24 128 28 102 Z" fill="#2E2A33"/>
+    <circle cx="78" cy="113" r="19" fill="#fff"/><circle cx="142" cy="113" r="19" fill="#fff"/>
+    <circle cx="81" cy="116" r="10.5" fill="#2E2A33"/><circle cx="139" cy="116" r="10.5" fill="#2E2A33"/>
+    <circle cx="85" cy="112" r="3.6" fill="#fff"/><circle cx="143" cy="112" r="3.6" fill="#fff"/>
+    <circle cx="54" cy="156" r="12" fill="#F4A6A6" opacity="0.55"/><circle cx="166" cy="156" r="12" fill="#F4A6A6" opacity="0.55"/>
+    <path d="M110 150 q10 0 8 8.5 q-2 6.5 -8 7.5 q-6 -1 -8 -7.5 q-2 -8.5 8 -8.5 Z" fill="#3A2F3A"/>
+    <path d="M110 166 q-9 9 -17 2.5 M110 166 q9 9 17 2.5" stroke="#3A2F3A" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </svg>
+  <h1>Ask once.<br><span class="grad">Hear from everyone.</span></h1>
+  <p class="hero-sub">Polecat sends one prompt to many AI models — <b>free and paid</b> — then merges them into a single answer you can trust. Cross-check providers, compare models head-to-head, and control exactly how the consensus is formed.</p>
+  <div class="hero-flow">
+    <span class="pill" style="--c:#d4773b">Claude</span>
+    <span class="pill" style="--c:#4285f4">Gemini</span>
+    <span class="pill" style="--c:#10a37f">ChatGPT</span>
+    <span class="pill" style="--c:#8b5cf6">OpenRouter</span>
+    <span class="pill" style="--c:#f55036">Groq</span>
+    <span class="pill" style="--c:#ffb000">Hugging&nbsp;Face</span>
+    <span class="flow-arrow">→</span>
+    <span class="pill pill-consensus"><span aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:-1px"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg></span> Consensus</span>
+  </div>
+  <div class="hero-cta">
+    <a class="btn btn-free btn-lg" href="/">Try it free — no key needed</a>
+    <a class="btn btn-ghost btn-lg" href="#cases">See it work ↓</a>
+  </div>
+  <div class="hero-note">Run a real model instantly, no signup · bring your own keys for the full mix · your keys stay in your browser · <a href="https://github.com/kevinrhaas/polecat-app/blob/main/changelog.json" style="color:inherit;text-decoration:underline;text-underline-offset:2px">what's new ↗</a></div>
+</section>
+
+<!-- ── Problem ──────────────────────────────────────────── -->
+<section class="band">
+  <div class="wrap narrow center">
+    <h2>One model can be wrong.<br>Several rarely miss the same way.</h2>
+    <p class="lead">Asking a single AI means betting on its blind spots. Polecat asks several at once — where they agree, you can trust it; where they split, it shows you and reconciles the difference into one validated answer.</p>
+  </div>
+</section>
+
+<!-- ── How it works ─────────────────────────────────────── -->
+<section id="how" class="wrap">
+  <div class="section-head center">
+    <div class="kicker">How consolidation works</div>
+    <h2>Many minds in, one answer out</h2>
+  </div>
+  <div class="flow reveal">
+    <div class="flow-models">
+      <div class="fm" style="--c:#d4773b"><span class="fm-dot"></span>Claude<span class="fm-tag paid">paid</span></div>
+      <div class="fm" style="--c:#4285f4"><span class="fm-dot"></span>Gemini<span class="fm-tag paid">paid</span></div>
+      <div class="fm" style="--c:#10a37f"><span class="fm-dot"></span>ChatGPT<span class="fm-tag paid">paid</span></div>
+      <div class="fm" style="--c:#8b5cf6"><span class="fm-dot"></span>Llama 3.3 70B<span class="fm-tag free">free</span></div>
+      <div class="fm" style="--c:#f55036"><span class="fm-dot"></span>GPT-OSS 120B<span class="fm-tag free">free</span></div>
+    </div>
+    <div class="flow-mid"><div class="flow-line"></div><div class="flow-arbiter"><span aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:-1px"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg></span> Consensus</div><div class="flow-line"></div></div>
+    <div class="flow-out"><div class="flow-consensus"><span aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:-2px"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg></span><span>Consensus</span></div></div>
+  </div>
+  <div class="steps reveal">
+    <div class="step"><div class="step-n">1</div><div><b>Pick your models.</b> Mix providers freely — even two from one provider (Opus <em>and</em> Sonnet).</div></div>
+    <div class="step"><div class="step-n">2</div><div><b>Ask once.</b> Your prompt fans out to all of them in parallel.</div></div>
+    <div class="step"><div class="step-n">3</div><div><b>Get one answer.</b> A consensus strategy you choose synthesizes the best, validated result.</div></div>
+  </div>
+</section>
+
+<!-- ── Example carousel ──────────────────────────────────────── -->
+<section class="pcx" id="cases" aria-label="Real Polecat examples">
+  <style>
+    .pcx{ --pcx-bg:#111118; --pcx-bg2:#18181f; --pcx-border:#2a2a3c; --pcx-text:#e8e8f2;
+      --pcx-text2:#9a9ab5; --pcx-amber:#d4773b; --pcx-purple:#b070f0; --pcx-green:#10b981;
+      max-width:1040px; margin:0 auto; padding:8px 16px 40px; color:var(--pcx-text);
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
+    .pcx *{ box-sizing:border-box; }
+    .pcx-eyebrow{ font-size:13px; font-weight:700; letter-spacing:.3px; color:var(--pcx-amber); text-transform:uppercase; }
+    .pcx-head{ font-size:clamp(26px,4vw,40px); font-weight:800; letter-spacing:-.5px; margin:6px 0 8px; line-height:1.1; }
+    .pcx-sub{ font-size:15px; color:var(--pcx-text2); line-height:1.6; margin:0 0 20px; max-width:640px; }
+    .pcx-row{ display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory;
+      -webkit-overflow-scrolling:touch; padding:4px 4px 14px; scrollbar-width:thin; scrollbar-color:var(--pcx-border) transparent; }
+    .pcx-row:focus-visible{ outline:2px solid var(--pcx-purple); outline-offset:2px; border-radius:8px; }
+    .pcx-row::-webkit-scrollbar{ height:8px; }
+    .pcx-row::-webkit-scrollbar-thumb{ background:var(--pcx-border); border-radius:4px; }
+    .pcx-card{ flex:0 0 min(560px,86%); scroll-snap-align:center; padding:22px 22px 24px;
+      background:var(--pcx-bg); border:1px solid var(--pcx-border); border-radius:16px; }
+    .pcx-card-top{ display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .pcx-topic{ font-size:12px; font-weight:700; color:var(--pcx-text2); }
+    .pcx-tag{ font-size:11px; font-weight:700; padding:2px 9px; border-radius:100px; }
+    .pcx-tag.diverge{ color:var(--pcx-amber); background:rgba(212,119,59,.15); }
+    .pcx-tag.agree{ color:var(--pcx-green); background:rgba(16,185,129,.15); }
+    .pcx-prompt{ font-size:18px; font-weight:700; line-height:1.4; margin-bottom:16px; }
+    .pcx-takes{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+    .pcx-take{ display:flex; gap:10px; align-items:baseline; background:var(--pcx-bg2);
+      border:1px solid var(--pcx-border); border-radius:10px; padding:9px 12px; }
+    .pcx-model{ font-size:12px; font-weight:700; color:var(--pcx-text2); white-space:nowrap; flex-shrink:0; min-width:128px; }
+    .pcx-pick{ font-size:14px; color:var(--pcx-text); line-height:1.45; }
+    .pcx-consensus{ display:flex; gap:10px; align-items:flex-start; padding:13px 14px; border-radius:12px;
+      background:rgba(147,51,234,.10); border:1px solid rgba(147,51,234,.40); }
+    .pcx-spark{ color:var(--pcx-purple); font-weight:800; line-height:1.4; }
+    .pcx-clabel{ font-size:11px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--pcx-purple); display:block; margin-bottom:2px; }
+    .pcx-ctext{ font-size:14px; line-height:1.5; color:var(--pcx-text); }
+    .pcx-hint{ font-size:12px; color:var(--pcx-text2); margin-top:4px; }
+    @media (max-width:560px){ .pcx-model{ min-width:0; } .pcx-take{ flex-direction:column; gap:2px; } }
+  </style>
+
+  <div class="pcx-eyebrow">Real prompts, real models</div>
+  <h2 class="pcx-head">Ask once. Watch them split &mdash; then reconcile.</h2>
+  <p class="pcx-sub">Where models diverge, consensus reconciles; where they agree, you can trust it.</p>
+
+  <div class="pcx-row" tabindex="0" role="region" aria-label="Example prompts carousel — scroll or use arrow keys to see all 6">
+
+    <article class="pcx-card">
+      <div class="pcx-card-top"><span class="pcx-topic">Cooking</span><span class="pcx-tag diverge">They disagreed</span></div>
+      <div class="pcx-prompt">&ldquo;What&rsquo;s the secret to extra-crispy roast potatoes?&rdquo;</div>
+      <div class="pcx-takes">
+        <div class="pcx-take"><span class="pcx-model">HF &middot; Qwen3 235B</span><span class="pcx-pick">Baking soda &mdash; a &ldquo;game-changer&rdquo; for craggy edges</span></div>
+        <div class="pcx-take"><span class="pcx-model">GPT-5.5</span><span class="pcx-pick">Parboil + rough-up + hot fat; baking soda optional</span></div>
+        <div class="pcx-take"><span class="pcx-model">Llama 3.3 70B</span><span class="pcx-pick">Starchy potato, parboil, shake to roughen, duck fat, scorching pan</span></div>
+      </div>
+      <div class="pcx-consensus"><span class="pcx-spark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:-2px"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg></span><div><span class="pcx-clabel">Consensus</span><span class="pcx-ctext">Starchy potato &rarr; parboil &rarr; rough up the edges &rarr; very hot fat. Baking soda is optional (raises pH for crispier edges).</span></div></div>
+    </article>
+
+    <article class="pcx-card">
+      <div class="pcx-card-top"><span class="pcx-topic">History</span><span class="pcx-tag diverge">They disagreed</span></div>
+      <div class="pcx-prompt">&ldquo;What is the most significant event in US history? Choose only one.&rdquo;</div>
+      <div class="pcx-takes">
+        <div class="pcx-take"><span class="pcx-model">Groq &middot; Llama 3.3 70B</span><span class="pcx-pick">American Civil War (1861&ndash;65)</span></div>
+        <div class="pcx-take"><span class="pcx-model">HF &middot; DeepSeek V3.1</span><span class="pcx-pick">The American Revolution &amp; founding (1776)</span></div>
+        <div class="pcx-take"><span class="pcx-model">OpenRouter &middot; GPT-OSS</span><span class="pcx-pick">Adoption of the Constitution (1787)</span></div>
+      </div>
+      <div class="pcx-consensus"><span class="pcx-spark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:-2px"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg></span><div><span class="pcx-clabel">Consensus</span><span class="pcx-ctext">The American Civil War (1861&ndash;65) &mdash; with the nation&rsquo;s founding a close, defensible alternative.</span></div></div>
+    </article>
+
+    <article class="pcx-card">
+      <div class="pcx-card-top"><span class="pcx-topic">Music</span><span class="pcx-tag diverge">They disagreed</span></div>
+      <div class="pcx-prompt">&ldquo;What&rsquo;s the all-time best Beatles song? Pick just one.&rdquo;</div>
+      <div class="pcx-takes">
+        <div class="pcx-take"><span class="pcx-model">Llama 3.3 70B</span><span class="pcx-pick">Hey Jude</span></div>
+        <div class="pcx-take"><span class="pcx-model">Gemma 4 31B</span><span class="pcx-pick">A Day in the Life</span></div>
+        <div class="pcx-take"><span class="pcx-model">GPT-5.5</span><span class="pcx-pick">A Day in the Life</span></div>
+      </div>
+      <div class="pcx-consensus"><span class="pcx-spark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:-2px"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg></span><div><span class="pcx-clabel">Consensus</span><span class="pcx-ctext">&ldquo;A Day in the Life&rdquo; &mdash; the band&rsquo;s artistic peak; &ldquo;Hey Jude&rdquo; wins on popularity.</span></div></div>
+    </article>
+
+    <article class="pcx-card">
+      <div class="pcx-card-top"><span class="pcx-topic">Learning to code</span><span class="pcx-tag agree">They agreed</span></div>
+      <div class="pcx-prompt">&ldquo;What&rsquo;s the best first programming language to learn in 2026?&rdquo;</div>
+      <div class="pcx-takes">
+        <div class="pcx-take"><span class="pcx-model">GPT-5.5</span><span class="pcx-pick">Python</span></div>
+        <div class="pcx-take"><span class="pcx-model">HF &middot; Qwen3 235B</span><span class="pcx-pick">Python (then JavaScript for the web)</span></div>
+        <div class="pcx-take"><span class="pcx-model">Gemma 4 31B</span><span class="pcx-pick">Python all-rounder; TypeScript for web</span></div>
+      </div>
+      <div class="pcx-consensus"><span class="pcx-spark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:-2px"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg></span><div><span class="pcx-clabel">Consensus</span><span class="pcx-ctext">Python overall; JavaScript/TypeScript if you&rsquo;re web-focused. Rare strong agreement &mdash; trust it.</span></div></div>
+    </article>
+
+    <article class="pcx-card">
+      <div class="pcx-card-top"><span class="pcx-topic">Travel</span><span class="pcx-tag diverge">They disagreed</span></div>
+      <div class="pcx-prompt">&ldquo;Most underrated, inexpensive, best-value, most-fun travel spot? Choose one.&rdquo;</div>
+      <div class="pcx-takes">
+        <div class="pcx-take"><span class="pcx-model">Llama 3.3 70B</span><span class="pcx-pick">Hoi An, Vietnam</span></div>
+        <div class="pcx-take"><span class="pcx-model">OpenRouter &middot; GPT-OSS</span><span class="pcx-pick">Tbilisi, Georgia</span></div>
+        <div class="pcx-take"><span class="pcx-model">HF &middot; Qwen3 235B</span><span class="pcx-pick">Azores (S&atilde;o Miguel), Portugal</span></div>
+      </div>
+      <div class="pcx-consensus"><span class="pcx-spark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:-2px"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg></span><div><span class="pcx-clabel">Consensus</span><span class="pcx-ctext">Da Nang, Vietnam &mdash; beach + city + food + nature at very low cost (Tbilisi &amp; the Azores are great wildcards).</span></div></div>
+    </article>
+
+    <article class="pcx-card">
+      <div class="pcx-card-top"><span class="pcx-topic">Sports</span><span class="pcx-tag diverge">They disagreed</span></div>
+      <div class="pcx-prompt">&ldquo;Who is the single greatest athlete of all time?&rdquo;</div>
+      <div class="pcx-takes">
+        <div class="pcx-take"><span class="pcx-model">GPT-5.5</span><span class="pcx-pick">Jim Thorpe (best all-around)</span></div>
+        <div class="pcx-take"><span class="pcx-model">Llama 3.3 70B</span><span class="pcx-pick">No single answer &mdash; depends on the criteria</span></div>
+        <div class="pcx-take"><span class="pcx-model">HF &middot; Qwen3 235B</span><span class="pcx-pick">Jordan, Ali, Serena, Bolt, Pel&eacute;&hellip; (8 contenders)</span></div>
+      </div>
+      <div class="pcx-consensus"><span class="pcx-spark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:-2px"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg></span><div><span class="pcx-clabel">Consensus</span><span class="pcx-ctext">No objective GOAT; if forced, Jim Thorpe for all-around ability &mdash; Jordan, Ali, Serena &amp; Bolt all defensible.</span></div></div>
+    </article>
+
+  </div>
+  <div class="pcx-hint">Swipe or scroll to see more &rarr;</div>
+</section>
+
+<!-- ── Product screenshots ──────────────────────────────── -->
+<section class="wrap">
+  <div class="section-head center">
+    <div class="kicker">The real thing</div>
+    <h2>Watch it consolidate, live</h2>
+  </div>
+  <div class="shots reveal">
+    <figure class="shot"><img src="../assets/shots/consensus.png" alt="Consensus answer in Polecat" loading="lazy" width="1600" height="1200"><figcaption>One synthesized answer from all your models</figcaption></figure>
+    <figure class="shot"><img src="../assets/shots/progress.png" alt="Live consensus progress" loading="lazy" width="1080" height="980"><figcaption>Live progress — who's answering, what consensus is doing</figcaption></figure>
+    <figure class="shot"><img src="../assets/shots/browse.png" alt="Browse models" loading="lazy" width="1136" height="1392"><figcaption>Browse &amp; search every available model</figcaption></figure>
+  </div>
+</section>
+
+<!-- ── Consensus settings ────────────────────────────────── -->
+<section id="consensus-settings" class="band">
+  <div class="wrap split">
+    <div class="split-text">
+      <div class="kicker">You control the verdict</div>
+      <h2>Customizable consensus</h2>
+      <p class="lead">The combined answer isn't a black box. Choose <b>how</b> it's formed, name <b>which model</b> gets the final say, or turn it off to compare side by side.</p>
+      <ul class="strat-list">
+        <li><b>Best Answer</b> — pick the single strongest, lightly corrected.</li>
+        <li><b>Merge Everything</b> — combine everything into the most complete answer.</li>
+        <li><b>Fact-Checked Merge</b> — merge, but cross-check claims and flag disagreements.</li>
+        <li><b>Debate &amp; Merge</b> — models critique each other, then merge the best of each.</li>
+        <li><b>Refine Together</b> — each model refines a running draft.</li>
+      </ul>
+      <p class="muted small">Edit the prompts, save your own strategies, and export/import your whole setup.</p>
+    </div>
+    <figure class="split-shot"><img src="../assets/shots/arbitration.png" alt="Consensus settings in Polecat" loading="lazy" width="1200" height="1448"></figure>
+  </div>
+</section>
+
+<!-- ── Agreement map ────────────────────────────────────── -->
+<section class="wrap">
+  <div class="section-head center">
+    <div class="kicker">Polecat's signature &nbsp;·&nbsp; <span class="kicker-new">now live</span></div>
+    <h2>See <span class="grad">where the models agree</span></h2>
+    <p class="lead">Every consensus comes with an interactive agreement map: how much each model shaped the answer, where they lined up, and where they split. No other chat app shows you that — because no other chat app asks several at once.</p>
+  </div>
+  <div class="amap reveal">
+    <div class="amap-bars">
+      <div class="amap-panel-header">
+        <span class="amap-panel-icon" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        <span class="amap-panel-label">How this was formed</span>
+        <span class="amap-panel-badge">Strong agreement</span>
+      </div>
+      <div class="amap-stack" role="img" aria-label="Contribution: Claude 42%, Gemini 34%, Llama 3.3 70B 24%">
+        <span class="amap-seg" style="--c:#d4773b;width:42%">42%</span>
+        <span class="amap-seg" style="--c:#4285f4;width:34%">34%</span>
+        <span class="amap-seg" style="--c:#8b5cf6;width:24%">24%</span>
+      </div>
+      <div class="amap-legend">
+        <div class="amap-legend-row"><span class="amap-name" style="--c:#d4773b"><span class="amap-dot"></span>Claude</span><span class="amap-stance amap-aligned">aligned</span></div>
+        <div class="amap-legend-row"><span class="amap-name" style="--c:#4285f4"><span class="amap-dot"></span>Gemini</span><span class="amap-stance amap-aligned">aligned</span></div>
+        <div class="amap-legend-row"><span class="amap-name" style="--c:#8b5cf6"><span class="amap-dot"></span>Llama 3.3 70B</span><span class="amap-stance amap-partial">partial</span></div>
+      </div>
+      <div class="amap-foot">Contribution is approximate — a guide, not a verdict.</div>
+    </div>
+    <div class="amap-notes">
+      <div class="amap-note ok"><span class="amap-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span><div><b>Where they agreed</b><span>All three: parboil first, then roast in plenty of hot fat.</span></div></div>
+      <div class="amap-note split"><span class="amap-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v6"/><path d="M12 9l-6 12"/><path d="M12 9l6 12"/></svg></span><div><b>Where they split</b><span>Only Gemini suggested a pinch of baking soda in the water.</span></div></div>
+      <div class="amap-note live-cta"><span class="amap-ic live-ic">→</span><div><b>Interactive in the app</b><span>Every consensus gets a plain-language verdict — <em>"All 3 models agreed"</em> or <em>"2 of 3 agreed; GPT-4o differed"</em> — plus a stance and ~% contribution badge per model. Turn on inline highlighting to see which model said what, sentence by sentence. Tap a disagreement to make the models debate it, or reformat the whole answer (shorter, bullets, more detail) without re-querying.</span><a class="amap-app-link" href="/">Try it free in the app →</a></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Providers ────────────────────────────────────────── -->
+<section class="wrap">
+  <div class="section-head center">
+    <div class="kicker">Mix &amp; match</div>
+    <h2>Seven providers, free and paid</h2>
+    <p class="lead">Bring your own keys — combine flagships with free open models in one run.</p>
+  </div>
+  <div class="providers reveal">
+    <div class="prov" style="--c:#d4773b"><span class="prov-dot"></span>Claude<span class="prov-badge paid">paid</span></div>
+    <div class="prov" style="--c:#4285f4"><span class="prov-dot"></span>Gemini<span class="prov-badge paid">paid</span></div>
+    <div class="prov" style="--c:#10a37f"><span class="prov-dot"></span>ChatGPT<span class="prov-badge paid">paid</span></div>
+    <div class="prov" style="--c:#8b5cf6"><span class="prov-dot"></span>OpenRouter<span class="prov-badge free">300+ models</span></div>
+    <div class="prov" style="--c:#f55036"><span class="prov-dot"></span>Groq<span class="prov-badge free">free tier</span></div>
+    <div class="prov" style="--c:#ffb000"><span class="prov-dot"></span>Hugging Face<span class="prov-badge free">open</span></div>
+    <div class="prov" style="--c:#06b6d4"><span class="prov-dot"></span>Polecat Model Server<span class="prov-badge free">first-party</span></div>
+  </div>
+  <p style="text-align:center;font-size:13px;color:var(--text-2);margin-top:14px;max-width:480px;margin-left:auto;margin-right:auto">Polecat's own free community model server — open-source models (Qwen, Llama, DeepSeek, Mistral, Phi, Gemma), served by us. Self-serve keys are coming soon; the other six providers cover you in the meantime — <a href="/" style="color:var(--brand-b);text-decoration:underline">try it free</a>.</p>
+</section>
+
+<!-- ── Comparison ───────────────────────────────────────── -->
+<section class="wrap">
+  <div class="section-head center">
+    <div class="kicker">Why not just use one chatbot</div>
+    <h2>Polecat vs. a single-model chat</h2>
+    <p class="lead">ChatGPT, Gemini, and Claude are each one opinion. Polecat asks several and shows you the difference.</p>
+  </div>
+  <div class="compare-wrap reveal" tabindex="0" role="region" aria-label="Comparison table — scroll horizontally to see the Polecat column">
+    <table class="compare">
+      <thead>
+        <tr><th scope="col"><span class="sr-only">Feature</span></th><th scope="col">A single chatbot</th><th scope="col" class="compare-pole">Polecat</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">Models per prompt</th><td>1</td><td class="compare-pole">Up to 7 providers, any mix</td></tr>
+        <tr><th scope="row">Cross-checks itself</th><td class="no">No — one voice, one blind spot</td><td class="yes compare-pole">Yes — a consensus merges every answer</td></tr>
+        <tr><th scope="row">Shows disagreement</th><td class="no">Hidden — you only see one take</td><td class="yes compare-pole">Agreement map: where models split, and why</td></tr>
+        <tr><th scope="row">Your API keys, your choice of models</th><td class="no">Locked to one vendor</td><td class="yes compare-pole">Bring your own keys, mix free &amp; paid</td></tr>
+        <tr><th scope="row">Where prompts &amp; files go</th><td>Vendor's servers</td><td class="yes compare-pole">Straight from your browser to each provider with your own key<span class="muted small"> (except the keyless free demo &amp; Polecat Model Server, which proxy through ours)</span></td></tr>
+        <tr><th scope="row">Cost to try</th><td>Sign up, often a paywall</td><td class="yes compare-pole">Free demo, no signup</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="compare-hint">Swipe to see the Polecat column &rarr;</p>
+</section>
+
+<!-- ── Privacy ──────────────────────────────────────────── -->
+<section class="band">
+  <div class="wrap narrow center">
+    <div class="lock" aria-hidden="true"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M7.5 11V7.5a4.5 4.5 0 0 1 9 0V11"/></svg></div>
+    <h2>Private &amp; yours</h2>
+    <p class="lead">Bring your own key, and your API keys <b>and your conversations</b> live only in your browser — prompts go straight to each provider, never to us. No server, no accounts. <b>Attached files</b> (PDFs, Word docs, spreadsheets, images) are read entirely in your browser — nothing is uploaded anywhere. It's a static site you could fork and run yourself. <span class="muted small">(Two exceptions: the free demo and the Polecat Model Server both run through a lightweight proxy so you can try Polecat without a key.)</span></p>
+    <div class="hero-flow" style="margin-top:20px">
+      <span class="pill" style="--c:#34d399"><span aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="display:inline;vertical-align:-2px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span> Search, rename &amp; pin — on your device</span>
+      <span class="pill" style="--c:#8b5cf6"><span aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span> Private mode</span>
+      <span class="pill" style="--c:#e08a45"><span aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="display:inline;vertical-align:-2px"><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 10 12 15 17 10"/><line x1="3" y1="20" x2="21" y2="20"/></svg></span> Export anywhere</span>
+      <span class="pill" style="--c:#4285f4"><span aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline;vertical-align:-2px"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></span> Files read in your browser — never uploaded</span>
+      <span class="pill" style="--c:#06b6d4"><span aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg></span> Installable — add to your Home Screen</span>
+    </div>
+    <p class="muted small" style="margin-top:12px">Now installable as an app on desktop and mobile — handy, and the fix for iOS Safari quietly clearing site data after a week away. On iPhone/iPad, Polecat now gently reminds you to add it to your Home Screen before that happens.</p>
+  </div>
+</section>
+
+<!-- ── Final CTA ────────────────────────────────────────── -->
+<section class="cta-final">
+  <div class="hero-glow"></div>
+  <h2>Ask once. Hear from everyone.</h2>
+  <a class="btn btn-primary btn-lg" href="/">Open Polecat →</a>
+  <div class="hero-note">Free &amp; open. If it earns a spot in your toolkit, you can <a href="https://ko-fi.com/polecatlive" target="_blank" rel="noopener">leave a tip <span aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg></span></a> — entirely optional.</div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="foot-brand">Pole<span class="grad">cat</span></div>
+  <div class="foot-links">
+    <a href="/">App</a>
+    <a href="https://github.com/kevinrhaas/polecat-app">GitHub</a>
+    <a href="https://github.com/kevinrhaas/polecat-app/blob/main/changelog.json">Changelog</a>
+    <a href="https://polecat.live">Polecat suite</a>
+    <a href="https://ko-fi.com/polecatlive" target="_blank" rel="noopener">Ko-fi</a>
+  </div>
+  <div class="foot-meta">Last updated 2026-07-15 17:05 CT · <a href="https://github.com/kevinrhaas/polecat-app/blob/main/changelog.json" style="color:inherit">changelog</a></div>
+
+</footer>
+
+<script>
+  // reveal on scroll
+  const io = new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+</script>
+</body>
+</html>
