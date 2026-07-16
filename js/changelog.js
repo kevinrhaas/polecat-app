@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 138,
+    title: 'Free demo restored — model lineup refreshed',
+    kind: 'feature',
+    ts: '2026-07-16T17:00:00.000Z',
+    items: [
+      'The free demo works again. OpenRouter\'s free tier rotated: Llama 3.3 70B stopped serving entirely and three other demo models silently answered as a different model — the demo now lists only what genuinely responds as itself (GPT-OSS 20B).',
+      'New chats start with a working demo model instead of two broken ones.',
+      'More free models return once the demo proxy\'s allowlist is refreshed.',
+    ],
+  },
+  {
     v: 137,
     title: 'Moving day, prepared: Polecat can carry your data to a new address',
     kind: 'feature',

@@ -33,11 +33,14 @@ export const PROVIDERS = {
     baseUrl: DEMO_PROXY_URL + '/v1',
     noKey: true, demo: true,
     rateNote: 'No key needed — rate-limited free models so you can try Polecat instantly.',
+    // 2026-07-16 outage hotfix: OpenRouter's free tier rotated under us —
+    // llama-3.3-70b:free hangs (capacity never scheduled, endless keep-alives)
+    // and 120b/qwen3-coder/gemma-4 silently fall back to gpt-oss-20b (responses
+    // arrive labeled as the wrong model, text in reasoning deltas). Only list
+    // what genuinely serves AS ITSELF through the demo worker. Re-expand after
+    // the worker allowlist refresh (see proxy/worker.js ALLOWED_MODELS).
     models: [
-      { value: 'meta-llama/llama-3.3-70b-instruct:free', label: 'Llama 3.3 70B', price: 'free', free: true },
-      { value: 'openai/gpt-oss-120b:free',               label: 'GPT-OSS 120B',  price: 'free', free: true },
-      { value: 'qwen/qwen3-coder:free',                  label: 'Qwen3 Coder',   price: 'free', free: true },
-      { value: 'google/gemma-4-31b-it:free',             label: 'Gemma 4 31B',   price: 'free', free: true },
+      { value: 'openai/gpt-oss-20b:free', label: 'GPT-OSS 20B', price: 'free', free: true },
     ],
   },
   claude: {
