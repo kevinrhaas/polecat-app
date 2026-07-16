@@ -2813,7 +2813,7 @@ function closeConfig() {
 
 // One-tap free demo: select TWO fast, free models + a light consensus so the
 // cross-model magic is obvious, then keep the clickable example questions up.
-const DEMO_STARTER_MODELS = ['meta-llama/llama-3.3-70b-instruct:free', 'google/gemma-4-31b-it:free'];
+const DEMO_STARTER_MODELS = ['openai/gpt-oss-20b:free']; // hotfix: only model the demo worker genuinely serves today
 function startFreeDemo() {
   if (!PROVIDERS.demo) return;
   cfg.selections = cfg.selections || [];
