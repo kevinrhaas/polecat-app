@@ -1756,7 +1756,27 @@ async function runConsensus() {
     if (lastSynthesisOrdered.length >= 2) {
       renderResynthStrip(_consPair, lastSynthesisOrdered, lastSynthesisPrompt, activeStrategy(cfg).id);
     }
+    // The agreement map needs 2+ answering models to compare (and can skip on
+    // other failures). With the setting ON it must never just vanish — say why
+    // it's missing instead of leaving the user thinking it broke.
+    if (cfg.arbitration.provenance !== false && !lastConsensusProvenance) {
+      renderProvenanceGapNote(_consPair);
+    }
   }
+}
+
+// Why there's no agreement map under this consensus, in one muted line.
+function renderProvenanceGapNote(pair) {
+  if (!pair || pair.querySelector('.provenance-panel, .prov-gap-note')) return;
+  const answered = lastSynthesisOrdered.length;
+  const selected = answeringSelections(cfg).length;
+  const note = el('div', 'prov-gap-note');
+  note.textContent = answered < 2
+    ? `Agreement map: only ${answered === 1 ? 'one model' : 'no model'} answered this run` +
+      (selected > answered ? ` (${selected} selected — check the model tabs for what went wrong)` : '') +
+      ` — there's nothing to compare. It returns when two or more models answer.`
+    : 'The agreement analysis could not run on this answer.';
+  pair.appendChild(note);
 }
 // EPIC 1 · P4 — Inline attribution: color-coded paragraph highlighting.
 // A floating tooltip div is shared across all attributed paragraphs.

@@ -4,6 +4,18 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 141,
+    title: 'The agreement map now says why it\'s missing instead of silently vanishing',
+    kind: 'feature',
+    ts: '2026-07-18T05:27:00.000Z',
+    items: [
+      'Field report: a consensus ran with the agreement map turned on, but no map appeared and nothing explained why',
+      'Root cause: the map compares answers across models, so when only one of your selected models actually answers (the other errored or timed out), there is nothing to compare - and the app just skipped the map without a word',
+      'Now a short note appears under the consensus in that case: how many models answered, a pointer to check the model tabs for what went wrong, and that the map returns as soon as two or more respond',
+      'The automated gate now drives a real consensus with one deliberately failing model and verifies the answer still renders and the missing map is explained - plus the whole gate now runs fully offline (CDN scripts stubbed), ending a class of flaky runs',
+    ],
+  },
+  {
     v: 140,
     title: 'Polecat has a new address: chat.polecat.live',
     kind: 'feature',

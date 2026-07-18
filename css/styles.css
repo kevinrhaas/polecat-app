@@ -1279,3 +1279,7 @@ body.is-empty .composer { margin-top: 8px; }
 /* Keyboard-aware frame: js/app.js mirrors visualViewport.height into --vvh so
    the frame shrinks above the on-screen keyboard instead of hiding under it. */
 body.ps-shell { height: 100vh; height: var(--vvh, 100dvh); }
+
+/* One-line explainer shown when the agreement map is ON but couldn't run
+   (fewer than two models answered, or the analysis failed) */
+.prov-gap-note { padding: 8px 14px 10px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--text-3); line-height: 1.5; }
