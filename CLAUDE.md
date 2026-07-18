@@ -1,4 +1,4 @@
-# polecat-app (app.polecat.live) — agent guide
+# polecat-app (chat.polecat.live) — agent guide
 
 Polecat Chat, the consensus-chat flagship: one prompt to many AI models at
 once, one synthesized answer. Vanilla HTML/JS/CSS single-page app (no
@@ -59,9 +59,12 @@ How the app sits on the shell:
   (Pages deploys main; `auto-revert.yml` guards it). Never push to main.
 - No model identifiers in repo artifacts.
 
-## Domain note (GATED)
+## Domain note
 
-app.polecat.live → chat.polecat.live is a planned rename that MUST NOT run
-without Kevin's explicit written go — see polecat-platform docs/DOMAINS.md.
-Installed PWAs pin to their origin and localStorage does not cross origins:
-export/handoff ships and is verified BEFORE any DNS/Pages-domain change.
+The app lives at **chat.polecat.live** (renamed from app.polecat.live
+2026-07-18 on Kevin's written go, per polecat-platform docs/DOMAINS.md).
+The old origin serves the data-carrying handoff stub from the polecat repo
+(canonical source here: `handoff-stub/index.html` — keep them in sync); it
+stays published for months because installed PWAs pin to the old origin.
+`js/handoff.js` + `tryApplyHandoffFromHash` import arriving `#handoff=`
+payloads — confirm-gated, never remove.

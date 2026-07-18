@@ -1,6 +1,17 @@
 {
-  "updated": "2026-07-17 19:52 CT",
+  "updated": "2026-07-17 23:54 CT",
   "entries": [
+    {
+      "date": "2026-07-17",
+      "time": "23:54 CT",
+      "kind": "feature",
+      "title": "Polecat has a new address: chat.polecat.live",
+      "items": [
+        "The app now lives at chat.polecat.live - update your bookmarks. The old app.polecat.live shows a small forwarding page that brings your chats, settings and API keys along in one tap (you'll be asked to confirm; nothing passes through any server)",
+        "If you installed Polecat to your Home Screen or desktop, install it again from the new address - the old icon keeps working but points at the forwarding page",
+        "Share links and the marketing page moved with the app; everything else is unchanged"
+      ]
+    },
     {
       "date": "2026-07-17",
       "time": "19:52 CT",

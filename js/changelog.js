@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 140,
+    title: 'Polecat has a new address: chat.polecat.live',
+    kind: 'feature',
+    ts: '2026-07-18T04:54:00.000Z',
+    items: [
+      'The app now lives at chat.polecat.live - update your bookmarks. The old app.polecat.live shows a small forwarding page that brings your chats, settings and API keys along in one tap (you\'ll be asked to confirm; nothing passes through any server)',
+      'If you installed Polecat to your Home Screen or desktop, install it again from the new address - the old icon keeps working but points at the forwarding page',
+      'Share links and the marketing page moved with the app; everything else is unchanged',
+    ],
+  },
+  {
     v: 139,
     title: 'Fixed the zoomed-in, can\'t-find-send experience on iPhone',
     kind: 'fix',
