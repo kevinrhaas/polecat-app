@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-17 23:54 CT",
+  "updated": "2026-07-18 00:27 CT",
   "entries": [
+    {
+      "date": "2026-07-18",
+      "time": "00:27 CT",
+      "kind": "fix",
+      "title": "The agreement map now says why it's missing instead of silently vanishing",
+      "items": [
+        "Field report: a consensus ran with the agreement map turned on, but no map appeared and nothing explained why",
+        "Root cause: the map compares answers across models, so when only one of your selected models actually answers (the other errored or timed out), there is nothing to compare - and the app just skipped the map without a word",
+        "Now a short note appears under the consensus in that case: how many models answered, a pointer to check the model tabs for what went wrong, and that the map returns as soon as two or more respond",
+        "The automated gate now drives a real consensus with one deliberately failing model and verifies the answer still renders and the missing map is explained - plus the whole gate now runs fully offline (CDN scripts stubbed), ending a class of flaky runs"
+      ]
+    },
     {
       "date": "2026-07-17",
       "time": "23:54 CT",
