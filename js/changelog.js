@@ -4,6 +4,18 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 139,
+    title: 'Fixed the zoomed-in, can\'t-find-send experience on iPhone',
+    kind: 'fix',
+    ts: '2026-07-18T00:52:00.000Z',
+    items: [
+      'On iPhone, tapping the message box made Safari zoom the whole page in - and it never zoomed back out, so everything looked huge, nothing scaled right, and the send button ended up off-screen. Inputs are now 16px on touch devices, which stops that zoom at the source',
+      'The app now tracks the on-screen keyboard and shrinks to fit above it, so the composer and send button stay visible while you type instead of hiding behind the keyboard',
+      'Long drafts on phones now cap the message box at a sensible height (it scrolls inside), so the send row is always reachable',
+      'The automated mobile check now types a long draft and verifies the send button stays on-screen and inputs are at least 16px - this class of bug can\'t ship silently again',
+    ],
+  },
+  {
     v: 138,
     title: 'Free demo restored — model lineup refreshed',
     kind: 'feature',

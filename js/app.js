@@ -118,8 +118,11 @@ const statusOf  = (provider, model) => cfg.modelStatus[statusKey(provider, model
 // Fits the composer's height to its content (or, when empty, to its placeholder
 // hint) so the multi-line hint text is never clipped.
 function autoGrowComposer(el) {
+  // Cap lower on phones so a long draft never pushes the send row off-screen
+  // (keep in sync with the .prompt-input max-height media query in styles.css).
+  const cap = window.matchMedia('(max-width: 600px)').matches ? 120 : 200;
   el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+  el.style.height = Math.min(el.scrollHeight, cap) + 'px';
 }
 
 // ── Prompt history recall (↑/↓ in empty input) ──────────────────────────────
@@ -3706,6 +3709,24 @@ function syncHljsTheme() {
   const l = $('hljs-theme'); if (l) l.disabled = (effectiveMode() === 'light');
 }
 
+// Keyboard-aware frame height. iOS Safari overlays the on-screen keyboard
+// without shrinking the layout viewport, so a bottom-docked composer (and its
+// send button) can end up hidden behind it. Track window.visualViewport and
+// mirror its height into --vvh; body height follows it (styles.css), so the
+// whole frame genuinely shrinks above the keyboard. Skipped while the user is
+// pinch-zoomed — shrinking the layout mid-zoom would fight them.
+function wireVisualViewport() {
+  const vv = window.visualViewport; if (!vv) return;
+  const apply = () => {
+    if (vv.scale > 1.02) return;
+    document.documentElement.style.setProperty('--vvh', Math.round(vv.height) + 'px');
+    if (window.scrollY) window.scrollTo(0, 0);   // keep the app frame pinned while the keyboard is up
+  };
+  vv.addEventListener('resize', apply);
+  vv.addEventListener('scroll', apply);
+  apply();
+}
+
 function buildFrame() {
   configureTheme({
     storageKey: 'polecat_theme',   // historical key — kept forever (see config.js)
@@ -3752,6 +3773,8 @@ function buildFrame() {
 
   // The chat surface (transcript + composer) moves into the shell's main view.
   _shell.els.main.append(document.querySelector('.app'));
+
+  wireVisualViewport();
 }
 
 function init() {
