@@ -1255,3 +1255,27 @@ body.is-empty .composer { margin-top: 8px; }
 .backdrop .modal { display: block; transform: none; }
 #toast { border: none; }
 .send-btn kbd { background: none; border: none; padding: 0; }
+
+/* ── Mobile input & keyboard fixes ─────────────────────────────────────────
+   iOS Safari auto-zooms the whole page when a focused input's font-size is
+   under 16px — and never zooms back out, leaving the UI "huge" with the send
+   button off-screen. 16px on touch devices kills that at the root. */
+@media (pointer: coarse) {
+  .prompt-input, .sb-search, .sb-rename-input,
+  input[type="text"], input[type="search"], input[type="password"],
+  input[type="url"], input[type="email"], textarea, select { font-size: 16px; }
+}
+@media (max-width: 600px) {
+  /* a long draft must never swallow the screen — the send row stays visible
+     (cap kept in sync with autoGrowComposer in js/app.js) */
+  .prompt-input { max-height: 120px; }
+  /* In the empty/greeting state .responses sizes to its content (flex:0 auto)
+     and .app center-justifies — on a phone the tall greeting + composer can
+     exceed the viewport and push the send row off-screen. Let the greeting
+     area shrink and scroll instead; the composer stays pinned and reachable. */
+  body.is-empty .app { justify-content: flex-start; }
+  body.is-empty .responses { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+}
+/* Keyboard-aware frame: js/app.js mirrors visualViewport.height into --vvh so
+   the frame shrinks above the on-screen keyboard instead of hiding under it. */
+body.ps-shell { height: 100vh; height: var(--vvh, 100dvh); }

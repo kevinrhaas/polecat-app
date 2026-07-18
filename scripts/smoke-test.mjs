@@ -133,7 +133,8 @@ async function freshProfilePass(browser) {
 }
 
 async function mobilePass(browser) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 780 }, isMobile: true });
+  // hasTouch makes (pointer: coarse) match — required for the ≥16px input check
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 780 }, isMobile: true, hasTouch: true });
   const { page, errs } = await trackedPage(ctx);
   await page.addInitScript(seedReturning);
   await page.goto(URL_, { waitUntil: 'networkidle', timeout: 20000 });
@@ -145,6 +146,33 @@ async function mobilePass(browser) {
     const last = [...document.querySelectorAll('.ps-topbar > *')].pop();
     return last ? last.getBoundingClientRect().right > innerWidth + 1 : true;
   })) throw new Error('mobile: topbar overflows the 390px viewport');
+
+  // a long draft must never push the send button off-screen (the iOS bug:
+  // the composer grew unbounded and the send row fell below the viewport)
+  await page.evaluate(() => {
+    const inp = document.getElementById('promptInput');
+    inp.value = 'long draft line\n'.repeat(40);
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await page.waitForTimeout(200);
+  const send = await page.evaluate(() => {
+    const r = document.getElementById('sendBtn')?.getBoundingClientRect();
+    return r ? { top: r.top, bottom: r.bottom, right: r.right } : null;
+  });
+  if (!send) throw new Error('mobile: send button missing');
+  if (send.bottom > 780 + 1 || send.top < 0 || send.right > 390 + 1)
+    throw new Error(`mobile: send button off-screen with a long draft (${JSON.stringify(send)})`);
+  // composer input must be ≥16px on touch — anything smaller makes iOS
+  // auto-zoom the page on focus (the "everything is huge / pinch to find
+  // send" report). Chromium at 390px with a coarse-pointer context applies
+  // the same media query Safari would.
+  const fs = await page.evaluate(() => parseFloat(getComputedStyle(document.getElementById('promptInput')).fontSize));
+  if (fs < 16) throw new Error(`mobile: composer font-size ${fs}px < 16px — iOS will auto-zoom on focus`);
+  await page.evaluate(() => {
+    const inp = document.getElementById('promptInput');
+    inp.value = '';
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+  });
 
   // drawer: boots closed, hamburger opens it, backdrop closes it
   if (await page.evaluate(() => document.querySelector('.ps-rail')?.classList.contains('open')))
@@ -210,7 +238,7 @@ async function handoffPass(browser) {
   }, [PORT_OLD]);
   await page.goto(`http://127.0.0.1:${PORT_OLD}/handoff-stub/?to=${encodeURIComponent(`http://localhost:${PORT}/`)}`,
     { waitUntil: 'domcontentloaded', timeout: 20000 });
-  await page.waitForURL(u => u.hostname === 'localhost' && u.port === String(PORT), { timeout: 15000 });
+  await page.waitForURL(u => u.hostname === 'localhost' && u.port === String(PORT), { timeout: 15000, waitUntil: 'domcontentloaded' });
   await page.waitForSelector('.ps-rail #sbHistory', { timeout: 12000 });
   await page.waitForTimeout(900);
   const st = await page.evaluate(() => {
@@ -249,7 +277,7 @@ async function handoffPass(browser) {
   }, [PORT_OLD]);
   await p3.goto(`http://127.0.0.1:${PORT_OLD}/handoff-stub/?to=${encodeURIComponent(`http://localhost:${PORT}/`)}`,
     { waitUntil: 'domcontentloaded', timeout: 20000 });
-  await p3.waitForURL(u => u.hostname === 'localhost' && u.port === String(PORT), { timeout: 15000 });
+  await p3.waitForURL(u => u.hostname === 'localhost' && u.port === String(PORT), { timeout: 15000, waitUntil: 'domcontentloaded' });
   await p3.waitForSelector('.ps-view .prompt-input', { timeout: 12000 });
   await p3.waitForTimeout(700);
   const declined = await p3.evaluate(() => ({

@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-16 11:23 CT",
+  "updated": "2026-07-17 19:52 CT",
   "entries": [
+    {
+      "date": "2026-07-17",
+      "time": "19:52 CT",
+      "kind": "fix",
+      "title": "Fixed the zoomed-in, can't-find-send experience on iPhone",
+      "items": [
+        "On iPhone, tapping the message box made Safari zoom the whole page in - and it never zoomed back out, so everything looked huge, nothing scaled right, and the send button ended up off-screen. Inputs are now 16px on touch devices, which stops that zoom at the source",
+        "The app now tracks the on-screen keyboard and shrinks to fit above it, so the composer and send button stay visible while you type instead of hiding behind the keyboard",
+        "Long drafts on phones now cap the message box at a sensible height (it scrolls inside), so the send row is always reachable",
+        "The automated mobile check now types a long draft and verifies the send button stays on-screen and inputs are at least 16px - this class of bug can't ship silently again"
+      ]
+    },
     {
       "date": "2026-07-16",
       "kind": "fix",
