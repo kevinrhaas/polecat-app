@@ -54,7 +54,10 @@ const seedReturning = () => {
   localStorage.setItem('polecat_keys_nudge_shown', '1');
   localStorage.setItem('polecat_theme', 'light');   // pre-shell format
 };
-const realErrors = (errs) => errs.filter(e => !/favicon|net::ERR|Failed to load resource/i.test(e));
+// "interactive-widget" is a Chromium-only viewport key (keyboard-resize
+// behavior); WebKit logs a console warning for it, which is expected and
+// harmless — without the exclusion the WebKit pass false-reds every PR.
+const realErrors = (errs) => errs.filter(e => !/favicon|net::ERR|Failed to load resource|Viewport argument key "interactive-widget"/i.test(e));
 
 async function trackedPage(ctx) {
   const page = await ctx.newPage();
