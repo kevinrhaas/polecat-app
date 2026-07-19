@@ -54,13 +54,24 @@ const seedReturning = () => {
   localStorage.setItem('polecat_keys_nudge_shown', '1');
   localStorage.setItem('polecat_theme', 'light');   // pre-shell format
 };
-const realErrors = (errs) => errs.filter(e => !/favicon|net::ERR|Failed to load resource/i.test(e));
+// "interactive-widget" is a Chromium-only viewport key (keyboard-resize
+// behavior); WebKit logs a console warning for it, which is expected and
+// harmless — without the exclusion the WebKit pass false-reds every PR.
+const realErrors = (errs) => errs.filter(e => !/favicon|net::ERR|Failed to load resource|Viewport argument key "interactive-widget"/i.test(e));
 
 async function trackedPage(ctx) {
   const page = await ctx.newPage();
   const errs = [];
   page.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text()); });
   page.on('pageerror', e => errs.push('pageerror: ' + e));
+  // Stub the CDN scripts (marked/highlight.js) — their latency makes load
+  // events flaky in CI and the app degrades gracefully without them, so the
+  // gate stays deterministic and runs fully offline.
+  await page.route(/cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com/, r => r.fulfill({
+    status: 200,
+    contentType: r.request().url().endsWith('.css') ? 'text/css' : 'text/javascript',
+    body: '',
+  }));
   return { page, errs };
 }
 
@@ -292,6 +303,60 @@ async function handoffPass(browser) {
   console.log('✓ origin handoff: data crosses origins only via #handoff=, confirm-gated, fragment stripped; decline imports nothing');
 }
 
+async function degradedConsensusPass(browser) {
+  // A real consensus run where one of two models fails: the answer + follow-ups
+  // must render, and with the agreement map ON the app must EXPLAIN the missing
+  // map (.prov-gap-note) instead of silently dropping it (field report
+  // 2026-07-18). The demo worker is mocked in-page, so this is deterministic.
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const { page, errs } = await trackedPage(ctx);
+  await page.addInitScript(() => {
+    localStorage.setItem('polecat_welcomed', '1');
+    localStorage.setItem('polecat_keys_nudge_shown', '1');
+    localStorage.setItem('polecat', JSON.stringify({
+      schemaVersion: 1, providers: {}, consensus: true,
+      selections: [
+        { id: 'sA', provider: 'demo', model: 'mock/model-a' },
+        { id: 'sB', provider: 'demo', model: 'mock/model-b' },
+      ],
+      arbitration: { activeId: 'sequential', arbiter: 'auto', provenance: true, custom: [] },
+    }));
+  });
+  await page.route(/workers\.dev/, route => {
+    const body = route.request().postDataJSON?.() || {};
+    if ((body.model || '').includes('model-a')) {
+      return route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: { message: 'mock outage' } }) });
+    }
+    const sse = [
+      'data: ' + JSON.stringify({ choices: [{ delta: { content: 'Mock answer from model B.' } }] }),
+      'data: [DONE]', '',
+    ].join('\n\n');
+    return route.fulfill({ status: 200, contentType: 'text/event-stream', body: sse });
+  });
+  await page.goto(URL_, { waitUntil: 'networkidle', timeout: 20000 });
+  await page.waitForSelector('.ps-view .prompt-input', { timeout: 12000 });
+  await page.evaluate(() => {
+    const inp = document.getElementById('promptInput');
+    inp.value = 'Smoke: degraded consensus run';
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+    document.getElementById('sendBtn').click();
+  });
+  await page.waitForSelector('#conv_consensus .qa-pair .msg-bubble', { timeout: 20000 });
+  await page.waitForSelector('.prov-gap-note', { timeout: 15000 });
+  const st = await page.evaluate(() => ({
+    note: document.querySelector('.prov-gap-note')?.textContent || '',
+    consensus: document.querySelector('#conv_consensus .qa-pair:last-child .msg.assistant .msg-bubble')?.textContent || '',
+    map: !!document.querySelector('.provenance-panel'),
+  }));
+  if (!/only one model answered/i.test(st.note)) throw new Error(`degraded consensus: gap note wrong: "${st.note}"`);
+  if (!st.consensus.includes('Mock answer from model B')) throw new Error('degraded consensus: consensus text missing');
+  if (st.map) throw new Error('degraded consensus: a map rendered where none should');
+  const real = realErrors(errs);
+  if (real.length) throw new Error('degraded consensus errors:\n  ' + real.join('\n  '));
+  await ctx.close();
+  console.log('✓ degraded consensus: one model fails → answer renders + missing agreement map is explained');
+}
+
 async function changelogContractPass() {
   const mod = await import(join(ROOT, 'js', 'changelog.js'));
   if (!Array.isArray(mod.CHANGELOG) || !mod.CHANGELOG.length) throw new Error('changelog: CHANGELOG missing/empty');
@@ -315,6 +380,7 @@ async function changelogContractPass() {
     await mobilePass(browser);
     await welcomePass(browser);
     await handoffPass(browser);
+    await degradedConsensusPass(browser);
     await browser.close(); browser = null;
 
     // WebKit (iOS engine) — best-effort: run when the binary exists.
