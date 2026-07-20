@@ -95,6 +95,25 @@ export const PROVIDERS = {
     ],
   },
 
+  kimi: {
+    id: 'kimi', name: 'Kimi', short: 'Kimi', vendor: 'Moonshot AI',
+    color: '#7c89ff', kind: 'openai-compatible',
+    baseUrl: 'https://api.moonshot.ai/v1',
+    placeholder: 'sk-…',
+    keyUrl: 'https://platform.kimi.ai/console/api-keys', keyLabel: 'platform.kimi.ai',
+    openUrl: 'https://www.kimi.com/',
+    allowCustomModel: true,
+    rateNote: 'Kimi by Moonshot AI — frontier open-weights flagships at very low cost.',
+    models: [
+      { value: 'kimi-k3',              label: 'Kimi K3',        price: '$$' },
+      { value: 'kimi-k2.6',            label: 'Kimi K2.6',      price: '$' },
+      { value: 'kimi-k2.5',            label: 'Kimi K2.5',      price: '$' },
+      { value: 'kimi-k2.7-code',       label: 'K2.7 Code',      price: '$$' },
+      { value: 'moonshot-v1-auto',     label: 'Moonshot auto',  price: '$' },
+      { value: 'moonshot-v1-128k-vision-preview', label: 'V1 128k Vision', price: '$$', vision: true },
+    ],
+  },
+
   // ── Free / public-model providers (OpenAI-compatible) ───────────────────
   openrouter: {
     id: 'openrouter', name: 'OpenRouter', short: 'OpenRouter', vendor: 'OpenRouter',

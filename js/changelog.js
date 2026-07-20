@@ -4,6 +4,18 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 142,
+    title: 'New provider: Kimi (Moonshot AI)',
+    kind: 'feature',
+    ts: '2026-07-20T19:46:00.000Z',
+    items: [
+      'Kimi joins the lineup as Polecat\'s 8th provider - bring a key from platform.kimi.ai and run Kimi K3, K2.6, K2.5, the K2.7 coding model, Moonshot v1 auto, or the 128k vision preview (plus any model id you type, like every provider here)',
+      'Same privacy deal as always: your key lives in this browser and calls go straight to api.moonshot.ai - verified to allow direct browser access, no proxy involved',
+      'Kimi models were already reachable through Groq, OpenRouter and Hugging Face; the native provider adds the full first-party lineup at Moonshot\'s own (very low) prices',
+      'The automated gate now runs a full mocked Kimi consensus - correct endpoint, your key attached, two models to a merged answer with the agreement map',
+    ],
+  },
+  {
     v: 141,
     title: 'The agreement map now says why it\'s missing instead of silently vanishing',
     kind: 'feature',

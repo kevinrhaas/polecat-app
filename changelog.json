@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-18 00:27 CT",
+  "updated": "2026-07-20 14:46 CT",
   "entries": [
+    {
+      "date": "2026-07-20",
+      "time": "14:46 CT",
+      "kind": "feature",
+      "title": "New provider: Kimi (Moonshot AI)",
+      "items": [
+        "Kimi joins the lineup as Polecat's 8th provider - bring a key from platform.kimi.ai and run Kimi K3, K2.6, K2.5, the K2.7 coding model, Moonshot v1 auto, or the 128k vision preview (plus any model id you type, like every provider here)",
+        "Same privacy deal as always: your key lives in this browser and calls go straight to api.moonshot.ai - verified to allow direct browser access, no proxy involved",
+        "Kimi models were already reachable through Groq, OpenRouter and Hugging Face; the native provider adds the full first-party lineup at Moonshot's own (very low) prices",
+        "The automated gate now runs a full mocked Kimi consensus - correct endpoint, your key attached, two models to a merged answer with the agreement map"
+      ]
+    },
     {
       "date": "2026-07-18",
       "time": "00:27 CT",
