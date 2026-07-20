@@ -117,9 +117,12 @@ async function desktopPass(browser) {
   const t2 = await page.evaluate(() => [document.documentElement.getAttribute('data-theme'), localStorage.getItem('polecat_theme')]);
   if (t2[0] !== 'dark' || t2[1] !== 'polecat:dark') throw new Error(`theme toggle broken: ${JSON.stringify(t2)}`);
 
-  // settings modal opens and closes
+  // settings modal opens and closes; every provider (incl. Kimi) offers a key field
   await page.click('#configBtn');
   await page.waitForSelector('#configModal.open', { timeout: 4000 });
+  const keyProviders = await page.evaluate(() => document.getElementById('keyFields')?.textContent || '');
+  for (const p of ['Claude', 'Gemini', 'ChatGPT', 'Kimi', 'OpenRouter', 'Groq', 'Hugging Face'])
+    if (!keyProviders.includes(p)) throw new Error(`settings: ${p} key field missing`);
   await page.click('#doneConfig');
   await page.waitForTimeout(250);
 
@@ -357,6 +360,61 @@ async function degradedConsensusPass(browser) {
   console.log('✓ degraded consensus: one model fails → answer renders + missing agreement map is explained');
 }
 
+async function kimiProviderPass(browser) {
+  // The Kimi (Moonshot AI) provider end-to-end against a mocked api.moonshot.ai:
+  // the request must hit the right base URL with the user's bearer key, both
+  // models answer, a consensus renders, and the agreement map appears (two
+  // answers → the map must be back).
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const { page, errs } = await trackedPage(ctx);
+  const seen = { auth: '', urls: [] };
+  await page.route(/api\.moonshot\.ai/, route => {
+    seen.auth = route.request().headers()['authorization'] || '';
+    seen.urls.push(route.request().url());
+    const body = route.request().postDataJSON?.() || {};
+    const who = (body.model || '').includes('k2.6') ? 'Kimi B says beta.' : 'Kimi A says alpha.';
+    const sse = ['data: ' + JSON.stringify({ choices: [{ delta: { content: who } }] }), 'data: [DONE]', ''].join('\n\n');
+    return route.fulfill({ status: 200, contentType: 'text/event-stream', body: sse });
+  });
+  await page.addInitScript(() => {
+    localStorage.setItem('polecat_welcomed', '1');
+    localStorage.setItem('polecat_keys_nudge_shown', '1');
+    localStorage.setItem('polecat', JSON.stringify({
+      schemaVersion: 1, consensus: true,
+      providers: { kimi: { key: 'sk-smoke-kimi' } },
+      selections: [
+        { id: 'k1', provider: 'kimi', model: 'kimi-k3' },
+        { id: 'k2', provider: 'kimi', model: 'kimi-k2.6' },
+      ],
+      arbitration: { activeId: 'comprehensive', arbiter: 'auto', provenance: true, custom: [] },
+    }));
+  });
+  await page.goto(URL_, { waitUntil: 'networkidle', timeout: 20000 });
+  await page.waitForSelector('.ps-view .prompt-input', { timeout: 12000 });
+  await page.evaluate(() => {
+    const inp = document.getElementById('promptInput');
+    inp.value = 'Smoke: kimi provider run';
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+    document.getElementById('sendBtn').click();
+  });
+  await page.waitForSelector('#conv_consensus .qa-pair .msg.assistant .msg-bubble', { timeout: 20000 });
+  await page.waitForSelector('.provenance-panel', { timeout: 15000 });
+  const st = await page.evaluate(() => ({
+    consensus: document.querySelector('#conv_consensus .qa-pair:last-child .msg.assistant .msg-bubble')?.textContent || '',
+    map: !!document.querySelector('.provenance-panel'),
+    gapNote: !!document.querySelector('.prov-gap-note'),
+  }));
+  if (seen.auth !== 'Bearer sk-smoke-kimi') throw new Error(`kimi: wrong/missing bearer key (${seen.auth})`);
+  if (!seen.urls.every(u => u.includes('api.moonshot.ai/v1'))) throw new Error('kimi: request left the moonshot base URL');
+  if (!st.consensus.trim()) throw new Error('kimi: consensus missing');
+  if (!st.map) throw new Error('kimi: agreement map missing with two successful answers');
+  if (st.gapNote) throw new Error('kimi: gap note rendered although the map ran');
+  const real = realErrors(errs);
+  if (real.length) throw new Error('kimi errors:\n  ' + real.join('\n  '));
+  await ctx.close();
+  console.log('✓ kimi provider: mocked api.moonshot.ai round-trip — bearer key, consensus, agreement map');
+}
+
 async function changelogContractPass() {
   const mod = await import(join(ROOT, 'js', 'changelog.js'));
   if (!Array.isArray(mod.CHANGELOG) || !mod.CHANGELOG.length) throw new Error('changelog: CHANGELOG missing/empty');
@@ -381,6 +439,7 @@ async function changelogContractPass() {
     await welcomePass(browser);
     await handoffPass(browser);
     await degradedConsensusPass(browser);
+    await kimiProviderPass(browser);
     await browser.close(); browser = null;
 
     // WebKit (iOS engine) — best-effort: run when the binary exists.
