@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 143,
+    title: 'Pick your palette: Aurora and Neon join the house Polecat theme',
+    kind: 'feature',
+    ts: '2026-07-22T16:44:00.000Z',
+    items: [
+      'New Appearance tab in Settings lets you switch the whole app\'s color palette - warm amber Polecat (the default), violet/teal Aurora, or Miami-Vice magenta/cyan Neon',
+      'Every palette works in both light and dark mode - the existing Theme toggle still switches light/dark independently of your palette pick',
+      'Your choice is saved instantly and survives reloads under the same storage key as the existing theme setting, so nothing about your saved chats or keys changes',
+    ],
+  },
+  {
     v: 142,
     title: 'New provider: Kimi (Moonshot AI)',
     kind: 'feature',
