@@ -16,7 +16,7 @@ import {
 } from './arbitration.js';
 import { $, el, escapeHtml, nl2br, renderMarkdown, highlightBubble, toast } from './ui.js';
 // Polecat Shell (vendored, READ-ONLY — see CLAUDE.md): frame, theme, waffle, What's-New.
-import { configure as configureTheme, applyTheme, toggleMode, effectiveMode } from '../vendor/polecat-shell/theme.js';
+import { configure as configureTheme, applyTheme, toggleMode, effectiveMode, PALETTES, getTheme, setTheme } from '../vendor/polecat-shell/theme.js';
 import { initShell, rightPanel, appSwitcher } from '../vendor/polecat-shell/shell.js';
 import { publicFleet } from '../vendor/polecat-shell/catalog.js';
 import { initWhatsNew, hasUnseen } from '../vendor/polecat-shell/whatsnew.js';
@@ -2799,7 +2799,7 @@ function statusGlyph(provider, model) {
 // ════════════════════════════════════════════════════════════════════════════
 //  SETTINGS MODAL  (tabs: Models & Consensus · Keys · Support)
 // ════════════════════════════════════════════════════════════════════════════
-const VALID_TABS = new Set(['models', 'keys', 'support']);
+const VALID_TABS = new Set(['models', 'keys', 'appearance', 'support']);
 function setConfigTab(name) {
   cfg.ui.lastTab = name; persist();
   document.querySelectorAll('.cfg-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
@@ -2821,7 +2821,7 @@ function goToProviderKey(provider) {
 function openConfig(tab) {
   closeSidebar();   // opening Settings from the sidebar's own link left its higher z-index
                      // backdrop covering the modal, eating the first click
-  renderModels(); renderKeys(); renderArbitration(); renderDonate(); renderSystemPrompt();
+  renderModels(); renderKeys(); renderArbitration(); renderAppearance(); renderDonate(); renderSystemPrompt();
   const stored = cfg.ui.lastTab;
   setConfigTab(tab || (VALID_TABS.has(stored) ? stored : 'models'));
   const wasOpen = $('configModal').classList.contains('open');
@@ -3659,6 +3659,35 @@ function openWhatsNew() {
   updateWhatsNewBadge();
 }
 
+// ── Appearance ───────────────────────────────────────────────────────────────
+function renderAppearance() {
+  const wrap = $('paletteArea'); if (!wrap) return;
+  const seg = el('div', 'ps-seg');
+  seg.setAttribute('role', 'radiogroup');
+  seg.setAttribute('aria-label', 'Palette');
+  const { palette: current, mode } = getTheme();
+  PALETTES.forEach(p => {
+    const on = p.key === current;
+    const btn = el('button', 'ps-seg-btn' + (on ? ' on' : ''), escapeHtml(p.label));
+    btn.type = 'button';
+    btn.title = p.hint;
+    btn.setAttribute('role', 'radio');
+    btn.setAttribute('aria-checked', String(on));
+    btn.onclick = () => {
+      setTheme(p.key, getTheme().mode);
+      syncHljsTheme();
+      seg.querySelectorAll('.ps-seg-btn').forEach(x => {
+        const isThis = x === btn;
+        x.classList.toggle('on', isThis);
+        x.setAttribute('aria-checked', String(isThis));
+      });
+      toast(`${p.label} palette`, 1400);
+    };
+    seg.append(btn);
+  });
+  wrap.replaceChildren(seg);
+}
+
 // ── Support ─────────────────────────────────────────────────────────────────
 function renderDonate() {
   const wrap = $('donateArea'); if (!wrap) return;
@@ -3751,7 +3780,11 @@ function buildFrame() {
   configureTheme({
     storageKey: 'polecat_theme',   // historical key — kept forever (see config.js)
     defaultTheme: 'polecat:dark',
-    palettes: [{ key: 'polecat', label: 'Polecat', hint: 'Warm amber house style' }],
+    palettes: [
+      { key: 'polecat', label: 'Polecat', hint: 'Warm amber house style' },
+      { key: 'aurora',  label: 'Aurora',  hint: 'Violet / teal' },
+      { key: 'neon',    label: 'Neon',    hint: 'Miami-Vice magenta / cyan' },
+    ],
   });
   // The index.html pre-paint snippet normalizes the pre-shell bare 'dark' /
   // 'light' value; repeat here so direct js loads (tests) behave identically.

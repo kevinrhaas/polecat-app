@@ -40,10 +40,14 @@ The fleet-wide plan lives in **kevinrhaas/polecat-platform → docs/MIGRATION.md
     absolute links (share modal, /welcome/ canonical+OG, CLAUDE.md) updated.
   **RENAME COMPLETE.** Follow-up: vendor catch-up v0.1.0 → v0.4.1 arrives
   via the platform's sync-shell PR — merge when its smoke is green.
+- [x] **Optional palette picker (shipped 2026-07-22).** New Appearance tab in
+  Settings (`index.html` `#sec-appearance`/`#paletteArea`, `js/app.js`
+  `renderAppearance()`) offers Aurora and Neon alongside the house Polecat
+  palette via the shell's `PALETTES`/`getTheme`/`setTheme`, stored under the
+  same historical `polecat_theme` key. Mode (light/dark) toggle is unaffected.
 - [ ] Follow-ups queued for later units: shell-v2 ui.js/icon adoption
-  (app-local `js/ui.js` keeps pre-shell signatures for now), optional
-  palette picker (shell supports aurora/neon), archive-release snapshots
-  (`/v/<n>/`) fleet pattern.
+  (app-local `js/ui.js` keeps pre-shell signatures for now), archive-release
+  snapshots (`/v/<n>/`) fleet pattern.
 
 The hourly self-improve loop reads this file. When an epic has unchecked steps,
 the loop advances the **next unchecked step of the highest-priority epic** as a

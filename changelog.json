@@ -1,6 +1,17 @@
 {
-  "updated": "2026-07-20 14:46 CT",
+  "updated": "2026-07-22 11:44 CT",
   "entries": [
+    {
+      "date": "2026-07-22",
+      "time": "11:44 CT",
+      "kind": "feature",
+      "title": "Pick your palette: Aurora and Neon join the house Polecat theme",
+      "items": [
+        "New Appearance tab in Settings lets you switch the whole app's color palette - warm amber Polecat (the default), violet/teal Aurora, or Miami-Vice magenta/cyan Neon",
+        "Every palette works in both light and dark mode - the existing Theme toggle still switches light/dark independently of your palette pick",
+        "Your choice is saved instantly and survives reloads under the same storage key as the existing theme setting, so nothing about your saved chats or keys changes"
+      ]
+    },
     {
       "date": "2026-07-20",
       "time": "14:46 CT",
