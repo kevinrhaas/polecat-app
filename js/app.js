@@ -3795,11 +3795,13 @@ function buildFrame() {
 
   const holder = $('chromeHolder');
   const logo = holder.querySelector('.logo');
-  const wordmark = holder.querySelector('.logo-mark').outerHTML;
   const waffle = appSwitcher(publicFleet().map(a => ({ ...a, icon: shellIcon(a.icon, 20) })), { current: 'chat' });
 
   _shell = initShell({
-    app: { id: 'chat', name: 'Polecat', wordmark },
+    // Rail tile = the chat glyph in the fleet ring chassis, same as every
+    // app's launcher tile (brand v2: apps identify with their glyph badge,
+    // never the Polecat mark/mascot — platform docs/BRAND.md § mark system).
+    app: { id: 'chat', name: 'Polecat', icon: shellIcon('chat', 22) },
     sections: [],                          // the chat rail is content, not section nav
     rail: { storageKey: 'polecat.rail' },
     topbar: { left: [logo], right: [$('privateBadge'), $('resetBtn'), waffle] },

@@ -1,6 +1,17 @@
 {
-  "updated": "2026-07-30 10:58 CT",
+  "updated": "2026-07-30 18:41 CT",
   "entries": [
+    {
+      "date": "2026-07-30",
+      "time": "18:41 CT",
+      "kind": "polish",
+      "title": "New badge, same Polecat: the chat glyph takes over from the mascot",
+      "items": [
+        "Following the fleet's updated brand guidelines, the old mascot face retires from the app: the sidebar tile, top bar, favicon and Home Screen icon are now Chat's own glyph badge - the same purple chat bubble you see on the polecat.live launcher",
+        "The greeting and welcome tour lead with the Polecat wordmark; the marketing page and the old-address forwarding page follow the same rules (the forwarding page wears the new Polecat coin mark)",
+        "If you have Polecat installed, the new icon appears after your device refreshes it"
+      ]
+    },
     {
       "date": "2026-07-30",
       "time": "10:58 CT",
