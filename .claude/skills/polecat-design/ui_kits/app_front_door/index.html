@@ -1,0 +1,114 @@
+<!-- @dsCard group="Analytics" viewport="1200x760" name="App front door" subtitle="An app landing page: shared psx chrome, dark hero, cream body, feature cards" -->
+<!doctype html><html lang="en" data-theme="light"><head><meta charset="utf-8">
+<title>Analytics — build interactive dashboards from your data</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+/* App front doors deliberately do NOT load the in-app shell (fleet convention);
+   they carry the shared psx header/footer plus their own hero. Values from
+   analytics.polecat.live/css/landing.css. */
+:root{--ax-bg:#F7EEDF;--ax-pane:#FFFBF4;--ax-ink:#2E2A33;--ax-muted:#6f6260;--ax-faint:#9c8f8a;
+  --ax-brand:#c1602c;--ax-brand2:#7c5cbf;--ax-line:#E7D9C2;
+  --ax-hero:linear-gradient(150deg,#231e28,#3A2F3A 55%,#4a3a48);--ax-hero-ink:#F5E9D6;
+  --ax-shadow:0 12px 40px rgba(60,40,20,.18)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ax-bg);color:var(--ax-ink);font-family:var(--font-site);line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,p{text-wrap:pretty}
+a{color:var(--ax-brand);text-decoration:none}a:hover{text-decoration:underline}
+.hero{background:var(--ax-hero);color:var(--ax-hero-ink);text-align:center;padding:64px 22px 54px;overflow:hidden}
+.hero h1{font-size:clamp(30px,5.5vw,52px);line-height:1.12;margin:0 auto 18px;max-width:820px;font-weight:800}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#f2965b,#e79a5f,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{max-width:640px;margin:0 auto 28px;font-size:16.5px;opacity:.85}
+.btn-cta{display:inline-block;background:linear-gradient(135deg,var(--ax-brand),#d4773b);color:#fff!important;font-weight:700;padding:13px 26px;border-radius:12px;font-size:15.5px;box-shadow:0 6px 22px rgba(193,96,44,.35);transition:transform .12s ease,box-shadow .12s ease}
+.btn-cta:hover{text-decoration:none;transform:translateY(-1px);box-shadow:0 10px 28px rgba(193,96,44,.45)}
+.cta-note{font-size:12.5px;opacity:.6;margin-top:10px}
+.hc-frame{position:relative;max-width:1080px;margin:0 auto;aspect-ratio:2160/1350;border-radius:16px;overflow:hidden;border:1px solid rgba(245,233,214,.22);background:#1a1520;box-shadow:0 18px 70px rgba(0,0,0,.5)}
+.hc-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top left;opacity:0;transition:opacity .6s ease}
+.hc-img.on{opacity:1}
+.hc-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:44px;height:44px;border-radius:50%;border:1px solid rgba(245,233,214,.3);background:rgba(35,30,40,.72);backdrop-filter:blur(8px);color:var(--ax-hero-ink);display:grid;place-items:center;cursor:pointer;opacity:.55;font-size:22px;line-height:1;transition:opacity .15s,transform .12s,background .15s}
+.hc-frame:hover .hc-arrow{opacity:1}
+.hc-arrow:hover{background:rgba(35,30,40,.95);transform:translateY(-50%) scale(1.06)}
+.hc-arrow.prev{left:12px}.hc-arrow.next{right:12px}
+.hc-cap{text-align:center;color:var(--ax-hero-ink);opacity:.78;margin:18px auto 0;max-width:680px;font-size:15px}
+.hc-cap b{opacity:1;color:#fff}
+.hc-dots{display:flex;gap:9px;justify-content:center;margin-top:10px}
+.hc-dot{width:9px;height:9px;padding:0;border:none;border-radius:999px;background:rgba(245,233,214,.28);cursor:pointer;transition:width .2s,background .2s}
+.hc-dot.on{width:26px;background:linear-gradient(135deg,#f2965b,#a78bfa)}
+.grid-sec{max-width:1020px;margin:0 auto;padding:64px 22px 26px}
+.grid-sec h2,.strip h2,.final h2{font-size:clamp(22px,3.4vw,30px);text-align:center;margin:0 0 34px;font-weight:800}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.card{background:var(--ax-pane);border:1px solid var(--ax-line);border-radius:16px;padding:22px 20px;box-shadow:var(--ax-shadow)}
+.card .ic{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;margin-bottom:12px;background:linear-gradient(135deg,var(--ax-brand),var(--ax-brand2));color:#fff}
+.card b{display:block;font-size:15.5px;margin-bottom:6px}
+.card p{margin:0;font-size:13.5px;color:var(--ax-muted)}
+.strip{max-width:860px;margin:0 auto;padding:44px 22px;text-align:center}
+.strip-sub{color:var(--ax-muted);font-size:14.5px;max-width:640px;margin:0 auto 24px}
+.chips{display:flex;flex-wrap:wrap;gap:9px;justify-content:center}
+.chips span{background:var(--ax-pane);border:1px solid var(--ax-line);border-radius:999px;padding:7px 15px;font-size:13px;font-weight:600}
+.final{text-align:center;padding:40px 22px 72px}
+.note{max-width:760px;margin:0 auto;padding:14px 18px;border:1px dashed var(--ax-line);border-radius:12px;color:var(--ax-faint);font-size:12.5px;text-align:center}
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script></head>
+<body><div id="root"></div>
+<script type="text/babel">
+const { SiteHeader, SiteFooter, Icon, GlyphTile } = window.PolecatDesignSystem_dd3c05;
+const SHOTS=[['../../assets/shots/analytics-studio.png','Studio — live preview, inspector, and 40+ chart types.','Build a dashboard by dragging a dataset onto the canvas.'],
+  ['../../assets/shots/analytics-home.png','Home — your pinned analyses and recent workspace activity.','Everything works logged-out; your data stays in this browser.'],
+  ['../../assets/shots/analytics-dashboard.png','Dashboards — searchable, filterable, as tiles or a list.','Search also finds dashboards by the columns their datasets use.'],
+  ['../../assets/shots/analytics-explore.png','Explore — dataset to table to chart, saved as an analysis.','A reusable chart you can pin to Home or drop into any dashboard.'],
+  ['../../assets/shots/analytics-map.png','Maps — geographic rollups with honest weighted aggregates.','State, CRD and HUC8 boundaries, acreage-weighted.']];
+const FEATURES=[['db','Connect anything','Snowflake, Databricks, BigQuery, Redshift, DuckDB-Wasm, SQLite-HTTP, generic SQL, Google Sheets, or a CSV you drop on the canvas.'],
+  ['grid','Build by dragging','Drop a query on the canvas and you have a View. Click to edit, drag the header to reorder, drag the right edge to resize.'],
+  ['sliders','Prep without a pipeline','Rename, cast, derive, filter and roll up in Jobs — including an acreage-weighted mean for honest geographic aggregates.'],
+  ['download','Export to anything','Dashboard HTML, Excel, Word, PowerPoint, PDF, or the editable spec. Share a link or hand over a file.'],
+  ['lock','Yours, locally','Everything works logged-out on local storage. Point it at your own Supabase, Turso or Postgres when you want to.'],
+  ['refresh','Shipped daily','Every change lands with a changelog entry the launcher reads live. Watch it being made.']];
+function Page(){
+  const [i,setI]=React.useState(0);
+  React.useEffect(()=>{const t=setInterval(()=>setI(x=>(x+1)%SHOTS.length),4200);return()=>clearInterval(t)},[]);
+  return <>
+    <SiteHeader app="analytics" glyph="chart" name="Analytics" accent="#d4773b"
+      nav={[{label:'Features',href:'#features'},{label:'Sources',href:'#sources'},{label:'Docs',href:'#'}]}
+      cta={{label:'Launch app',href:'../analytics_app/index.html'}}
+      style={{'--psx-bg':'rgba(35,30,40,.82)','--psx-border':'rgba(245,233,214,.14)','--text':'#F5E9D6','--text-2':'rgba(245,233,214,.72)','--text-3':'rgba(245,233,214,.5)',color:'var(--ax-hero-ink)'}}/>
+    <header className="hero">
+      <h1>Build interactive dashboards <em>from your data</em> — in the browser.</h1>
+      <p className="sub">Connect a warehouse or drop a CSV, drag a query onto the canvas, and share the result as a link, a file, or a deck. No server, no account, no seat licence.</p>
+      <a className="btn-cta" href="../analytics_app/index.html">Open Analytics</a>
+      <p className="cta-note">Free · open source (GPL-3) · works fully logged-out</p>
+      <div style={{marginTop:44}}>
+        <div className="hc-frame">
+          {SHOTS.map(([src],n)=><img key={src} className={'hc-img'+(n===i?' on':'')} src={src} alt=""/>)}
+          <button className="hc-arrow prev" aria-label="Previous screen" onClick={()=>setI((i+SHOTS.length-1)%SHOTS.length)}>‹</button>
+          <button className="hc-arrow next" aria-label="Next screen" onClick={()=>setI((i+1)%SHOTS.length)}>›</button>
+        </div>
+        <p className="hc-cap"><b>{SHOTS[i][1]}</b><br/>{SHOTS[i][2]}</p>
+        <div className="hc-dots">{SHOTS.map((_,n)=><button key={n} className={'hc-dot'+(n===i?' on':'')} aria-label={'Screen '+(n+1)} onClick={()=>setI(n)}/>)}</div>
+      </div>
+    </header>
+    <section id="features" className="grid-sec">
+      <h2>Everything a dashboard needs, nothing it doesn't</h2>
+      <div className="cards">
+        {FEATURES.map(([ic,t,b])=><div className="card" key={t}><div className="ic"><Icon name={ic} size={19}/></div><b>{t}</b><p>{b}</p></div>)}
+      </div>
+    </section>
+    <section id="sources" className="strip">
+      <h2>Bring your own data plane</h2>
+      <p className="strip-sub">One adapter per source, all read-only by default. Credentials never leave your browser unless you connect a backend yourself.</p>
+      <div className="chips">{['Snowflake','Databricks','BigQuery','Redshift','DuckDB-Wasm','SQLite-HTTP','Generic SQL','PostgREST','Google Sheets','CSV / JSON'].map(s=><span key={s}>{s}</span>)}</div>
+    </section>
+    <section className="final">
+      <h2>Your data, your dashboards, today</h2>
+      <a className="btn-cta" href="../analytics_app/index.html">Open Analytics</a>
+      <p className="cta-note" style={{marginTop:14}}>Or read the docs first — nobody will email you about it.</p>
+    </section>
+    <SiteFooter app="analytics" glyph="chart" name="Analytics" accent="#d4773b"
+      links={[{label:'Docs',href:'#'},{label:'App',href:'../analytics_app/index.html'},{label:'Third-party notices',href:'#'}]}
+      style={{'--psx-solid':'#241e28','--psx-border':'rgba(245,233,214,.14)','--text':'#F5E9D6','--text-2':'#c9b9ab','--text-3':'#8f7f74'}}/>
+  </>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Page/>);
+</script></body></html>

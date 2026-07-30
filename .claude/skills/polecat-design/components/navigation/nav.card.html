@@ -1,0 +1,41 @@
+<!-- @dsCard group="Components" viewport="700x400" name="Navigation" subtitle="Rail, topbar, waffle switcher, shared site header and footer" -->
+<!doctype html><html data-palette="polecat" data-theme="dark"><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css"><style>html,body{margin:0}body{background:var(--bg);color:var(--text);font-family:var(--font-app);font-size:14px}.lbl{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:700;margin:14px 18px 8px}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script></head><body><div id="root"></div>
+<script type="text/babel">
+const { Rail, RailGroup, RailItem, Topbar, Waffle, SiteHeader, SiteFooter, Icon, IconButton, Button } = window.PolecatDesignSystem_dd3c05;
+function Demo(){
+  const [open,setOpen]=React.useState(true);const [sec,setSec]=React.useState('Dashboards');
+  const items=[['Home','home'],['Explore','activity'],['Dashboards','layers'],['Datasets','db'],['Connections','link']];
+  return <div>
+    <div style={{display:'flex',height:250,borderBottom:'1px solid var(--border)'}}>
+      <Rail app="analytics" glyph="chart" name="Analytics" open={open} onToggle={()=>setOpen(!open)}>
+        <RailGroup open={open}>Workspace</RailGroup>
+        {items.map(([l,i])=><RailItem key={l} icon={<Icon name={i}/>} label={l} active={sec===l} open={open} onClick={()=>setSec(l)}/>)}
+        <RailGroup open={open}>Manage</RailGroup>
+        <RailItem icon={<Icon name="sliders"/>} label="Jobs" badge={3} open={open}/>
+      </Rail>
+      <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0}}>
+        <Topbar section={sec} actions={<>
+          <IconButton icon={<Icon name="sparkle" size={18}/>} label="What's new"/>
+          <IconButton icon={<Icon name="waffle" size={18}/>} label="Polecat suite" active/>
+          <Button surface="app" variant="primary" size="sm">New ▾</Button>
+          <IconButton icon={<Icon name="more" size={18}/>} label="More actions"/>
+        </>}/>
+        <div style={{flex:1,padding:14,display:'flex',justifyContent:'flex-end',overflow:'hidden'}}>
+          <Waffle current="analytics"/>
+        </div>
+      </div>
+    </div>
+    <p className="lbl">Shared marketing chrome — psx header &amp; footer</p>
+    <SiteHeader app="analytics" glyph="chart" name="Analytics" accent="#d4773b"
+      nav={[{label:'Features',href:'#f'},{label:'How it works',href:'#h'},{label:'Docs',href:'#d'}]}
+      cta={{label:'Launch app',href:'#'}}/>
+    <SiteFooter app="analytics" glyph="chart" name="Analytics" accent="#d4773b"
+      links={[{label:'Docs',href:'#'},{label:'App',href:'#'},{label:'Third-party notices',href:'#'}]}/>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+</script></body></html>

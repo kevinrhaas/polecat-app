@@ -1,0 +1,41 @@
+<!-- @dsCard group="Components" viewport="700x360" name="Feedback & overlays" subtitle="Toast, modal, sheet, pop menu, right panel, empty state" -->
+<!doctype html><html data-palette="polecat" data-theme="dark"><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css"><style>html,body{margin:0}body{background:var(--bg);color:var(--text);font-family:var(--font-app);padding:18px 20px;font-size:14px}.lbl{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:700;margin:0 0 9px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script></head><body><div id="root"></div>
+<script type="text/babel">
+const { Toast, Modal, PopMenu, EmptyState, Button, Icon, Field, Input } = window.PolecatDesignSystem_dd3c05;
+ReactDOM.createRoot(document.getElementById('root')).render(<div>
+ <div className="grid">
+  <div>
+    <p className="lbl">Toasts</p>
+    <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:18}}>
+      <Toast tone="ok" title="Dashboard saved" body="Q3 Revenue · 2 views" action="Undo"/>
+      <Toast tone="err" title="Connection failed" body="Snowflake — check the account identifier."/>
+    </div>
+    <p className="lbl">Empty state</p>
+    <div style={{border:'1px solid var(--border)',borderRadius:'var(--radius)',background:'var(--surface)'}}>
+      <EmptyState icon={<Icon name="grid" size={26}/>} title="Canvas is empty"
+        description="Drag a dataset from the Data panel onto the canvas, or drop a CSV here to build a dashboard instantly."
+        actions={<><Button surface="app" size="sm">Open data panel</Button><Button surface="app" variant="ghost" size="sm">Import a file</Button></>}/>
+    </div>
+  </div>
+  <div>
+    <p className="lbl">Pop menu</p>
+    <div style={{marginBottom:18}}>
+      <PopMenu items={[{group:'View'},{label:'Tour',icon:<Icon name="compass" size={16}/>},{label:'Theme',icon:<Icon name="moon" size={16}/>},'-',{group:'Help & power tools'},{label:'Keyboard shortcuts',hint:'?'},{label:'Edit JSON spec…',hint:'{ }'}]}/>
+    </div>
+    <p className="lbl">Modal &amp; sheet (inline)</p>
+    <div style={{position:'relative',height:150,borderRadius:'var(--radius)',overflow:'hidden',border:'1px solid var(--border)'}}>
+      <div style={{position:'absolute',inset:0,transform:'scale(.82)',transformOrigin:'top left',width:'122%',height:'122%'}}>
+        <Modal title="New connection" titleIcon={<Icon name="link" size={18}/>} onClose={()=>{}}
+          footer={<><Button surface="app" variant="ghost">Cancel</Button><Button surface="app" variant="primary">Create</Button></>}>
+          <Field label="Name" hint="Credentials stay in this browser."><Input placeholder="Warehouse — prod"/></Field>
+        </Modal>
+      </div>
+    </div>
+  </div>
+ </div>
+</div>);
+</script></body></html>

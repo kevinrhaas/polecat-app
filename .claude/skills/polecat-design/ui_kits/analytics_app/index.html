@@ -1,0 +1,111 @@
+<!-- @dsCard group="Analytics" viewport="1280x800" name="Analytics app" subtitle="Rail + topbar frame, repository sections, and the Studio three-pane builder" -->
+<!doctype html><html lang="en" data-palette="polecat" data-theme="dark"><head><meta charset="utf-8">
+<title>Analytics — build interactive dashboards from your data · analytics.polecat.live</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="../../styles.css"><link rel="stylesheet" href="kit.css">
+<style>html,body{height:100%}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-app);font-size:14px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased}#root{height:100%;display:flex}a{color:var(--brand-2)}a:hover{color:var(--brand)}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script></head>
+<body><div id="root"></div>
+<script type="text/babel" src="AppSections.jsx"></script>
+<script type="text/babel" src="Studio.jsx"></script>
+<script type="text/babel">
+const { Rail, RailGroup, RailItem, Topbar, Waffle, Toast, ToastStack, RightPanel, PopMenu, Button, IconButton, Icon, Chip, Toggle, Segmented, Modal, Field, Input, Select } = window.PolecatDesignSystem_dd3c05;
+
+const SECTIONS = [
+  { id: 'Home', icon: 'home', group: 'Workspace' },
+  { id: 'Explore', icon: 'activity' },
+  { id: 'Dashboards', icon: 'layers' },
+  { id: 'Datasets', icon: 'db' },
+  { id: 'Connections', icon: 'link' },
+  { id: 'Repository', icon: 'folder' },
+  { id: 'Studio', icon: 'grid', group: 'Build' },
+  { id: 'Jobs', icon: 'sliders', group: 'Manage', badge: 3 },
+  { id: 'Settings', icon: 'settings' },
+];
+
+function App(){
+  const [open,setOpen]=React.useState(true);
+  const [sec,setSec]=React.useState('Dashboards');
+  const [waffle,setWaffle]=React.useState(false);
+  const [panel,setPanel]=React.useState(false);
+  const [more,setMore]=React.useState(false);
+  const [modal,setModal]=React.useState(false);
+  const [toasts,setToasts]=React.useState([]);
+  const [dark,setDark]=React.useState(true);
+  const [mode,setMode]=React.useState('standard');
+  React.useEffect(()=>{document.documentElement.setAttribute('data-theme',dark?'dark':'light')},[dark]);
+  const say=(t)=>{const id=Date.now();setToasts(x=>[...x,{id,...t}]);setTimeout(()=>setToasts(x=>x.filter(y=>y.id!==id)),4200)};
+
+  const body = sec==='Studio' ? <Studio onClose={()=>setSec('Dashboards')}/>
+    : <div className="ax-scroll" style={{flex:1,overflowY:'auto',padding:'22px 24px'}}>
+        {sec==='Home'&&<HomeSection/>}
+        {sec==='Dashboards'&&<DashboardsSection/>}
+        {sec==='Datasets'&&<DatasetsSection/>}
+        {sec==='Connections'&&<ConnectionsSection/>}
+        {sec==='Explore'&&<RepoHero blurb="Start from a dataset, see it as a table, pick a chart, and save the result as an analysis — a reusable chart you can pin to Home or drop into any dashboard."/>}
+        {sec==='Repository'&&<RepoHero blurb="Every object in your workspace — dashboards, datasets, connections, analyses and jobs — in one searchable, filterable place." search="Search the whole workspace…"/>}
+        {sec==='Jobs'&&<RepoHero blurb="Prep a dataset before it's charted: rename/cast/derive columns, filter rows, and roll up with an acreage-weighted mean for honest State/CRD/HUC8 aggregates." search="Search jobs…" actions={<Button surface="app" variant="primary">+ New job</Button>}/>}
+        {sec==='Settings'&&<div style={{maxWidth:640}}>
+          <h2 style={{fontSize:16,margin:'0 0 4px'}}>Appearance</h2>
+          <p style={{color:'var(--text-2)',fontSize:13,margin:'0 0 14px'}}>Theme and density follow you across every Polecat app.</p>
+          <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:14}}><span style={{flex:1,fontSize:13}}>Dark mode</span><Toggle on={dark} label="Dark mode" onChange={setDark}/></div>
+          <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:22}}><span style={{flex:1,fontSize:13}}>Interface mode</span><Segmented options={['simple','standard','expert']} value={mode} onChange={setMode}/></div>
+          <Button surface="app" variant="danger" size="sm">Clear local data…</Button>
+        </div>}
+      </div>;
+
+  return <>
+    <Rail app="analytics" glyph="chart" name="Analytics" open={open} onToggle={()=>setOpen(!open)}>
+      {SECTIONS.map(s=><React.Fragment key={s.id}>
+        {s.group&&<RailGroup open={open}>{s.group}</RailGroup>}
+        <RailItem className="ax-rail-item" icon={<Icon name={s.icon}/>} label={s.id} badge={s.badge}
+          active={sec===s.id} open={open} onClick={()=>setSec(s.id)}/>
+      </React.Fragment>)}
+    </Rail>
+    <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0,minHeight:0}}>
+      <Topbar section={sec} onSearch={()=>say({tone:'info',title:'Command palette',body:'⌘K — commands, datasets, dashboards.'})}
+        badges={mode==='simple'?<Chip tone="polish">Simple mode</Chip>:null}
+        actions={<>
+          <IconButton label="What's new" icon={<Icon name="sparkle" size={18}/>} onClick={()=>setPanel(true)}/>
+          <IconButton label="Toggle dark mode" icon={<Icon name={dark?'sun':'moon'} size={18}/>} onClick={()=>setDark(!dark)}/>
+          <IconButton label="Polecat suite" icon={<Icon name="waffle" size={18}/>} active={waffle} onClick={()=>setWaffle(!waffle)}/>
+          <Button surface="app" variant="primary" size="sm" onClick={()=>setModal(true)}>New ▾</Button>
+          <IconButton label="More actions" icon={<Icon name="more" size={18}/>} active={more} onClick={()=>setMore(!more)}/>
+        </>}/>
+      <div style={{flex:1,display:'flex',flexDirection:'column',minHeight:0,position:'relative'}}>
+        {body}
+        {waffle&&<div style={{position:'absolute',top:8,right:110,zIndex:120}}><Waffle current="analytics" onPick={a=>{setWaffle(false);say({tone:'info',title:'Opening '+a.name,body:a.id+'.polecat.live — new tab'})}}/></div>}
+        {more&&<div style={{position:'absolute',top:8,right:14,zIndex:120}}>
+          <PopMenu onPick={i=>{setMore(false);i.label&&say({title:i.label})}} items={[
+            {group:'View'},{label:'Tour',icon:<Icon name="compass" size={16}/>},{label:'Theme',icon:<Icon name="moon" size={16}/>},
+            '-',{group:'Present'},{label:'Focus mode'},{label:'Slideshow',hint:'▶'},{label:'Simple mode',hint:'✦'},
+            '-',{group:'Help & power tools'},{label:'Keyboard shortcuts',hint:'?'},{label:'Help docs',hint:'ⓘ'},{label:'Edit JSON spec…',hint:'{ }'},
+            '-',{label:'Sign out'}]}/>
+        </div>}
+      </div>
+    </div>
+    {panel&&<RightPanel title="What's new" open onClose={()=>setPanel(false)}>
+      {[['v2.9.1','2026-07-27',[['feature','Acreage-weighted rollups in Jobs'],['fix','Studio: dashbar no longer clips on 390px']]],
+        ['v2.9.0','2026-07-24',[['feature','Compare any two saved dashboards'],['polish','Repository search now matches dataset columns']]]].map(([v,d,rows])=>
+        <div key={v} style={{background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:'var(--radius)',padding:'14px 16px',marginBottom:14}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+            <span style={{fontFamily:'var(--mono)',fontSize:11,fontWeight:700,color:'var(--brand-2)',background:'color-mix(in srgb,var(--brand) 14%,transparent)',borderRadius:7,padding:'2px 8px'}}>{v}</span>
+            <span style={{fontSize:12,color:'var(--text-3)'}}>{d}</span>
+          </div>
+          {rows.map(([k,t])=><div key={t} style={{display:'flex',gap:8,alignItems:'center',marginTop:8}}><Chip tone={k}>{k}</Chip><span style={{fontSize:13,color:'var(--text-2)'}}>{t}</span></div>)}
+        </div>)}
+    </RightPanel>}
+    {modal&&<Modal title="New dashboard" titleIcon={<Icon name="layers" size={18}/>} onClose={()=>setModal(false)}
+      footer={<><Button surface="app" variant="ghost" onClick={()=>setModal(false)}>Cancel</Button>
+        <Button surface="app" variant="primary" onClick={()=>{setModal(false);setSec('Studio');say({tone:'ok',title:'Dashboard created',body:'untitled · opened in Studio',action:'Undo'})}}>Create</Button></>}>
+      <Field label="Title"><Input placeholder="Q3 revenue"/></Field>
+      <Field label="Start from" hint="Quick import builds a first draft from any dataset."><Select options={['Blank canvas','A dataset (quick import)','An example dashboard']}/></Field>
+    </Modal>}
+    <ToastStack>{toasts.map(t=><Toast key={t.id} {...t} onDismiss={()=>setToasts(x=>x.filter(y=>y.id!==t.id))}/>)}</ToastStack>
+  </>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script></body></html>

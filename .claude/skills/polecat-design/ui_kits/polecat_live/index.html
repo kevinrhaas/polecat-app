@@ -1,0 +1,29 @@
+<!-- @dsCard group="polecat.live" viewport="1200x780" name="Suite front door" subtitle="polecat.live — hero, ticker, the idea, the app launcher, method, consulting, connect" -->
+<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8"><title>Polecat — data, analytics &amp; apps, built to fit.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../styles.css"><link rel="stylesheet" href="kit.css">
+<style>html{scroll-behavior:smooth;overflow-x:hidden}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-site);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}h1,h2,p{text-wrap:pretty}section[id]{scroll-margin-top:76px}a{color:var(--brand-b)}a:hover{color:var(--blush)}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script></head>
+<body><div id="root"></div>
+<script type="text/babel" src="Chrome.jsx"></script>
+<script type="text/babel" src="PageSections.jsx"></script>
+<script type="text/babel">
+const { Ticker, AuroraBackdrop, SiteFooter } = window.PolecatDesignSystem_dd3c05;
+const STACK=['Pentaho','Snowflake','Databricks','BigQuery','Redshift','Kubernetes','AWS','Azure','GCP','GenAI','Vector search','ETL & ELT','Mondrian','Dimensional modeling','Document AI','Agent-driven development','Open source'];
+function Page(){
+  useReveal();
+  const [p,setP]=React.useState(0);
+  React.useEffect(()=>{const f=()=>setP(scrollY/Math.max(1,document.body.scrollHeight-innerHeight));addEventListener('scroll',f,{passive:true});return()=>removeEventListener('scroll',f)},[]);
+  return <>
+    <AuroraBackdrop/>
+    <div aria-hidden="true" style={{position:'fixed',top:0,left:0,height:'2.5px',width:'100%',zIndex:70,background:'linear-gradient(90deg,var(--brand-a),var(--brand-b),var(--blush),#b070f0)',transformOrigin:'0 50%',transform:`scaleX(${p})`,pointerEvents:'none'}}/>
+    <Nav/><Hero/><Ticker items={STACK}/>
+    <main><Idea/><Launcher/><Method/><Work/><About/><Connect/><FinalCta/></main>
+    <SiteFooter variant="root" suiteLinks={[{label:'Apps',href:'#apps'},{label:'How we build',href:'#method'},{label:'What I do',href:'#work'},{label:'GitHub',href:'https://github.com/kevinrhaas'},{label:'Email',href:'mailto:kevin.haas@polecat.live'}]}/>
+  </>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Page/>);
+</script></body></html>
