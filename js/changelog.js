@@ -4,6 +4,17 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 145,
+    title: 'New badge, same Polecat: the chat glyph takes over from the mascot',
+    kind: 'feature',
+    ts: '2026-07-30T23:41:00.000Z',
+    items: [
+      'Following the fleet\'s updated brand guidelines, the old mascot face retires from the app: the sidebar tile, top bar, favicon and Home Screen icon are now Chat\'s own glyph badge - the same purple chat bubble you see on the polecat.live launcher',
+      'The greeting and welcome tour lead with the Polecat wordmark; the marketing page and the old-address forwarding page follow the same rules (the forwarding page wears the new Polecat coin mark)',
+      'If you have Polecat installed, the new icon appears after your device refreshes it',
+    ],
+  },
+  {
     v: 144,
     title: 'The design system arrives: brand typeface, true palette accents, and a new front door',
     kind: 'feature',
