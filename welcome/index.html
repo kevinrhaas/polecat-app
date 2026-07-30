@@ -21,7 +21,11 @@
   <meta name="twitter:description" content="Ask once. Hear from everyone. One prompt → 8 AI providers (free + paid) → one trustworthy answer.">
   <meta name="twitter:image" content="https://chat.polecat.live/assets/og-card.png">
   <link rel="canonical" href="https://chat.polecat.live/welcome/">
+  <link rel="preload" href="../vendor/polecat-shell/fonts/HankenGrotesk-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../vendor/polecat-shell/fonts/HankenGrotesk-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../vendor/polecat-shell/fonts.css">
   <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="../vendor/polecat-shell/site-chrome.css">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -42,45 +46,14 @@
 </head>
 <body>
 
-<header class="nav">
-  <a class="brand" href="./">
-    <svg class="brand-mark" viewBox="0 0 220 220" width="26" height="26" aria-hidden="true">
-      <ellipse cx="60" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(-16 60 58)"/>
-      <ellipse cx="160" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(16 160 58)"/>
-      <ellipse cx="110" cy="122" rx="84" ry="78" fill="#F5E9D6"/>
-      <path d="M28 102 Q110 80 192 102 Q196 128 160 137 Q110 146 60 137 Q24 128 28 102 Z" fill="#2E2A33"/>
-      <circle cx="78" cy="113" r="19" fill="#fff"/><circle cx="142" cy="113" r="19" fill="#fff"/>
-      <circle cx="81" cy="116" r="10.5" fill="#2E2A33"/><circle cx="139" cy="116" r="10.5" fill="#2E2A33"/>
-      <path d="M110 150 q10 0 8 8.5 q-2 6.5 -8 7.5 q-6 -1 -8 -7.5 q-2 -8.5 8 -8.5 Z" fill="#3A2F3A"/>
-    </svg>
-    <span>Pole<span class="grad">cat</span></span>
-  </a>
-  <nav class="nav-links">
-    <a href="#how">How it works</a>
-    <a href="#cases">Examples</a>
-    <a href="#consensus-settings">Consensus</a>
-    <a class="btn btn-primary" href="/">Try it free →</a>
-  </nav>
-</header>
+<!-- Shared fleet chrome (psx-*): round chat glyph tile + sections + accent CTA
+     + the "Polecat ↗" suite link. Built by the vendored shell's siteHeader(). -->
+<header id="siteHeader"></header>
 
 <main>
 <!-- ── Hero ─────────────────────────────────────────────── -->
 <section class="hero">
   <div class="hero-glow"></div>
-  <svg class="hero-mascot" viewBox="0 0 220 220" width="132" height="132" aria-label="Polecat">
-    <ellipse cx="60" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(-16 60 58)"/>
-    <ellipse cx="160" cy="58" rx="25" ry="29" fill="#9C6B3F" transform="rotate(16 160 58)"/>
-    <ellipse cx="62" cy="62" rx="12" ry="15" fill="#F4A6A6" transform="rotate(-16 62 62)"/>
-    <ellipse cx="158" cy="62" rx="12" ry="15" fill="#F4A6A6" transform="rotate(16 158 62)"/>
-    <ellipse cx="110" cy="122" rx="84" ry="78" fill="#F5E9D6"/>
-    <path d="M28 102 Q110 80 192 102 Q196 128 160 137 Q110 146 60 137 Q24 128 28 102 Z" fill="#2E2A33"/>
-    <circle cx="78" cy="113" r="19" fill="#fff"/><circle cx="142" cy="113" r="19" fill="#fff"/>
-    <circle cx="81" cy="116" r="10.5" fill="#2E2A33"/><circle cx="139" cy="116" r="10.5" fill="#2E2A33"/>
-    <circle cx="85" cy="112" r="3.6" fill="#fff"/><circle cx="143" cy="112" r="3.6" fill="#fff"/>
-    <circle cx="54" cy="156" r="12" fill="#F4A6A6" opacity="0.55"/><circle cx="166" cy="156" r="12" fill="#F4A6A6" opacity="0.55"/>
-    <path d="M110 150 q10 0 8 8.5 q-2 6.5 -8 7.5 q-6 -1 -8 -7.5 q-2 -8.5 8 -8.5 Z" fill="#3A2F3A"/>
-    <path d="M110 166 q-9 9 -17 2.5 M110 166 q9 9 17 2.5" stroke="#3A2F3A" stroke-width="3" fill="none" stroke-linecap="round"/>
-  </svg>
   <h1>Ask once.<br><span class="grad">Hear from everyone.</span></h1>
   <p class="hero-sub">Polecat sends one prompt to many AI models — <b>free and paid</b> — then merges them into a single answer you can trust. Cross-check providers, compare models head-to-head, and control exactly how the consensus is formed.</p>
   <div class="hero-flow">
@@ -98,6 +71,19 @@
     <a class="btn btn-ghost btn-lg" href="#cases">See it work ↓</a>
   </div>
   <div class="hero-note">Run a real model instantly, no signup · bring your own keys for the full mix · your keys stay in your browser · <a href="https://github.com/kevinrhaas/polecat-app/blob/main/changelog.json" style="color:inherit;text-decoration:underline;text-underline-offset:2px">what's new ↗</a></div>
+
+  <!-- Hero carousel — real product screenshots (fleet front-door pattern:
+       16px-radius framed card, cross-fade, arrows + dot pills). -->
+  <div class="hc-frame" id="heroCarousel" role="region" aria-roledescription="carousel" aria-label="Polecat screenshots">
+    <img class="hc-img on" src="../assets/shots/consensus.png" alt="A synthesized consensus answer in Polecat, with per-model responses a tab away" width="1600" height="1200">
+    <img class="hc-img" src="../assets/shots/progress.png" alt="Live consensus progress — which models are answering and what the merge is doing" width="1080" height="980" loading="lazy">
+    <img class="hc-img" src="../assets/shots/arbitration.png" alt="Consensus settings — pick the strategy and which model writes the final answer" width="1200" height="1448" loading="lazy">
+    <img class="hc-img" src="../assets/shots/browse.png" alt="Browsing and searching every available model" width="1136" height="1392" loading="lazy">
+    <button class="hc-arrow prev" type="button" aria-label="Previous screenshot">‹</button>
+    <button class="hc-arrow next" type="button" aria-label="Next screenshot">›</button>
+    <div class="hc-cap" aria-live="polite">One synthesized answer from all your models</div>
+    <div class="hc-dots" role="tablist" aria-label="Choose screenshot"></div>
+  </div>
 </section>
 
 <!-- ── Problem ──────────────────────────────────────────── -->
@@ -246,19 +232,6 @@
   <div class="pcx-hint">Swipe or scroll to see more &rarr;</div>
 </section>
 
-<!-- ── Product screenshots ──────────────────────────────── -->
-<section class="wrap">
-  <div class="section-head center">
-    <div class="kicker">The real thing</div>
-    <h2>Watch it consolidate, live</h2>
-  </div>
-  <div class="shots reveal">
-    <figure class="shot"><img src="../assets/shots/consensus.png" alt="Consensus answer in Polecat" loading="lazy" width="1600" height="1200"><figcaption>One synthesized answer from all your models</figcaption></figure>
-    <figure class="shot"><img src="../assets/shots/progress.png" alt="Live consensus progress" loading="lazy" width="1080" height="980"><figcaption>Live progress — who's answering, what consensus is doing</figcaption></figure>
-    <figure class="shot"><img src="../assets/shots/browse.png" alt="Browse models" loading="lazy" width="1136" height="1392"><figcaption>Browse &amp; search every available model</figcaption></figure>
-  </div>
-</section>
-
 <!-- ── Consensus settings ────────────────────────────────── -->
 <section id="consensus-settings" class="band">
   <div class="wrap split">
@@ -384,18 +357,80 @@
 </section>
 </main>
 
-<footer class="foot">
-  <div class="foot-brand">Pole<span class="grad">cat</span></div>
-  <div class="foot-links">
-    <a href="/">App</a>
-    <a href="https://github.com/kevinrhaas/polecat-app">GitHub</a>
-    <a href="https://github.com/kevinrhaas/polecat-app/blob/main/changelog.json">Changelog</a>
-    <a href="https://polecat.live">Polecat suite</a>
-    <a href="https://ko-fi.com/polecatlive" target="_blank" rel="noopener">Ko-fi</a>
-  </div>
-  <div class="foot-meta">Last updated 2026-07-15 17:05 CT · <a href="https://github.com/kevinrhaas/polecat-app/blob/main/changelog.json" style="color:inherit">changelog</a></div>
+<!-- Shared fleet footer (psx- app variant): "Chat · part of the polecat.live
+     suite" + links. Built by siteFooter(); no hand-stamped dates to go stale. -->
+<footer id="siteFooter"></footer>
 
-</footer>
+<script type="module">
+  import { siteHeader, siteFooter } from '../vendor/polecat-shell/site-chrome.js';
+
+  siteHeader('#siteHeader', {
+    app: 'chat',
+    home: './',
+    nav: [
+      { href: '#how', label: 'How it works' },
+      { href: '#cases', label: 'Examples' },
+      { href: '#consensus-settings', label: 'Consensus' },
+    ],
+    cta: { href: '/', label: 'Try it free' },
+  });
+
+  siteFooter('#siteFooter', {
+    app: 'chat',
+    home: './',
+    appUrl: '/',
+    extraLinks: [
+      { href: 'https://github.com/kevinrhaas/polecat-app', label: 'GitHub', ext: true },
+      { href: 'https://github.com/kevinrhaas/polecat-app/blob/main/changelog.json', label: 'Changelog', ext: true },
+      { href: 'https://ko-fi.com/polecatlive', label: 'Ko-fi', ext: true },
+    ],
+  });
+
+  // Hero carousel: cross-fade, arrows, dot pills, auto-advance (paused on
+  // hover/focus and under reduced motion).
+  const frame = document.getElementById('heroCarousel');
+  const imgs = [...frame.querySelectorAll('.hc-img')];
+  const caps = [
+    'One synthesized answer from all your models',
+    'Live progress — who\'s answering, what consensus is doing',
+    'You pick the strategy — and which model writes the final answer',
+    'Browse & search every available model',
+  ];
+  const cap = frame.querySelector('.hc-cap');
+  const dots = frame.querySelector('.hc-dots');
+  imgs.forEach((_, i) => {
+    const d = document.createElement('button');
+    d.type = 'button'; d.className = 'hc-dot' + (i === 0 ? ' on' : '');
+    d.setAttribute('role', 'tab');
+    d.setAttribute('aria-label', 'Screenshot ' + (i + 1));
+    d.addEventListener('click', () => show(i, true));
+    dots.appendChild(d);
+  });
+  let cur = 0, timer = 0;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+    || document.documentElement.hasAttribute('data-reduce-motion');
+  function show(i, manual) {
+    cur = (i + imgs.length) % imgs.length;
+    imgs.forEach((im, j) => im.classList.toggle('on', j === cur));
+    [...dots.children].forEach((d, j) => {
+      d.classList.toggle('on', j === cur);
+      d.setAttribute('aria-selected', j === cur ? 'true' : 'false');
+    });
+    cap.textContent = caps[cur];
+    if (manual) restart();
+  }
+  frame.querySelector('.prev').addEventListener('click', () => show(cur - 1, true));
+  frame.querySelector('.next').addEventListener('click', () => show(cur + 1, true));
+  function restart() {
+    clearInterval(timer);
+    if (!reduce) timer = setInterval(() => show(cur + 1), 5200);
+  }
+  frame.addEventListener('mouseenter', () => clearInterval(timer));
+  frame.addEventListener('mouseleave', restart);
+  frame.addEventListener('focusin', () => clearInterval(timer));
+  frame.addEventListener('focusout', restart);
+  restart();
+</script>
 
 <script>
   // reveal on scroll

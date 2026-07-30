@@ -1,0 +1,28 @@
+/* Corners, borders, shadows, focus rings. */
+:root{
+  /* site radii */
+  --r:16px; --r-sm:10px; --r-pill:100px;
+  /* app radii (shell.css) */
+  --radius:14px; --radius-sm:9px; --radius-lg:20px; --radius-pill:999px;
+  /* tile chassis: radius is ~28-30% of tile size */
+  --r-tile-30:9px;   /* 30px psx-tile */
+  --r-tile-38:11px;  /* 38px rail logo / waffle */
+  --r-tile-44:12px;  /* 44px launcher glyph */
+
+  --border-w:1px; /* @kind spacing */
+
+  /* site shadows */
+  --shadow-card-hover:0 14px 38px rgba(0,0,0,.35);
+  --shadow-cta:0 6px 22px rgba(224,138,69,.28);
+  --shadow-cta-hover:0 10px 28px rgba(193,96,44,.45);
+  --shadow-tile:0 4px 14px rgba(224,138,69,.30);
+  --shadow-modal:0 24px 70px rgba(0,0,0,.55);
+  --shadow-pop:0 14px 38px rgba(0,0,0,.4);
+  --shadow-mascot:drop-shadow(0 12px 34px rgba(156,107,63,.4)); /* @kind shadow */
+
+  /* app shadows are palette-scoped (--shadow / --shadow-sm in colors-app.css) */
+  --ring:0 0 0 3px color-mix(in srgb, var(--brand, var(--pc-orange)) 40%, transparent);
+  --ring-site:0 0 0 3px color-mix(in srgb, var(--brand-b) 26%, transparent);
+  --focus-outline:2px solid var(--brand-b); /* @kind other */
+  --focus-offset:2px; /* @kind spacing */
+}

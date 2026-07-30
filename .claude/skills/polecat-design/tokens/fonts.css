@@ -1,0 +1,21 @@
+/* Hanken Grotesk — the Polecat brand face, self-hosted from fonts/.
+   Nine weights x roman/italic. 800 is the brand weight (headings, wordmark,
+   kickers, stat numbers, app names); 600 carries controls and rail items. */
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-Thin.ttf') format('truetype');font-weight:100;font-style:normal;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-ThinItalic.ttf') format('truetype');font-weight:100;font-style:italic;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-ExtraLight.ttf') format('truetype');font-weight:200;font-style:normal;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-ExtraLightItalic.ttf') format('truetype');font-weight:200;font-style:italic;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-Light.ttf') format('truetype');font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-LightItalic.ttf') format('truetype');font-weight:300;font-style:italic;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-Medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-MediumItalic.ttf') format('truetype');font-weight:500;font-style:italic;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-SemiBold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-SemiBoldItalic.ttf') format('truetype');font-weight:600;font-style:italic;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-BoldItalic.ttf') format('truetype');font-weight:700;font-style:italic;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-ExtraBold.ttf') format('truetype');font-weight:800;font-style:normal;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-ExtraBoldItalic.ttf') format('truetype');font-weight:800;font-style:italic;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-Black.ttf') format('truetype');font-weight:900;font-style:normal;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('../fonts/HankenGrotesk-BlackItalic.ttf') format('truetype');font-weight:900;font-style:italic;font-display:swap}

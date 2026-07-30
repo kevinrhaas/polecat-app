@@ -1,0 +1,48 @@
+<!-- @dsCard group="Components" viewport="700x300" name="Core controls" subtitle="Buttons, pills, chips, inputs, switches — site and app surfaces" -->
+<!doctype html><html data-palette="polecat" data-theme="dark"><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css"><style>html,body{margin:0}body{background:var(--bg);color:var(--text);font-family:var(--font-app);padding:18px 20px;font-size:14px}.lbl{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:700;margin:0 0 9px}.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:16px}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script></head><body><div id="root"></div>
+<script type="text/babel">
+const { Button, IconButton, Pill, Chip, Input, Select, Field, FieldRow, Toggle, Segmented, Kbd, Icon } = window.PolecatDesignSystem_dd3c05;
+function Demo(){
+  const [mode,setMode]=React.useState('standard');const [on,setOn]=React.useState(true);
+  return <div>
+    <p className="lbl">Site — pills, gradient primary</p>
+    <div className="row">
+      <Button variant="primary" size="lg">See what we've shipped</Button>
+      <Button variant="ghost" size="lg">Work with me →</Button>
+      <Button variant="primary">Send it</Button>
+      <Button variant="secondary">Sign in</Button>
+      <Button variant="ghost" size="sm">Cancel</Button>
+    </div>
+    <p className="lbl">App — 9px radius, surface-2</p>
+    <div className="row">
+      <Button surface="app" variant="primary">New ▾</Button>
+      <Button surface="app" variant="secondary">Save</Button>
+      <Button surface="app" variant="ghost">Close</Button>
+      <Button surface="app" variant="danger" size="sm">Clear local data…</Button>
+      <Button surface="app" variant="secondary" disabled>Disabled</Button>
+      <IconButton icon={<Icon name="bell" size={18}/>} label="Notifications"/>
+      <IconButton icon={<Icon name="moon" size={18}/>} label="Theme" active/>
+      <IconButton icon={<Icon name="more" size={18}/>} label="More" variant="ghost"/>
+      <IconButton icon={<Icon name="close" size={15}/>} label="Close" size="sm"/>
+    </div>
+    <p className="lbl">Pills · chips · switches</p>
+    <div className="row">
+      <Pill on>All</Pill><Pill count={12}>Overdue</Pill><Pill icon={<Icon name="star" size={13}/>}>Starred</Pill><Pill disabled>Archived</Pill>
+      <Chip tone="feature">feature</Chip><Chip tone="fix">fix</Chip><Chip tone="polish">polish</Chip><Chip>local</Chip>
+      <Toggle on={on} label="Dark mode" onChange={setOn}/>
+      <Segmented options={['simple','standard','expert']} value={mode} onChange={setMode}/>
+      <Kbd>⌘K</Kbd>
+    </div>
+    <p className="lbl">Fields</p>
+    <FieldRow style={{maxWidth:520}}>
+      <Field label="Name" style={{flex:1,minWidth:160,marginBottom:0}}><Input placeholder="Your name"/></Field>
+      <Field label="I'm interested in" style={{flex:1,minWidth:160,marginBottom:0}}><Select options={['Consulting','A specific app','Just saying hi']}/></Field>
+    </FieldRow>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+</script></body></html>

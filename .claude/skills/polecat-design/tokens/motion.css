@@ -1,0 +1,41 @@
+/* Motion. Elegant, quick, always reduce-motion-safe. Durations are short on
+   interaction (.08-.22s) and generous on entrances (.55-.7s). */
+:root{
+  --d-press:80ms; /* @kind other */
+  --d-fast:120ms; /* @kind other */
+  --d-hover:160ms; /* @kind other */
+  --d-panel:220ms; /* @kind other */
+  --d-sheet:240ms; /* @kind other */
+  --d-toast:260ms; /* @kind other */
+  --d-enter:550ms; /* @kind other */
+  --d-rise:700ms; /* @kind other */
+  --d-drift:30s; /* @kind other */
+  --d-ticker:44s; /* @kind other */
+  --d-float:4.5s; /* @kind other */
+
+  /* easings: layout · hero entrance · panels · toast overshoot · springy pop */
+  --e-standard:cubic-bezier(.4,0,.2,1); /* @kind other */
+  --e-rise:cubic-bezier(.22,.8,.3,1); /* @kind other */
+  --e-panel:cubic-bezier(.2,.8,.3,1); /* @kind other */
+  --e-toast:cubic-bezier(.2,.9,.3,1.2); /* @kind other */
+  --e-pop:cubic-bezier(.34,1.56,.64,1); /* @kind other */
+  --e-out:ease; /* @kind other */
+
+  --lift-hover:translateY(-2px); /* @kind other */
+  --lift-card:translateY(-3px); /* @kind other */
+  --lift-press:translateY(0); /* @kind other */
+}
+@media (prefers-reduced-motion:reduce){
+  :root{
+    --d-press:1ms; /* @kind other */
+    --d-fast:1ms; /* @kind other */
+    --d-hover:1ms; /* @kind other */
+    --d-panel:1ms; /* @kind other */
+    --d-sheet:1ms; /* @kind other */
+    --d-toast:1ms; /* @kind other */
+    --d-enter:1ms; /* @kind other */
+    --d-rise:1ms; /* @kind other */
+    --lift-hover:none; /* @kind other */
+    --lift-card:none; /* @kind other */
+  }
+}

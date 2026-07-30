@@ -1,0 +1,154 @@
+<!-- @dsCard group="Polecat Shell" viewport="1280x820" name="Shell kitchen sink" subtitle="Every shell primitive in situ — rail states, topbar, overlays, controls, palettes" -->
+<!doctype html><html lang="en" data-palette="polecat" data-theme="dark"><head><meta charset="utf-8">
+<title>Polecat Shell — kitchen sink</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="../../styles.css">
+<style>html,body{height:100%}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-app);font-size:14px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased;display:flex}
+h3{margin:0 0 10px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3)}
+.ks-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.ks-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.ks-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+a{color:var(--brand-2)}a:hover{color:var(--brand)}
+@media (max-width:900px){.ks-grid{grid-template-columns:1fr}}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script></head>
+<body><div id="root" style="display:flex;flex:1;min-height:0"></div>
+<script type="text/babel">
+const { Rail, RailGroup, RailItem, Topbar, Waffle, Button, IconButton, Pill, Chip, Input, Select, Textarea, Field, FieldRow, Toggle, Segmented, Kbd, Icon, GlyphTile, Toast, ToastStack, Modal, Sheet, PopMenu, RightPanel, EmptyState } = window.PolecatDesignSystem_dd3c05;
+
+const NAV=[['Home','home','Workspace'],['Board','board'],['Timeline','timeline'],['People','users'],['Reports','chart','Manage'],['Settings','settings']];
+
+function Sink(){
+  const [open,setOpen]=React.useState(true);
+  const [sec,setSec]=React.useState('Home');
+  const [palette,setPalette]=React.useState('polecat');
+  const [theme,setTheme]=React.useState('dark');
+  const [modal,setModal]=React.useState(false);
+  const [sheet,setSheet]=React.useState(false);
+  const [panel,setPanel]=React.useState(false);
+  const [waffle,setWaffle]=React.useState(false);
+  const [mode,setMode]=React.useState('standard');
+  const [on,setOn]=React.useState(true);
+  const [filter,setFilter]=React.useState('All');
+  const [toasts,setToasts]=React.useState([{id:1,tone:'ok',title:'Saved',body:'3 changes · just now',action:'Undo'}]);
+  React.useEffect(()=>{const d=document.documentElement;d.setAttribute('data-palette',palette);d.setAttribute('data-theme',theme)},[palette,theme]);
+  const say=t=>{const id=Date.now();setToasts(x=>[...x,{id,...t}]);setTimeout(()=>setToasts(x=>x.filter(y=>y.id!==id)),4000)};
+  return <>
+    <Rail app="manager" glyph="gauge" name="Kitchen Sink" open={open} onToggle={()=>setOpen(!open)}>
+      {NAV.map(([l,i,g])=><React.Fragment key={l}>
+        {g&&<RailGroup open={open}>{g}</RailGroup>}
+        <RailItem icon={<Icon name={i}/>} label={l} active={sec===l} open={open} onClick={()=>setSec(l)} badge={l==='Reports'?7:undefined}/>
+      </React.Fragment>)}
+    </Rail>
+    <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0,minHeight:0}}>
+      <Topbar section={sec} badges={<Chip tone="polish">{palette}</Chip>}
+        onSearch={()=>say({tone:'info',title:'⌘K',body:'The command palette opens here.'})}
+        actions={<>
+          <IconButton label="What's new" icon={<Icon name="sparkle" size={18}/>} onClick={()=>setPanel(true)}/>
+          <IconButton label="Theme" icon={<Icon name={theme==='dark'?'sun':'moon'} size={18}/>} onClick={()=>setTheme(theme==='dark'?'light':'dark')}/>
+          <IconButton label="Polecat suite" icon={<Icon name="waffle" size={18}/>} active={waffle} onClick={()=>setWaffle(!waffle)}/>
+          <Button surface="app" variant="primary" size="sm" onClick={()=>setModal(true)}>New ▾</Button>
+          <IconButton label="More actions" icon={<Icon name="more" size={18}/>}/>
+        </>}/>
+      <div style={{flex:1,overflowY:'auto',padding:'22px 24px',position:'relative'}}>
+        <div className="ks-grid">
+          <div>
+            <div className="ks-card">
+              <h3>Palettes × themes</h3>
+              <div className="ks-row">
+                <Segmented options={['polecat','aurora','neon']} value={palette} onChange={setPalette}/>
+                <Segmented options={['dark','light']} value={theme} onChange={setTheme}/>
+              </div>
+              <p style={{color:'var(--text-2)',fontSize:12.5,margin:'10px 0 0'}}>Two axes stamped on <code style={{fontFamily:'var(--mono)'}}>&lt;html&gt;</code>: <code style={{fontFamily:'var(--mono)'}}>[data-palette]</code> × <code style={{fontFamily:'var(--mono)'}}>[data-theme]</code>. Every component below reads only tokens, so nothing else changes.</p>
+            </div>
+            <div className="ks-card">
+              <h3>Buttons</h3>
+              <div className="ks-row" style={{marginBottom:9}}>
+                <Button surface="app" variant="primary">Primary</Button>
+                <Button surface="app" variant="secondary">Secondary</Button>
+                <Button surface="app" variant="ghost">Ghost</Button>
+                <Button surface="app" variant="danger">Danger</Button>
+                <Button surface="app" variant="secondary" disabled>Disabled</Button>
+              </div>
+              <div className="ks-row">
+                <Button surface="app" variant="secondary" size="sm" icon={<Icon name="plus" size={15}/>}>Small</Button>
+                <IconButton label="Star" icon={<Icon name="star" size={18}/>}/>
+                <IconButton label="Filter" icon={<Icon name="filter" size={18}/>} active/>
+                <IconButton label="Close" icon={<Icon name="close" size={15}/>} size="sm" variant="ghost"/>
+                <Kbd>⌘S</Kbd><Kbd>Esc</Kbd>
+              </div>
+            </div>
+            <div className="ks-card">
+              <h3>Pills, chips, switches</h3>
+              <div className="ks-row" style={{marginBottom:10}}>
+                {['All','Active','Overdue','Archived'].map(f=><Pill key={f} on={filter===f} count={f==='Overdue'?12:undefined} onClick={()=>setFilter(f)}>{f}</Pill>)}
+              </div>
+              <div className="ks-row">
+                <Chip tone="feature">feature</Chip><Chip tone="fix">fix</Chip><Chip tone="polish">polish</Chip><Chip tone="warn">warn</Chip><Chip>local</Chip>
+                <Toggle on={on} label="Notifications" onChange={setOn}/>
+                <Segmented options={['simple','standard','expert']} value={mode} onChange={setMode}/>
+              </div>
+            </div>
+            <div className="ks-card">
+              <h3>Fields</h3>
+              <FieldRow>
+                <Field label="Name" style={{flex:1,minWidth:160}}><Input placeholder="Your name"/></Field>
+                <Field label="Source" style={{flex:1,minWidth:160}}><Select options={['Local','Supabase','Turso']}/></Field>
+              </FieldRow>
+              <Field label="Notes" hint="Markdown is fine."><Textarea rows={3} placeholder="A sentence or two…"/></Field>
+            </div>
+          </div>
+          <div>
+            <div className="ks-card">
+              <h3>Overlays</h3>
+              <div className="ks-row">
+                <Button surface="app" variant="secondary" onClick={()=>setModal(true)}>Modal</Button>
+                <Button surface="app" variant="secondary" onClick={()=>setSheet(true)}>Sheet</Button>
+                <Button surface="app" variant="secondary" onClick={()=>setPanel(true)}>Right panel</Button>
+                <Button surface="app" variant="secondary" onClick={()=>say({tone:'err',title:'Sync failed',body:'Retrying in 30s.',action:'Retry now'})}>Toast</Button>
+              </div>
+            </div>
+            <div className="ks-card">
+              <h3>Pop menu</h3>
+              <PopMenu items={[{group:'View'},{label:'Tour',icon:<Icon name="compass" size={16}/>},{label:'Theme',icon:<Icon name="moon" size={16}/>},'-',{group:'Help & power tools'},{label:'Keyboard shortcuts',hint:'?'},{label:'Help docs',hint:'ⓘ'}]}/>
+            </div>
+            <div className="ks-card">
+              <h3>Fleet marks</h3>
+              <div className="ks-row">
+                {[['chat','chat'],['jobtracker','briefcase'],['analytics','chart'],['autoselector','car'],['relay','network'],['games','gamepad'],['manager','gauge'],['modelserver','terminal']].map(([a,g])=><GlyphTile key={a} app={a} glyph={g} size={38}/>)}
+              </div>
+            </div>
+            <div className="ks-card" style={{padding:0}}>
+              <EmptyState icon={<Icon name="inbox" size={26}/>} title="Nothing here yet"
+                description="Create your first record, or import one from a CSV. Everything works without an account."
+                actions={<><Button surface="app" size="sm" variant="primary">+ New record</Button><Button surface="app" size="sm" variant="ghost">Import…</Button></>}/>
+            </div>
+          </div>
+        </div>
+        {waffle&&<div style={{position:'absolute',top:0,right:24,zIndex:120}}><Waffle current="manager" onPick={()=>setWaffle(false)}/></div>}
+      </div>
+    </div>
+    {modal&&<Modal title="New record" titleIcon={<Icon name="plus" size={18}/>} onClose={()=>setModal(false)}
+      footer={<><Button surface="app" variant="ghost" onClick={()=>setModal(false)}>Cancel</Button><Button surface="app" variant="primary" onClick={()=>{setModal(false);say({tone:'ok',title:'Record created',action:'Undo'})}}>Create</Button></>}>
+      <Field label="Title"><Input placeholder="Q3 planning"/></Field>
+      <Field label="Owner" hint="Local-only until you connect a backend."><Select options={['Me','Unassigned']}/></Field>
+    </Modal>}
+    {sheet&&<Sheet title="Filters" side="right" onClose={()=>setSheet(false)}
+      footer={<><Button surface="app" variant="ghost" onClick={()=>setSheet(false)}>Clear</Button><Button surface="app" variant="primary" onClick={()=>setSheet(false)}>Apply</Button></>}>
+      {['Active','Overdue','Starred','Archived'].map(f=><div key={f} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 2px'}}><input type="checkbox" defaultChecked={f==='Active'} style={{accentColor:'var(--brand)'}}/><span style={{fontSize:13}}>{f}</span></div>)}
+    </Sheet>}
+    {panel&&<RightPanel title="What's new" open onClose={()=>setPanel(false)}>
+      <p style={{color:'var(--text-2)',fontSize:13,marginTop:0}}>Every app publishes <code style={{fontFamily:'var(--mono)'}}>/js/changelog.js</code> in the fleet format; Manager and the launcher read it live.</p>
+      {[['v0.4.0','media controls promoted from Games','feature'],['v0.3.2','rail drawer close affordance on phones','fix'],['v0.3.1','waffle grid authored for the switcher','polish']].map(([v,t,k])=>
+        <div key={v} style={{display:'flex',gap:9,alignItems:'center',padding:'9px 0',borderBottom:'1px solid var(--border)'}}>
+          <span style={{fontFamily:'var(--mono)',fontSize:11,fontWeight:700,color:'var(--brand-2)'}}>{v}</span>
+          <Chip tone={k}>{k}</Chip><span style={{fontSize:13,color:'var(--text-2)'}}>{t}</span>
+        </div>)}
+    </RightPanel>}
+    <ToastStack>{toasts.map(t=><Toast key={t.id} {...t} onDismiss={()=>setToasts(x=>x.filter(y=>y.id!==t.id))}/>)}</ToastStack>
+  </>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Sink/>);
+</script></body></html>

@@ -48,6 +48,16 @@ How the app sits on the shell:
   Manager + the polecat.live launcher parse it live). Never hand-edit
   `js/changelog.js`; never break its parseability.
 
+## Design system
+
+The full Polecat design system lives at `.claude/skills/polecat-design`
+(tokens, the brand face, icon set, component specs, UI kits, guidelines).
+Any visual/brand/copy change starts there. Fonts ship via the vendored
+shell (`vendor/polecat-shell/fonts.css`); the app's accent names
+(`--brand-a/b/c`, `--consensus`) are mapped onto shell tokens at the top of
+`css/styles.css` so every palette recolors them — never pin raw accent hex
+in `:root`.
+
 ## Gates before any merge
 
 - `node scripts/validate.mjs` — ES-module parse + smart-quote guard (CI runs

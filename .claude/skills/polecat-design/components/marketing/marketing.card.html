@@ -1,0 +1,32 @@
+<!-- @dsCard group="Components" viewport="700x420" name="Marketing" subtitle="App launcher tiles, stat cards, feature cards, ticker, advantage band" -->
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css"><style>html,body{margin:0}body{background:var(--bg);color:var(--text);font-family:var(--font-site);padding:18px 20px;font-size:14px}.lbl{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);font-weight:700;margin:0 0 9px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script></head><body><div id="root"></div>
+<script type="text/babel">
+const { AppCard, StatCard, FeatureCard, Ticker, AdvantageBand } = window.PolecatDesignSystem_dd3c05;
+ReactDOM.createRoot(document.getElementById('root')).render(<div>
+  <p className="lbl">App launcher tiles — third one shows the hover state</p>
+  <div className="g3">
+    <AppCard app="analytics" glyph="chart" name="Analytics" host="analytics.polecat.live" tagline="Connect your data, build dashboards, share anywhere." version="v2.9.1" shipped="2 days ago"/>
+    <AppCard app="manager" glyph="gauge" name="Manager" host="manager.polecat.live" tagline="Mission control for the fleet." version="v1.8.0" shipped="today"/>
+    <AppCard app="games" glyph="gamepad" name="Games" host="games.polecat.live" tagline="An ever-growing neon arcade of story-driven retro games." version="v0.9.4" shipped="5 days ago" fun="fun" hover/>
+  </div>
+  <p className="lbl">Stats — four numbers, all true</p>
+  <div className="g4">
+    <StatCard value="7" label="live apps"/><StatCard value="900+" label="releases shipped"/>
+    <StatCard value="100%" label="open source" hover/><StatCard value="0" label="meetings held"/>
+  </div>
+  <p className="lbl">Feature cards</p>
+  <div className="g3">
+    <FeatureCard num="01" title="A shared platform, not eight snowflakes">Every app runs on one open shell library — improve it once, the whole fleet gets better.</FeatureCard>
+    <FeatureCard num="02" title="Agents build; gates decide" hover>Nothing ships until the app's own test gate passes on mobile and desktop.</FeatureCard>
+    <FeatureCard title="Analytics &amp; BI">Semantic models, dimensional modeling, governed metrics, embedded and OEM analytics.</FeatureCard>
+  </div>
+  <Ticker items={['Pentaho','Snowflake','Databricks','BigQuery','Kubernetes','AWS','GenAI','ETL & ELT','Open source']}/>
+  <AdvantageBand kicker="Why this works" lead="The unusual part isn't any single skill — it's operating credibly at four levels at once:"
+    pills={['Executive strategy','Enterprise architecture','Hands-on implementation','Delivery leadership']}
+    foot="Assess → strategize → roadmap → prototype → implement → enable your team to run it."/>
+</div>);
+</script></body></html>

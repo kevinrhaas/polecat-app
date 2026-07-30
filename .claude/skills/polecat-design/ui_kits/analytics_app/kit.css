@@ -1,0 +1,8 @@
+/* Analytics app UI kit — hover polish over the DS components' inline styles. */
+.ax-row:hover{background:var(--surface-2)!important}
+.ax-card{transition:border-color .16s ease,transform .16s ease}
+.ax-card:hover{border-color:color-mix(in srgb,var(--brand) 45%,var(--border))!important;transform:translateY(-2px)}
+.ax-btn:hover{background:var(--surface-3)!important;transform:translateY(-1px)}
+.ax-rail-item:hover{background:var(--surface-2)!important;color:var(--text)!important}
+.ax-scroll::-webkit-scrollbar{width:9px}
+.ax-scroll::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:5px}

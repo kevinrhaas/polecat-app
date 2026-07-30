@@ -1,0 +1,28 @@
+/* Space + layout. The fleet is not on a strict 4/8 grid — these are the real
+   shipped values from site.css and shell.css. */
+:root{
+  --sp-1:2px; --sp-2:4px; --sp-3:6px; --sp-4:8px; --sp-5:10px; --sp-6:12px;
+  --sp-7:14px; --sp-8:16px; --sp-9:18px; --sp-10:22px; --sp-11:26px;
+  --sp-12:30px; --sp-13:40px; --sp-14:44px; --sp-15:56px; --sp-16:80px;
+
+  /* site layout */
+  --maxw:1080px; --maxw-prose:880px; --maxw-narrow:720px; --maxw-hero:860px;
+  --gutter:22px; --gutter-sm:14px;
+  --section-y:80px; --section-y-sm:56px;
+  --grid-gap:16px; --grid-gap-tight:14px;
+  --card-pad:22px; --card-pad-sm:20px;
+  --nav-y:12px; --scroll-offset:76px;
+
+  /* app layout */
+  --rail-w:66px; --rail-w-open:232px;
+  --topbar-y:12px; --topbar-x:18px;
+  --view-pad:22px 24px; /* @kind spacing */
+  --view-pad-sm:16px 14px; /* @kind spacing */
+  --panel-w:min(420px,100vw); /* @kind spacing */
+  /* WCAG 2.5.5 tap floor, enforced below the 860px drawer breakpoint */
+  --tap-min:44px; /* @kind spacing */
+  --bp-phone:520px; /* @kind other */
+  --bp-mobile:640px; /* @kind other */
+  --bp-drawer:860px; /* @kind other */
+  --bp-wide:900px; /* @kind other */
+}

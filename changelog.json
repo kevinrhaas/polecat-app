@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-22 11:44 CT",
+  "updated": "2026-07-30 10:58 CT",
   "entries": [
+    {
+      "date": "2026-07-30",
+      "time": "10:58 CT",
+      "kind": "feature",
+      "title": "The design system arrives: brand typeface, true palette accents, and a new front door",
+      "items": [
+        "The whole app now sets in Hanken Grotesk, the Polecat fleet's brand face -- self-hosted, preloaded, with the system stack right behind it so nothing ever blocks",
+        "Aurora and Neon finally recolor everything: the logo gradient, New chat button, switches, focus rings, and the agreement map used to stay amber/purple in every palette -- the app's accent colors now ride the shell's palette tokens, so Neon really goes neon",
+        "The welcome page got the fleet treatment: the shared suite header and footer (with the round Chat badge), and a live hero carousel of real product screenshots -- consensus, progress, strategy settings, and the model browser",
+        "Share cards fixed too: links to the app now show the proper Polecat card instead of a bare icon"
+      ]
+    },
     {
       "date": "2026-07-22",
       "time": "11:44 CT",

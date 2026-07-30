@@ -1,0 +1,36 @@
+/* SITE semantics — polecat.live and every app front door (marketing chrome).
+   Dark is the base; light is a real, shipped fallback (theme.js stamps
+   [data-theme] on <html> pre-paint). Verbatim from site/css/site.css. */
+:root{
+  --bg:#0b0a10; --bg-2:#110f18;
+  --surface:#16131f; --surface-2:#1d1928;
+  --border:#2c2738;
+  --text:#f1edf7; --text-2:#a59fb8; --text-3:#6b6480;
+
+  --brand-a:var(--pc-brown); --brand-b:var(--pc-orange);
+  --blush:var(--pc-blush); --cream:var(--pc-cream);
+  --ok:#34d399; --warn:#f0a830;
+
+  /* semantic aliases */
+  --text-body:var(--text-2); --text-heading:var(--text); --text-faint:var(--text-3);
+  --surface-page:var(--bg); --surface-band:var(--bg-2); --surface-card:var(--surface);
+  --link:var(--brand-b); --link-hover:var(--blush);
+  --accent-site:var(--brand-b);
+
+  /* glass chrome */
+  --nav-bg:rgba(11,10,16,.78); --scrim:rgba(5,4,10,.65);
+  --blur-nav:blur(12px); /* @kind other */
+
+  /* shared site chrome (site-chrome.css psx-* fallbacks) */
+  --psx-bg:rgba(12,11,18,.72); --psx-solid:#0c0b12;
+  --psx-border:rgba(255,255,255,.10);
+}
+[data-theme="light"]{
+  --bg:#FBF7F1; --bg-2:#F3EBDD;
+  --surface:#FFFFFF; --surface-2:#F8F1E5;
+  --border:#E5D9C5;
+  --text:#241D2E; --text-2:#5E566E; --text-3:#8A8296;
+  --nav-bg:rgba(251,247,241,.82); --scrim:rgba(36,29,46,.45);
+  --psx-bg:rgba(255,255,255,.8); --psx-solid:#f6f2ec;
+  --psx-border:rgba(0,0,0,.10);
+}

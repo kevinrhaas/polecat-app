@@ -4,6 +4,18 @@
 // Entries are newest-first; `ts` is an ISO-8601 UTC string.
 export const CHANGELOG = [
   {
+    v: 144,
+    title: 'The design system arrives: brand typeface, true palette accents, and a new front door',
+    kind: 'feature',
+    ts: '2026-07-30T15:58:00.000Z',
+    items: [
+      'The whole app now sets in Hanken Grotesk, the Polecat fleet\'s brand face -- self-hosted, preloaded, with the system stack right behind it so nothing ever blocks',
+      'Aurora and Neon finally recolor everything: the logo gradient, New chat button, switches, focus rings, and the agreement map used to stay amber/purple in every palette -- the app\'s accent colors now ride the shell\'s palette tokens, so Neon really goes neon',
+      'The welcome page got the fleet treatment: the shared suite header and footer (with the round Chat badge), and a live hero carousel of real product screenshots -- consensus, progress, strategy settings, and the model browser',
+      'Share cards fixed too: links to the app now show the proper Polecat card instead of a bare icon',
+    ],
+  },
+  {
     v: 143,
     title: 'Pick your palette: Aurora and Neon join the house Polecat theme',
     kind: 'feature',
