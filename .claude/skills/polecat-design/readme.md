@@ -347,8 +347,9 @@ family — do not substitute Lucide, Heroicons or anything else.
   Knocked-out working copies are provided: `assets/logo-mark-alpha.png`
   (transparent, black) and `assets/logo-mark-white.png` (transparent, white) —
   use the white one on dark and on brand-orange surfaces.
-  **It is raster only.** ⚠️ Ask the brand owner for an SVG before any print,
-  large-format or favicon use.
+  **`assets/logo-mark.svg` is the canonical vector** (traced 2026-07-30 from
+  the master art, brand-owner supplied) — use it for favicons, print and
+  large format; the PNGs remain as raster conveniences.
 - **`assets/polecat.svg` — the legacy mascot** still live on polecat.live: a
   cream/brown/blush masked-cat face. Kept for fidelity when recreating the
   current site. Per `docs/BRAND.md` the mascot is the master mark on
@@ -426,4 +427,3 @@ Longer prose: `guidelines/CONTENT.md`, `guidelines/BRAND-STANDARDS.md`.
   render on the system stack. Hanken Grotesk is supplied by the brand owner and
   self-hosted here, so this system's type is *ahead* of what production ships —
   worth reconciling upstream.
-- The new logo is raster only.
